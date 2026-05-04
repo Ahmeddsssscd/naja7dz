@@ -44,12 +44,15 @@ function SiteNav() {
           <a href="#features" className="hover:text-fg transition-colors">
             {t("features")}
           </a>
-          <a href="#pricing" className="hover:text-fg transition-colors">
+          <Link href="/tarifs" className="hover:text-fg transition-colors">
             {t("pricing")}
-          </a>
-          <a href="#faq" className="hover:text-fg transition-colors">
+          </Link>
+          <Link href="/pour-les-parents" className="hover:text-fg transition-colors">
+            {t("parents")}
+          </Link>
+          <Link href="/faq" className="hover:text-fg transition-colors">
             {t("faq")}
-          </a>
+          </Link>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
