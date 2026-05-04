@@ -1,8 +1,9 @@
 import { useTranslations } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { Logo } from "@/components/Logo";
 import { LangSwitch } from "@/components/LangSwitch";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { EmailCapture } from "@/components/EmailCapture";
 import {
   CheckIcon,
   PlusIcon,
@@ -14,14 +15,7 @@ import {
   ChartIcon,
 } from "@/components/Icon";
 
-export default function LandingPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  // Static rendering for performance
-  // (params is awaited but we don't need its value here)
-  void params;
+export default function LandingPage() {
   return (
     <>
       <SiteNav />
@@ -41,25 +35,26 @@ export default function LandingPage({
 function SiteNav() {
   const t = useTranslations("Nav");
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-nav border-b border-pale-blue">
+    <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-nav border-b border-line">
       <div className="container-x flex items-center justify-between h-18 py-4">
         <Link href="/" aria-label="Najaح" className="flex-shrink-0">
           <Logo height={36} priority />
         </Link>
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-soft">
-          <a href="#features" className="hover:text-navy transition-colors">
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-fg-soft">
+          <a href="#features" className="hover:text-fg transition-colors">
             {t("features")}
           </a>
-          <a href="#pricing" className="hover:text-navy transition-colors">
+          <a href="#pricing" className="hover:text-fg transition-colors">
             {t("pricing")}
           </a>
-          <a href="#faq" className="hover:text-navy transition-colors">
+          <a href="#faq" className="hover:text-fg transition-colors">
             {t("faq")}
           </a>
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           <LangSwitch />
-          <Link href="/connexion" className="hidden md:inline text-sm font-medium text-navy">
+          <Link href="/connexion" className="hidden md:inline text-sm font-medium text-fg ms-2">
             {t("login")}
           </Link>
           <Link href="/inscription" className="btn btn-primary">
@@ -75,10 +70,10 @@ function SiteNav() {
 function Hero() {
   const t = useTranslations("Hero");
   return (
-    <section className="bg-cream py-20 md:py-30">
+    <section className="bg-surface-2 py-20 md:py-30">
       <div className="container-x grid md:grid-cols-2 gap-12 md:gap-16 items-center">
         <div>
-          <h1 className="text-[clamp(34px,6vw,56px)] font-bold leading-[1.1] tracking-tight text-navy mb-5">
+          <h1 className="text-[clamp(34px,6vw,56px)] font-bold leading-[1.1] tracking-tight text-fg mb-5">
             {t("headline_pre")}{" "}
             <span className="relative inline-block">
               <span className="relative z-10">{t("headline_accent")}</span>
@@ -89,16 +84,9 @@ function Hero() {
             </span>
             {t("headline_post")}
           </h1>
-          <p className="text-lg text-ink-soft mb-8 max-w-prose">{t("lead")}</p>
-          <div className="flex flex-wrap items-center gap-4 mb-7">
-            <Link href="/inscription" className="btn btn-primary btn-lg">
-              {t("cta_primary")}
-            </Link>
-            <a href="#how" className="btn-text">
-              {t("cta_secondary")}
-            </a>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-ink-soft">
+          <p className="text-lg text-fg-soft mb-8 max-w-prose">{t("lead")}</p>
+          <EmailCapture />
+          <div className="flex items-center gap-2 text-sm text-fg-soft mt-6">
             <CheckIcon size={16} className="text-gold" />
             <span>{t("trust")}</span>
           </div>
@@ -113,16 +101,16 @@ function HeroQuizMock() {
   return (
     <div
       aria-hidden
-      className="bg-white rounded-modal p-7 shadow-card-hover max-w-md w-full mx-auto md:ms-auto"
+      className="bg-surface rounded-modal p-7 shadow-card-hover border border-line max-w-md w-full mx-auto md:ms-auto"
     >
-      <div className="flex items-center gap-3 pb-4 mb-5 border-b border-pale-blue text-sm text-ink-soft">
+      <div className="flex items-center gap-3 pb-4 mb-5 border-b border-line text-sm text-fg-soft">
         <span>Mathématiques · 4AM</span>
-        <div className="flex-1 h-1 bg-pale-blue rounded overflow-hidden">
+        <div className="flex-1 h-1 bg-surface-3 rounded overflow-hidden">
           <div className="h-full w-3/5 bg-gold rounded" />
         </div>
         <span>3/5</span>
       </div>
-      <div className="text-lg font-semibold text-navy mb-5 leading-snug">
+      <div className="text-lg font-semibold text-fg mb-5 leading-snug">
         Quelle est la solution de l&rsquo;équation 2x + 6 = 14 ?
       </div>
       <div className="flex flex-col gap-2.5">
@@ -148,13 +136,13 @@ function MockOption({
     <div
       className={`flex items-center gap-3.5 px-4 py-3.5 rounded-btn border text-base ${
         correct
-          ? "border-gold bg-gold-faint text-navy font-medium"
-          : "border-pale-blue text-ink"
+          ? "border-gold bg-gold-faint dark:bg-gold/10 text-fg font-medium"
+          : "border-line text-fg"
       }`}
     >
       <span
         className={`inline-flex w-7 h-7 rounded-md items-center justify-center text-xs font-semibold ${
-          correct ? "bg-gold text-navy" : "bg-cream text-ink-soft"
+          correct ? "bg-gold text-navy" : "bg-surface-2 text-fg-soft"
         }`}
       >
         {letter}
@@ -169,8 +157,8 @@ function TrustStrip() {
   const t = useTranslations("TrustStrip");
   const items = ["official", "grades", "languages", "payment"] as const;
   return (
-    <div className="bg-white border-y border-pale-blue py-7">
-      <div className="container-x flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm text-ink-soft font-medium">
+    <div className="bg-surface border-y border-line py-7">
+      <div className="container-x flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm text-fg-soft font-medium">
         {items.map((key) => (
           <span key={key} className="inline-flex items-center gap-2">
             <CheckIcon size={16} className="text-gold" />
@@ -191,17 +179,17 @@ function HowItWorks() {
     { title: t("step3_title"), text: t("step3_text") },
   ];
   return (
-    <section id="how" className="py-24 md:py-26">
+    <section id="how" className="py-24 md:py-26 bg-surface">
       <div className="container-x">
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {steps.map((step, i) => (
             <div key={i} className="text-center px-6 py-8">
-              <div className="w-14 h-14 rounded-full bg-pale-blue text-navy font-bold text-xl inline-flex items-center justify-center mb-5">
+              <div className="w-14 h-14 rounded-full bg-surface-3 text-fg font-bold text-xl inline-flex items-center justify-center mb-5">
                 {i + 1}
               </div>
-              <h3 className="text-lg font-semibold text-navy mb-2">{step.title}</h3>
-              <p className="text-ink-soft text-base">{step.text}</p>
+              <h3 className="text-lg font-semibold text-fg mb-2">{step.title}</h3>
+              <p className="text-fg-soft text-base">{step.text}</p>
             </div>
           ))}
         </div>
@@ -222,20 +210,20 @@ function Features() {
     { icon: ChartIcon, title: t("f6_title"), text: t("f6_text") },
   ];
   return (
-    <section id="features" className="py-24 md:py-26 bg-cream">
+    <section id="features" className="py-24 md:py-26 bg-surface-2">
       <div className="container-x">
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((it, i) => (
             <article
               key={i}
-              className="card hover:shadow-card-hover hover:-translate-y-0.5 hover:border-transparent transition-all duration-200"
+              className="bg-surface border border-line rounded-card p-7 hover:shadow-card-hover hover:-translate-y-0.5 hover:border-transparent transition-all duration-200"
             >
-              <div className="w-11 h-11 rounded-[10px] bg-pale-blue text-navy inline-flex items-center justify-center mb-5">
+              <div className="w-11 h-11 rounded-[10px] bg-surface-3 text-fg inline-flex items-center justify-center mb-5">
                 <it.icon size={24} />
               </div>
-              <h3 className="text-lg font-semibold text-navy mb-2">{it.title}</h3>
-              <p className="text-base text-ink-soft">{it.text}</p>
+              <h3 className="text-lg font-semibold text-fg mb-2">{it.title}</h3>
+              <p className="text-base text-fg-soft">{it.text}</p>
             </article>
           ))}
         </div>
@@ -248,7 +236,7 @@ function Features() {
 function Pricing() {
   const t = useTranslations("Pricing");
   return (
-    <section id="pricing" className="py-24 md:py-26">
+    <section id="pricing" className="py-24 md:py-26 bg-surface">
       <div className="container-x">
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -313,8 +301,8 @@ function PlanCard({
     <div
       className={`relative rounded-card p-8 flex flex-col transition-all duration-200 hover:shadow-card-hover ${
         featured
-          ? "bg-navy text-white border-2 border-navy"
-          : "bg-white border border-pale-blue hover:-translate-y-0.5"
+          ? "bg-navy text-white border-2 border-navy dark:border-gold"
+          : "bg-surface border border-line text-fg hover:-translate-y-0.5"
       }`}
     >
       {badge && (
@@ -324,22 +312,22 @@ function PlanCard({
       )}
       <div
         className={`text-sm font-semibold uppercase tracking-wider mb-3 ${
-          featured ? "text-white/70" : "text-ink-soft"
+          featured ? "text-white/70" : "text-fg-soft"
         }`}
       >
         {name}
       </div>
-      <div className={`text-4xl font-bold leading-none mb-1 ${featured ? "text-white" : "text-navy"}`}>
+      <div className={`text-4xl font-bold leading-none mb-1 ${featured ? "text-white" : "text-fg"}`}>
         {price} <span className="text-base font-medium">{currency}</span>
       </div>
-      <div className={`text-sm mb-7 ${featured ? "text-white/65" : "text-ink-soft"}`}>{period}</div>
+      <div className={`text-sm mb-7 ${featured ? "text-white/65" : "text-fg-soft"}`}>{period}</div>
       <ul className="flex-1 mb-7 space-y-2">
         {features.map((f, i) => (
           <li
             key={i}
-            className={`flex items-start gap-2.5 text-base ${featured ? "text-white" : "text-ink"}`}
+            className={`flex items-start gap-2.5 text-base ${featured ? "text-white" : "text-fg"}`}
           >
-            <CheckIcon size={16} className={`mt-1 flex-shrink-0 ${featured ? "text-gold" : "text-gold"}`} />
+            <CheckIcon size={16} className="mt-1 flex-shrink-0 text-gold" />
             <span>{f}</span>
           </li>
         ))}
@@ -366,20 +354,20 @@ function FAQ() {
     a: t(`a${i}` as "a1"),
   }));
   return (
-    <section id="faq" className="py-24 md:py-26 bg-cream">
+    <section id="faq" className="py-24 md:py-26 bg-surface-2">
       <div className="container-x">
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} />
         <div className="max-w-3xl mx-auto">
           {items.map((it, i) => (
-            <details key={i} className="border-b border-pale-blue group">
-              <summary className="flex justify-between items-center py-6 text-lg font-medium text-navy cursor-pointer list-none">
+            <details key={i} className="border-b border-line group">
+              <summary className="flex justify-between items-center py-6 text-lg font-medium text-fg cursor-pointer list-none">
                 <span>{it.q}</span>
                 <PlusIcon
                   size={20}
-                  className="text-ink-soft transition-transform group-open:rotate-45 group-open:text-gold flex-shrink-0 ms-4"
+                  className="text-fg-soft transition-transform group-open:rotate-45 group-open:text-gold flex-shrink-0 ms-4"
                 />
               </summary>
-              <p className="pb-6 text-ink-soft text-base leading-relaxed">{it.a}</p>
+              <p className="pb-6 text-fg-soft text-base leading-relaxed">{it.a}</p>
             </details>
           ))}
         </div>
@@ -410,32 +398,32 @@ function FinalCTA() {
 function SiteFooter() {
   const t = useTranslations("Footer");
   return (
-    <footer className="bg-cream pt-16 pb-8 border-t border-pale-blue">
+    <footer className="bg-surface-2 pt-16 pb-8 border-t border-line">
       <div className="container-x">
         <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 mb-10">
           <div>
             <Logo height={36} />
-            <p className="text-ink-soft text-sm mt-4 max-w-xs">{t("tagline")}</p>
+            <p className="text-fg-soft text-sm mt-4 max-w-xs">{t("tagline")}</p>
           </div>
           <FooterCol title={t("product")}>
             <a href="#features">{t("product_features")}</a>
-            <a href="#pricing">{t("product_pricing")}</a>
-            <a href="#faq">{t("product_faq")}</a>
+            <Link href="/tarifs">{t("product_pricing")}</Link>
+            <Link href="/pour-les-parents">{t("product_parents")}</Link>
+            <Link href="/faq">{t("product_faq")}</Link>
           </FooterCol>
           <FooterCol title={t("company")}>
-            <a href="#">{t("company_about")}</a>
-            <a href="#">{t("company_blog")}</a>
-            <a href="#">{t("company_contact")}</a>
-            <a href="#">{t("company_partner")}</a>
+            <Link href="/about">{t("company_about")}</Link>
+            <Link href="/blog">{t("company_blog")}</Link>
+            <Link href="/contact">{t("company_contact")}</Link>
           </FooterCol>
           <FooterCol title={t("legal")}>
-            <a href="#">{t("legal_terms")}</a>
-            <a href="#">{t("legal_privacy")}</a>
-            <a href="#">{t("legal_loi")}</a>
-            <a href="#">{t("legal_mentions")}</a>
+            <Link href="/legal/conditions">{t("legal_terms")}</Link>
+            <Link href="/legal/confidentialite">{t("legal_privacy")}</Link>
+            <Link href="/legal/loi-18-07">{t("legal_loi")}</Link>
+            <Link href="/legal/mentions">{t("legal_mentions")}</Link>
           </FooterCol>
         </div>
-        <div className="border-t border-pale-blue pt-6 flex flex-wrap justify-between gap-3 text-xs text-ink-soft">
+        <div className="border-t border-line pt-6 flex flex-wrap justify-between gap-3 text-xs text-fg-soft">
           <span>{t("rights")}</span>
           <span>{t("made_in")}</span>
         </div>
@@ -447,8 +435,8 @@ function SiteFooter() {
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-navy mb-4">{title}</h4>
-      <ul className="space-y-1.5 [&_a]:text-sm [&_a]:text-ink-soft [&_a]:py-1.5 [&_a]:block hover:[&_a]:text-navy [&_a]:transition-colors">
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-fg mb-4">{title}</h4>
+      <ul className="space-y-1.5 [&_a]:text-sm [&_a]:text-fg-soft [&_a]:py-1.5 [&_a]:block hover:[&_a]:text-fg [&_a]:transition-colors">
         {Array.isArray(children) ? (
           children.map((c, i) => <li key={i}>{c}</li>)
         ) : (
@@ -472,10 +460,10 @@ function SectionHead({
   return (
     <div className="text-center max-w-2xl mx-auto mb-14">
       <span className="eyebrow mb-3">{eyebrow}</span>
-      <h2 className="text-[clamp(28px,4vw,40px)] font-bold text-navy leading-tight tracking-tight mb-3 mt-2">
+      <h2 className="text-[clamp(28px,4vw,40px)] font-bold text-fg leading-tight tracking-tight mb-3 mt-2">
         {title}
       </h2>
-      {subtitle && <p className="text-ink-soft text-lg">{subtitle}</p>}
+      {subtitle && <p className="text-fg-soft text-lg">{subtitle}</p>}
     </div>
   );
 }

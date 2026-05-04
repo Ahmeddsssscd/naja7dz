@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -10,6 +11,7 @@ const config: Config = {
           DEFAULT: "#0F1B33",
           soft: "#1a2748",
           faint: "#2a3958",
+          deep: "#070D1E",
         },
         gold: {
           DEFAULT: "#D4A72C",
@@ -20,12 +22,24 @@ const config: Config = {
           DEFAULT: "#E8EDF5",
           deep: "#D4DCE8",
         },
-        cream: "#FAF9F6",
+        cream: {
+          DEFAULT: "#FAF9F6",
+          dim: "#B5BCD0",
+        },
         ink: {
           DEFAULT: "#0F1B33",
           soft: "#5A6478",
           faint: "#8A92A4",
         },
+        // Semantic theme tokens — auto-swap via CSS vars (light/dark)
+        surface: "var(--surface)",
+        "surface-2": "var(--surface-2)",
+        "surface-3": "var(--surface-3)",
+        fg: "var(--fg)",
+        "fg-soft": "var(--fg-soft)",
+        "fg-faint": "var(--fg-faint)",
+        line: "var(--line)",
+        "line-strong": "var(--line-strong)",
       },
       fontFamily: {
         // Latin: Poppins. Arabic: Tajawal. Loaded via next/font in layout.

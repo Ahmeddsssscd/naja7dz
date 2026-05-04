@@ -20,6 +20,70 @@
     "cta_secondary": "Voir comment ça marche →",
     "trust": "Sans carte bancaire · Annulation en un clic"
   },
+  "Waitlist": {
+    "placeholder": "ton@email.com",
+    "cta": "Rejoindre la liste",
+    "sending": "Envoi…",
+    "success": "Merci ! Tu seras parmi les premiers prévenus du lancement.",
+    "error": "Une erreur s'est produite. Réessaye dans un instant."
+  },
+  "Tarifs": {
+    "title": "Tarifs simples. Sans surprise.",
+    "subtitle": "Choisis ce qui correspond à ta famille. Annule en un clic.",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "annual_save": "−38%",
+    "compare_title": "Comparaison détaillée",
+    "compare_eleve": "Élève",
+    "compare_famille": "Famille",
+    "compare_bac": "Pack Bac",
+    "trust_chargily": "Paiement sécurisé via Chargily",
+    "trust_cards": "CIB · EDAHABIA · BaridiMob"
+  },
+  "Parents": {
+    "eyebrow": "Pour les parents",
+    "title": "Najaح est conçu pour ta tranquillité d'esprit.",
+    "subtitle": "Tu choisis. Tu surveilles. Tu décides du temps.",
+    "p1_title": "Espace sécurisé pour les enfants",
+    "p1_text": "Aucune publicité. Aucun contact extérieur. Aucun achat intégré. L'univers des petits est entièrement protégé.",
+    "p2_title": "Tu contrôles le temps d'écran",
+    "p2_text": "Définis des limites quotidiennes par enfant. Bloque les jeux jusqu'à ce que les exercices soient finis.",
+    "p3_title": "Rapports hebdomadaires",
+    "p3_text": "Reçois chaque dimanche un PDF en arabe + français : performances, axes de progrès, recommandations.",
+    "p4_title": "Programme officiel",
+    "p4_text": "Tout le contenu suit strictement le programme national algérien. Du 1AP au 3AS, dans toutes les matières.",
+    "p5_title": "Conformité Loi 18-07",
+    "p5_text": "Tes données sont stockées en sécurité, encryptées, et ne sont jamais vendues. Conforme à la législation algérienne.",
+    "p6_title": "Modération humaine",
+    "p6_text": "Chaque message dans les groupes d'étude est vérifié. Chaque demande d'amitié passe par toi avant d'être acceptée.",
+    "cta": "Voir une démo"
+  },
+  "Contact": {
+    "eyebrow": "Contact",
+    "title": "Une question ? Nous sommes là.",
+    "subtitle": "Réponse en moins de 24 heures, du dimanche au jeudi.",
+    "form_name": "Nom complet",
+    "form_email": "Adresse email",
+    "form_subject": "Sujet",
+    "form_message": "Message",
+    "form_send": "Envoyer",
+    "form_sending": "Envoi…",
+    "form_success": "Merci, ton message est bien reçu. Nous reviendrons vers toi rapidement.",
+    "form_error": "Une erreur s'est produite. Réessaye ou contacte-nous directement.",
+    "channel_email": "Email",
+    "channel_whatsapp": "WhatsApp",
+    "channel_hours": "Horaires de support"
+  },
+  "Cookies": {
+    "title": "Najaح utilise des cookies essentiels",
+    "text": "Nous utilisons des cookies strictement nécessaires au fonctionnement du site. Aucun cookie publicitaire, aucun pistage tiers. Conforme à la Loi 18-07.",
+    "accept": "OK, compris",
+    "more": "En savoir plus"
+  },
+  "Theme": {
+    "light": "Mode clair",
+    "dark": "Mode sombre"
+  },
   "TrustStrip": {
     "official": "Programme officiel algérien",
     "grades": "Du 1AP au 3AS",

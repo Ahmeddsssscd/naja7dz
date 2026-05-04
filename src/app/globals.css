@@ -3,67 +3,97 @@
 @tailwind utilities;
 
 @layer base {
-  /* Tell the browser this site is light-only — prevents OS dark-mode from
-     auto-styling form inputs, scrollbars, and other UA widgets. */
+  /* Light theme tokens (default) */
   :root {
+    --surface: #FFFFFF;
+    --surface-2: #FAF9F6;     /* cream */
+    --surface-3: #E8EDF5;     /* pale-blue */
+    --fg: #0F1B33;
+    --fg-soft: #5A6478;
+    --fg-faint: #8A92A4;
+    --line: #E8EDF5;
+    --line-strong: #D4DCE8;
     color-scheme: light;
   }
+
+  /* Dark theme tokens — kicks in when <html> has class="dark" (set by next-themes) */
+  .dark {
+    --surface: #070D1E;       /* near-black navy */
+    --surface-2: #0F1B33;     /* deep navy */
+    --surface-3: #1a2748;     /* navy-soft, used for raised elements */
+    --fg: #FAF9F6;            /* cream as text */
+    --fg-soft: #B5BCD0;
+    --fg-faint: #8A92A4;
+    --line: #1a2748;
+    --line-strong: #2a3958;
+    color-scheme: dark;
+  }
+
   html {
     scroll-behavior: smooth;
-    background: theme("colors.white");
-    color-scheme: light;
+    background: var(--surface);
   }
   body {
-    @apply text-ink bg-white antialiased;
+    @apply text-fg bg-surface antialiased;
     font-family: var(--font-poppins), system-ui, sans-serif;
-    color-scheme: light;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   body[dir="rtl"] {
     font-family: var(--font-tajawal), var(--font-poppins), system-ui, sans-serif;
   }
-  /* Hard-override OS dark-mode preference for the whole site */
-  @media (prefers-color-scheme: dark) {
-    :root { color-scheme: light; }
-    html, body { background: #FFFFFF; color: #0F1B33; }
+
+  /* Default focus ring — accessible + on-brand in both themes */
+  :focus-visible {
+    outline: 2px solid theme("colors.gold.DEFAULT");
+    outline-offset: 2px;
   }
 
-  /* Default focus ring — accessible + on-brand */
-  :focus-visible {
-    outline: 2px solid theme("colors.navy.DEFAULT");
-    outline-offset: 2px;
+  /* Smooth color transitions across theme swap (everywhere except images) */
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  img, video, svg.no-transition * {
+    transition: none !important;
   }
 }
 
 @layer components {
-  /* Buttons — built once, used everywhere. Never re-style ad hoc. */
+  /* Buttons — use semantic tokens so they work in dark mode automatically */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 h-11 px-5 rounded-btn text-sm font-semibold transition-all whitespace-nowrap;
+    @apply inline-flex items-center justify-center gap-2 h-11 px-5 rounded-btn text-sm font-semibold whitespace-nowrap;
   }
   .btn:active {
     @apply translate-y-px;
   }
   .btn-primary {
-    @apply bg-navy text-white hover:bg-navy-soft;
+    @apply bg-navy text-white hover:bg-navy-soft dark:bg-gold dark:text-navy dark:hover:bg-gold-soft;
   }
   .btn-secondary {
     @apply bg-gold text-navy hover:bg-gold-soft;
   }
   .btn-outline {
-    @apply bg-transparent text-navy border border-pale-blue-deep hover:border-navy;
+    @apply bg-transparent text-fg border border-line-strong hover:border-fg;
   }
   .btn-ghost {
-    @apply bg-transparent text-ink-soft hover:text-navy hover:bg-pale-blue;
+    @apply bg-transparent text-fg-soft hover:text-fg hover:bg-surface-3;
   }
   .btn-text {
-    @apply text-navy font-medium px-0 h-auto hover:text-gold;
+    @apply text-fg font-medium px-0 h-auto hover:text-gold;
   }
   .btn-lg {
     @apply h-14 px-7 text-base;
   }
+  .btn-sm {
+    @apply h-9 px-3 text-xs;
+  }
 
-  /* Card — consistent container */
+  /* Card — uses semantic surface */
   .card {
-    @apply bg-white border border-pale-blue rounded-card p-6;
+    @apply bg-surface border border-line rounded-card p-6;
   }
 
   /* Eyebrow — gold uppercase label above section titles */
@@ -79,7 +109,6 @@
 }
 
 @layer utilities {
-  /* Logical-property helpers — work in both LTR and RTL */
   .text-start { text-align: start; }
   .text-end { text-align: end; }
 }

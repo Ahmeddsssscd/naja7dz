@@ -4,13 +4,9 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import { Poppins, Tajawal } from "next/font/google";
 import { routing } from "@/i18n/routing";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { CookieBanner } from "@/components/CookieBanner";
 import "../globals.css";
-
-// Viewport + color scheme (Next 15 requires this in its own export, not Metadata)
-export const viewport: Viewport = {
-  themeColor: "#FAF9F6",
-  colorScheme: "light",
-};
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -25,6 +21,13 @@ const tajawal = Tajawal({
   variable: "--font-tajawal",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF9F6" },
+    { media: "(prefers-color-scheme: dark)", color: "#070D1E" },
+  ],
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -69,11 +72,19 @@ export default async function LocaleLayout({
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={dir} className={`${poppins.variable} ${tajawal.variable}`}>
+    <html
+      lang={locale}
+      dir={dir}
+      className={`${poppins.variable} ${tajawal.variable}`}
+      suppressHydrationWarning
+    >
       <body>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+        <ThemeProvider>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+            <CookieBanner />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

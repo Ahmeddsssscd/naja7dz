@@ -4,7 +4,6 @@
  */
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "./types";
 
 export function createServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,7 +13,8 @@ export function createServerClient() {
       "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment.",
     );
   }
-  return createClient<Database>(url, serviceKey, {
+  // Untyped client for now (see client.ts comment for how to regenerate types)
+  return createClient(url, serviceKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
