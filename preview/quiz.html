@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quiz · Mathématiques — Najaح</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  body { background: var(--cream); }
+
+  .quiz-shell {
+    max-width: 560px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--cream);
+  }
+
+  .quiz-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .quiz-back {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-soft);
+    transition: background 0.15s;
+  }
+  .quiz-back:hover { background: var(--pale-blue); color: var(--navy); }
+  .quiz-meta { flex: 1; min-width: 0; }
+  .quiz-meta .breadcrumb { font-size: 12px; color: var(--text-soft); }
+  .quiz-meta .progress-text { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .quiz-progress {
+    height: 4px;
+    background: var(--pale-blue);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .quiz-progress > div { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.3s; }
+
+  .quiz-main {
+    flex: 1;
+    padding: 32px 20px 100px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .question-num {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .question-text {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+    margin-bottom: 32px;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 12px; }
+  .option {
+    background: var(--white);
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-card);
+    padding: 18px 18px;
+    text-align: left;
+    font-size: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.05s;
+    width: 100%;
+  }
+  body[dir="rtl"] .option { text-align: right; }
+  .option:hover { border-color: var(--navy); }
+  .option:active { transform: scale(0.99); }
+  .option-key {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--cream);
+    color: var(--text-soft);
+    font-weight: 600;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .option:hover .option-key { background: var(--navy); color: var(--white); }
+  .option.selected { border-color: var(--navy); background: var(--white); }
+  .option.correct {
+    border-color: var(--success);
+    background: #DEF1E6;
+  }
+  .option.correct .option-key { background: var(--success); color: var(--white); }
+  .option.wrong {
+    border-color: var(--danger);
+    background: #FCEFEC;
+  }
+  .option.wrong .option-key { background: var(--danger); color: var(--white); }
+  .option .check-icon { margin-left: auto; opacity: 0; }
+  body[dir="rtl"] .option .check-icon { margin-left: 0; margin-right: auto; }
+  .option.correct .check-icon, .option.wrong .check-icon { opacity: 1; }
+
+  /* Wrong answer explanation slide-up */
+  .explanation {
+    background: var(--white);
+    border-radius: var(--radius-modal) var(--radius-modal) 0 0;
+    padding: 24px 20px 32px;
+    box-shadow: var(--shadow-xl);
+    margin-top: 32px;
+    border-top: 4px solid var(--gold);
+  }
+  .explanation .label { font-size: 12px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .explanation h3 { font-size: 18px; color: var(--navy); margin-bottom: 12px; }
+  .explanation p { color: var(--text-soft); font-size: 15px; line-height: 1.6; margin-bottom: 16px; }
+  .explanation .formula {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    color: var(--navy);
+    margin-bottom: 16px;
+  }
+
+  .quiz-bottom {
+    position: sticky;
+    bottom: 0;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .quiz-tools { display: flex; gap: 8px; }
+  .tool-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .tool-btn:hover { background: var(--pale-blue); }
+
+  /* Toggle for showing wrong-state */
+  .demo-toggle {
+    position: fixed;
+    top: 80px;
+    right: 16px;
+    background: var(--navy);
+    color: var(--white);
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 100;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+  }
+</style>
+</head>
+<body>
+
+<button class="demo-toggle" id="demoToggle">Voir réponse fausse</button>
+
+<div class="quiz-shell">
+
+  <!-- TOP -->
+  <header class="quiz-top">
+    <a href="eleve.html" class="quiz-back" aria-label="Retour">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <div class="quiz-meta">
+      <div class="breadcrumb">Mathématiques · Équations du 1er degré</div>
+      <div class="progress-text">Question 3 / 10</div>
+      <div class="quiz-progress"><div style="width: 30%;"></div></div>
+    </div>
+    <button class="lang-toggle" id="langToggle">عربي</button>
+  </header>
+
+  <!-- MAIN -->
+  <main class="quiz-main">
+
+    <div class="question-num">Question 3</div>
+    <div class="question-text">
+      Quelle est la solution de l'équation <strong>2x + 6 = 14</strong> ?
+    </div>
+
+    <div class="options" id="options">
+      <button class="option" data-correct="false">
+        <span class="option-key">A</span>
+        <span>x = 2</span>
+        <svg class="icon-md check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--danger);"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button class="option" data-correct="true">
+        <span class="option-key">B</span>
+        <span>x = 4</span>
+        <svg class="icon-md check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--success);"><path d="M20 6L9 17l-5-5"/></svg>
+      </button>
+      <button class="option" data-correct="false">
+        <span class="option-key">C</span>
+        <span>x = 6</span>
+        <svg class="icon-md check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--danger);"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button class="option" data-correct="false">
+        <span class="option-key">D</span>
+        <span>x = 10</span>
+        <svg class="icon-md check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--danger);"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- EXPLANATION (shown on wrong answer) -->
+    <div class="explanation" id="explanation" style="display:none;">
+      <div class="label">Explication</div>
+      <h3>La bonne réponse est <strong>x = 4</strong></h3>
+      <p>Pour résoudre cette équation, on isole le terme contenant <strong>x</strong> en soustrayant 6 des deux côtés :</p>
+      <div class="formula">2x + 6 − 6 = 14 − 6  →  2x = 8</div>
+      <p>Puis on divise les deux côtés par 2 :</p>
+      <div class="formula">2x ÷ 2 = 8 ÷ 2  →  x = 4</div>
+      <p class="muted" style="font-size:13px; margin-top: 16px;">💡 Astuce : pour vérifier, remplace x par 4 dans l'équation initiale : 2(4) + 6 = 8 + 6 = 14 ✓</p>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM -->
+  <footer class="quiz-bottom">
+    <div class="quiz-tools">
+      <button class="tool-btn" aria-label="Indice" title="Indice">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.66 18h4.68"/><path d="M12 2a7 7 0 0 0-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 0 0-7-7z"/></svg>
+      </button>
+      <button class="tool-btn" aria-label="Écouter la question" title="Écouter">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      </button>
+      <button class="tool-btn" aria-label="Signaler un problème" title="Signaler">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="22" x2="4" y2="15"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>
+      </button>
+    </div>
+    <button class="btn btn-primary" id="nextBtn" disabled style="opacity: 0.5;">
+      Suivant
+      <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </footer>
+</div>
+
+<nav class="preview-nav">
+  <a href="index.html">Accueil</a>
+  <a href="connexion.html">Connexion</a>
+  <a href="inscription.html">Inscription</a>
+  <a href="parent.html">Parent</a>
+  <a href="eleve.html">Élève</a>
+  <a href="quiz.html" class="active">Quiz</a>
+</nav>
+
+<script src="script.js"></script>
+<script>
+  // Quiz interactivity
+  const opts = document.querySelectorAll('.option');
+  const explanation = document.getElementById('explanation');
+  const nextBtn = document.getElementById('nextBtn');
+  const demoToggle = document.getElementById('demoToggle');
+
+  opts.forEach((opt) => {
+    opt.addEventListener('click', () => {
+      const isCorrect = opt.dataset.correct === 'true';
+      opts.forEach((o) => o.disabled = true);
+      if (isCorrect) {
+        opt.classList.add('correct');
+        explanation.style.display = 'none';
+      } else {
+        opt.classList.add('wrong');
+        document.querySelector('.option[data-correct="true"]').classList.add('correct');
+        explanation.style.display = 'block';
+        explanation.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+    });
+  });
+
+  // Demo toggle to simulate the wrong-answer state
+  let demoOn = false;
+  demoToggle.addEventListener('click', () => {
+    demoOn = !demoOn;
+    if (demoOn) {
+      document.querySelector('.option[data-correct="false"]').click();
+      demoToggle.textContent = 'Réinitialiser';
+    } else {
+      opts.forEach((o) => {
+        o.classList.remove('correct', 'wrong');
+        o.disabled = false;
+      });
+      explanation.style.display = 'none';
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.5';
+      demoToggle.textContent = 'Voir réponse fausse';
+    }
+  });
+</script>
+</body>
+</html>

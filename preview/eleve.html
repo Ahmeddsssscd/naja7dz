@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yacine — Najaح</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  body { background: var(--cream); }
+
+  .greeting { display: flex; align-items: center; gap: 12px; }
+  .greeting .avatar-lg { background: var(--navy); color: var(--white); font-weight: 700; }
+  .greeting h1 { font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+  .greeting .sub { font-size: 13px; color: var(--text-soft); }
+
+  .stats-pills { display: flex; gap: 8px; }
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--white);
+    padding: 8px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    border: 1px solid var(--border);
+  }
+  .stat-pill .icon { font-size: 14px; }
+
+  .app-content { padding: 0 20px; }
+
+  /* HERO MISSION CARD */
+  .hero-mission {
+    background: var(--navy);
+    color: var(--white);
+    border-radius: var(--radius-modal);
+    padding: 24px;
+    margin: 16px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-mission::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,167,44,0.18), transparent 70%);
+  }
+  .hero-mission .label { font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 6px; }
+  .hero-mission h2 { color: var(--white); font-size: 22px; line-height: 1.2; margin-bottom: 4px; }
+  .hero-mission .sub { color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 14px; }
+  .hero-mission .btn { background: var(--gold); color: var(--navy); height: 38px; padding: 0 16px; font-size: 13px; }
+  .hero-mission .btn:hover { background: var(--gold-soft); }
+
+  .ring {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .ring svg { transform: rotate(-90deg); }
+  .ring-bg { stroke: rgba(255,255,255,0.15); }
+  .ring-fg { stroke: var(--gold); stroke-linecap: round; }
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .ring-text .num { font-size: 22px; line-height: 1; }
+  .ring-text .total { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+  /* SECTION HEAD */
+  .row-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 24px 0 12px;
+  }
+  .row-head h3 { font-size: 16px; font-weight: 600; color: var(--navy); }
+  .row-head a { font-size: 13px; color: var(--text-soft); font-weight: 500; }
+
+  /* MISSION LIST */
+  .missions { display: flex; flex-direction: column; gap: 10px; }
+  .mission {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .mission-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--pale-blue);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .mission-icon.gold { background: var(--gold-faint); color: #8a6c1c; }
+  .mission-icon.danger { background: #FCEFEC; color: var(--danger); }
+  .mission-info { flex: 1; min-width: 0; }
+  .mission-info h4 { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+  .mission-info .meta { font-size: 12px; color: var(--text-soft); }
+  .mission-xp { font-size: 12px; font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .mission.done { opacity: 0.6; }
+  .mission.done h4 { text-decoration: line-through; }
+
+  /* QUICK ACCESS GRID */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .quick {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .quick:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .quick-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--pale-blue);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .quick-icon.gold { background: var(--gold-faint); color: #8a6c1c; }
+  .quick h4 { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .quick .meta { font-size: 12px; color: var(--text-soft); }
+
+  /* SUBJECTS SCROLL */
+  .subjects-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    margin: 0 -20px;
+    padding: 4px 20px 20px;
+    scroll-snap-type: x mandatory;
+  }
+  .subjects-scroll::-webkit-scrollbar { display: none; }
+  .subject-card {
+    flex: 0 0 160px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 16px;
+    scroll-snap-align: start;
+  }
+  .subject-card .icon-pill {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--pale-blue);
+    color: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .subject-card h4 { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+  .subject-card .pct { font-size: 12px; color: var(--text-soft); margin-bottom: 8px; }
+  .subject-bar { height: 4px; background: var(--pale-blue); border-radius: 4px; overflow: hidden; }
+  .subject-bar > div { height: 100%; background: var(--navy); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- TOP -->
+  <div class="app-top">
+    <div class="greeting">
+      <div class="avatar avatar-lg">YB</div>
+      <div>
+        <h1>Salut Yacine 👋</h1>
+        <div class="sub">3AM · Niveau 12</div>
+      </div>
+    </div>
+    <button class="lang-toggle" id="langToggle">عربي</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="app-content">
+    <div class="stats-pills">
+      <span class="stat-pill"><span class="icon">🔥</span> 12 jours</span>
+      <span class="stat-pill"><span class="icon" style="color: var(--gold);">★</span> 1 240 XP</span>
+      <span class="stat-pill"><span class="icon">🏆</span> 8</span>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero-mission">
+      <div>
+        <div class="label">Mission du jour</div>
+        <h2>Continue ton parcours</h2>
+        <p class="sub">3 missions · 25 minutes</p>
+        <a href="#" class="btn">Continuer →</a>
+      </div>
+      <div class="ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" class="ring-bg" stroke-width="6"/>
+          <circle cx="40" cy="40" r="34" fill="none" class="ring-fg" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="71.2"/>
+        </svg>
+        <div class="ring-text">
+          <span class="num">2</span>
+          <span class="total">/ 3</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY'S MISSIONS -->
+    <div class="row-head">
+      <h3>Missions du jour</h3>
+      <a href="#">Tout voir</a>
+    </div>
+    <div class="missions">
+      <div class="mission done">
+        <div class="mission-icon gold">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="mission-info">
+          <h4>Quiz · Équations du 1er degré</h4>
+          <div class="meta">8 min · Mathématiques</div>
+        </div>
+        <span class="mission-xp">+50 XP</span>
+      </div>
+      <div class="mission">
+        <div class="mission-icon">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+        </div>
+        <div class="mission-info">
+          <h4>Lecture · Le Petit Prince — chapitre 3</h4>
+          <div class="meta">10 min · Français</div>
+        </div>
+        <span class="mission-xp">+30 XP</span>
+      </div>
+      <div class="mission">
+        <div class="mission-icon danger">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="mission-info">
+          <h4>Révision · Erreurs d'hier</h4>
+          <div class="meta">7 min · 5 questions</div>
+        </div>
+        <span class="mission-xp">+40 XP</span>
+      </div>
+    </div>
+
+    <!-- QUICK ACCESS -->
+    <div class="row-head">
+      <h3>Accès rapide</h3>
+    </div>
+    <div class="quick-grid">
+      <a href="#" class="quick">
+        <div class="quick-icon">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h4>Tuteur</h4>
+        <span class="meta">Pose une question</span>
+      </a>
+      <a href="#" class="quick">
+        <div class="quick-icon gold">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        </div>
+        <h4>Aide aux devoirs</h4>
+        <span class="meta">Photographie ton exercice</span>
+      </a>
+      <a href="#" class="quick">
+        <div class="quick-icon">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h4>Bac · Sujets</h4>
+        <span class="meta">Archive complète</span>
+      </a>
+      <a href="#" class="quick">
+        <div class="quick-icon gold">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h4>Examen blanc</h4>
+        <span class="meta">Mode chronométré</span>
+      </a>
+    </div>
+
+    <!-- SUBJECTS -->
+    <div class="row-head">
+      <h3>Mes matières</h3>
+      <a href="#">Tout voir</a>
+    </div>
+  </div>
+
+  <div class="subjects-scroll">
+    <div class="subject-card">
+      <div class="icon-pill">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>
+      </div>
+      <h4>Mathématiques</h4>
+      <div class="pct">88% · 12 chap.</div>
+      <div class="subject-bar"><div style="width: 88%;"></div></div>
+    </div>
+    <div class="subject-card">
+      <div class="icon-pill">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg>
+      </div>
+      <h4>Physique</h4>
+      <div class="pct">72% · 9 chap.</div>
+      <div class="subject-bar"><div style="width: 72%;"></div></div>
+    </div>
+    <div class="subject-card">
+      <div class="icon-pill">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <h4>Arabe</h4>
+      <div class="pct">65% · 8 chap.</div>
+      <div class="subject-bar"><div style="width: 65%;"></div></div>
+    </div>
+    <div class="subject-card">
+      <div class="icon-pill">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+      </div>
+      <h4>Français</h4>
+      <div class="pct">81% · 10 chap.</div>
+      <div class="subject-bar"><div style="width: 81%;"></div></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="app-bottom-nav">
+    <a href="eleve.html" class="active">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Accueil
+    </a>
+    <a href="#">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/></svg>
+      Matières
+    </a>
+    <a href="#">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Tuteur
+    </a>
+    <a href="#">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Progrès
+    </a>
+    <a href="#">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profil
+    </a>
+  </nav>
+
+</div>
+
+<nav class="preview-nav">
+  <a href="index.html">Accueil</a>
+  <a href="connexion.html">Connexion</a>
+  <a href="inscription.html">Inscription</a>
+  <a href="parent.html">Parent</a>
+  <a href="eleve.html" class="active">Élève</a>
+  <a href="quiz.html">Quiz</a>
+</nav>
+
+<script src="script.js"></script>
+</body>
+</html>

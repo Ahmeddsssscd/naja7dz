@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Espace Parent — Najaح</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .welcome {
+    margin-bottom: 28px;
+  }
+  .welcome h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .welcome p { color: var(--text-soft); font-size: 15px; }
+
+  .child-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  @media (min-width: 800px) { .child-grid { grid-template-columns: 1fr 1fr; } }
+
+  .child-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+  .child-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+  .child-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .child-head h3 { font-size: 17px; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+  .child-head .sub { font-size: 13px; color: var(--text-soft); }
+  .child-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .child-stat-label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .child-stat-value { font-size: 18px; font-weight: 700; color: var(--navy); }
+  .child-progress { display: flex; flex-direction: column; gap: 8px; }
+  .progress-row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+  .progress-row .label { width: 90px; color: var(--text-soft); }
+  .progress-bar { flex: 1; height: 6px; background: var(--pale-blue); border-radius: 6px; overflow: hidden; }
+  .progress-bar > div { height: 100%; background: var(--navy); border-radius: 6px; }
+  .progress-bar > div.gold { background: var(--gold); }
+  .progress-bar > div.danger { background: var(--danger); }
+  .progress-row .pct { width: 40px; text-align: right; font-weight: 600; color: var(--navy); }
+
+  .child-alert {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #FCEFEC;
+    border-left: 3px solid var(--danger);
+    border-radius: 6px;
+    font-size: 13px;
+    color: #8A2A1F;
+  }
+
+  .insight-card {
+    background: var(--navy);
+    color: var(--white);
+    border-radius: var(--radius-card);
+    padding: 28px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .insight-card::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,167,44,0.15), transparent 70%);
+  }
+  .insight-card .eyebrow { color: var(--gold); }
+  .insight-card h3 { color: var(--white); font-size: 20px; margin: 8px 0 14px; }
+  .insight-card p { color: rgba(255,255,255,0.8); font-size: 15px; line-height: 1.6; max-width: 640px; }
+  .insight-card .actions { display: flex; gap: 12px; margin-top: 20px; }
+  .insight-card .btn-secondary { background: var(--gold); color: var(--navy); }
+  .insight-card .btn-outline { color: var(--white); border-color: rgba(255,255,255,0.3); }
+  .insight-card .btn-outline:hover { border-color: var(--white); }
+
+  .activity-list {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+  .activity-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--pale-blue);
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .activity-icon.gold { background: var(--gold-faint); color: #8a6c1c; }
+  .activity-icon.success { background: #DEF1E6; color: var(--success); }
+  .activity-text { flex: 1; min-width: 0; font-size: 14px; color: var(--text); }
+  .activity-text strong { font-weight: 600; color: var(--navy); }
+  .activity-time { font-size: 12px; color: var(--text-faint); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="dash">
+
+  <!-- TOP BAR -->
+  <header class="dash-top">
+    <div class="dash-top-left">
+      <a href="index.html" class="logo">
+        <span>Naja</span>
+        <span class="logo-h">ح</span>
+      </a>
+    </div>
+    <div class="dash-top-right">
+      <div class="dash-search">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Rechercher…" />
+      </div>
+      <button class="btn-icon btn-ghost" aria-label="Notifications">
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="lang-toggle" id="langToggle">عربي</button>
+      <div class="avatar">AB</div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="dash-side">
+    <a href="parent.html" class="side-link active">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Accueil
+    </a>
+    <a href="#" class="side-link">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Mes enfants
+    </a>
+    <a href="#" class="side-link">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Rapports
+    </a>
+    <a href="#" class="side-link">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Abonnement
+    </a>
+    <div class="side-section">Outils</div>
+    <a href="#" class="side-link">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Conversation
+    </a>
+    <a href="#" class="side-link">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Paramètres
+    </a>
+    <a href="#" class="side-link">
+      <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Aide
+    </a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+
+    <div class="welcome">
+      <h1>Bonjour Ahmed 👋</h1>
+      <p>Voici un résumé de la semaine de tes enfants.</p>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Temps d'étude</div>
+        <div class="kpi-value">8h 24min</div>
+        <span class="kpi-trend">
+          <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          +18% vs semaine dernière
+        </span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Quiz complétés</div>
+        <div class="kpi-value">42</div>
+        <span class="kpi-trend">
+          <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          +6
+        </span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Note moyenne</div>
+        <div class="kpi-value">76%</div>
+        <span class="kpi-trend">
+          <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          +4 points
+        </span>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Série en cours</div>
+        <div class="kpi-value">12 jours</div>
+        <span class="kpi-trend">
+          <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+          record
+        </span>
+      </div>
+    </div>
+
+    <!-- INSIGHT CARD -->
+    <div class="insight-card">
+      <span class="eyebrow">Cette semaine</span>
+      <h3>Yacine progresse bien en mathématiques. Imane a besoin de soutien en physique.</h3>
+      <p>Les performances de Yacine en équations ont augmenté de 22% cette semaine. Imane a obtenu des scores plus faibles en physique-chimie — nous lui suggérons trois exercices ciblés sur les unités de mesure.</p>
+      <div class="actions">
+        <a href="#" class="btn btn-secondary">Voir les recommandations</a>
+        <a href="#" class="btn btn-outline">Discuter avec un conseiller</a>
+      </div>
+    </div>
+
+    <!-- CHILD CARDS -->
+    <div class="section-title">
+      <h3>Mes enfants</h3>
+      <a href="#">Voir tout →</a>
+    </div>
+
+    <div class="child-grid">
+
+      <!-- Yacine -->
+      <article class="child-card">
+        <div class="child-head">
+          <div class="avatar avatar-lg" style="background: #E8EDF5;">YB</div>
+          <div>
+            <h3>Yacine</h3>
+            <div class="sub">14 ans · 3AM · Sciences</div>
+          </div>
+          <span class="badge badge-success" style="margin-left:auto;">En progrès</span>
+        </div>
+        <div class="child-stats">
+          <div>
+            <div class="child-stat-label">Temps</div>
+            <div class="child-stat-value">5h 12m</div>
+          </div>
+          <div>
+            <div class="child-stat-label">Moyenne</div>
+            <div class="child-stat-value">82%</div>
+          </div>
+          <div>
+            <div class="child-stat-label">Série</div>
+            <div class="child-stat-value">12j</div>
+          </div>
+        </div>
+        <div class="child-progress">
+          <div class="progress-row">
+            <span class="label">Mathématiques</span>
+            <div class="progress-bar"><div class="gold" style="width: 88%;"></div></div>
+            <span class="pct">88%</span>
+          </div>
+          <div class="progress-row">
+            <span class="label">Physique</span>
+            <div class="progress-bar"><div style="width: 72%;"></div></div>
+            <span class="pct">72%</span>
+          </div>
+          <div class="progress-row">
+            <span class="label">Arabe</span>
+            <div class="progress-bar"><div style="width: 65%;"></div></div>
+            <span class="pct">65%</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Imane -->
+      <article class="child-card">
+        <div class="child-head">
+          <div class="avatar avatar-lg" style="background: #FDF6E3; color: #8a6c1c;">IB</div>
+          <div>
+            <h3>Imane</h3>
+            <div class="sub">11 ans · 1AM · Tronc commun</div>
+          </div>
+          <span class="badge" style="margin-left:auto; background: #FCEFEC; color: #8A2A1F;">À surveiller</span>
+        </div>
+        <div class="child-stats">
+          <div>
+            <div class="child-stat-label">Temps</div>
+            <div class="child-stat-value">3h 12m</div>
+          </div>
+          <div>
+            <div class="child-stat-label">Moyenne</div>
+            <div class="child-stat-value">68%</div>
+          </div>
+          <div>
+            <div class="child-stat-label">Série</div>
+            <div class="child-stat-value">4j</div>
+          </div>
+        </div>
+        <div class="child-progress">
+          <div class="progress-row">
+            <span class="label">Mathématiques</span>
+            <div class="progress-bar"><div style="width: 78%;"></div></div>
+            <span class="pct">78%</span>
+          </div>
+          <div class="progress-row">
+            <span class="label">Physique</span>
+            <div class="progress-bar"><div class="danger" style="width: 42%;"></div></div>
+            <span class="pct">42%</span>
+          </div>
+          <div class="progress-row">
+            <span class="label">Français</span>
+            <div class="progress-bar"><div style="width: 81%;"></div></div>
+            <span class="pct">81%</span>
+          </div>
+        </div>
+        <div class="child-alert">
+          ⚠ Baisse de 14 points en physique cette semaine. Trois exercices ciblés disponibles.
+        </div>
+      </article>
+
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="section-title">
+      <h3>Activité récente</h3>
+      <a href="#">Tout voir →</a>
+    </div>
+
+    <div class="activity-list">
+      <div class="activity-row">
+        <div class="activity-icon success">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="activity-text"><strong>Yacine</strong> a complété un quiz de mathématiques · 9/10</div>
+        <span class="activity-time">il y a 12 min</span>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon gold">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="activity-text"><strong>Imane</strong> a gagné le trophée « Première semaine »</div>
+        <span class="activity-time">il y a 2h</span>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="activity-text"><strong>Yacine</strong> a posé une question au tuteur sur les équations du second degré</div>
+        <span class="activity-time">il y a 4h</span>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        </div>
+        <div class="activity-text"><strong>Imane</strong> a envoyé une photo d'exercice de physique</div>
+        <span class="activity-time">hier</span>
+      </div>
+      <div class="activity-row">
+        <div class="activity-icon success">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="activity-text"><strong>Yacine</strong> a terminé le chapitre « Géométrie analytique »</div>
+        <span class="activity-time">hier</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<nav class="preview-nav">
+  <a href="index.html">Accueil</a>
+  <a href="connexion.html">Connexion</a>
+  <a href="inscription.html">Inscription</a>
+  <a href="parent.html" class="active">Parent</a>
+  <a href="eleve.html">Élève</a>
+  <a href="quiz.html">Quiz</a>
+</nav>
+
+<script src="script.js"></script>
+</body>
+</html>

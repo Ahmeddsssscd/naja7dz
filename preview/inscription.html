@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inscription — Najaح</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .stepper { display: flex; align-items: center; gap: 8px; margin-bottom: 28px; }
+  .step-dot { flex: 1; height: 4px; background: var(--border); border-radius: 4px; transition: background 0.3s; }
+  .step-dot.active { background: var(--gold); }
+  .step-dot.done { background: var(--navy); }
+  .step-label { font-size: 12px; color: var(--text-faint); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; text-align: center; margin-bottom: 24px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 500px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+  .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 16px; font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+  .checkbox-row input { margin-top: 2px; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--navy); }
+  .checkbox-row a { color: var(--navy); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-corner">
+    <button class="lang-toggle" id="langToggle" aria-label="Changer la langue">عربي</button>
+  </div>
+
+  <div class="auth-card" style="max-width: 520px;">
+    <div class="auth-logo">
+      <a href="index.html" class="logo" aria-label="Najaح">
+        <span>Naja</span>
+        <span class="logo-h">
+          ح
+          <svg class="logo-cap" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M2 8L12 3L22 8L12 13L2 8Z" fill="currentColor"/>
+            <path d="M6 10V14C6 14 8 16 12 16C16 16 18 14 18 14V10" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <line x1="20" y1="9" x2="20" y2="14" stroke="#D4A72C" stroke-width="1.5"/>
+            <circle cx="20" cy="15" r="1.2" fill="#D4A72C"/>
+          </svg>
+        </span>
+      </a>
+    </div>
+
+    <div class="step-label">Étape 1 sur 3 — Compte parent</div>
+    <div class="stepper">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+
+    <h1 class="auth-h">Crée ton compte parent</h1>
+    <p class="auth-sub">Tu ajouteras les enfants à l'étape suivante.</p>
+
+    <form>
+      <div class="grid-2">
+        <div class="field">
+          <label for="fn">Prénom</label>
+          <input type="text" id="fn" class="input" placeholder="Ahmed" />
+        </div>
+        <div class="field">
+          <label for="ln">Nom</label>
+          <input type="text" id="ln" class="input" placeholder="Benali" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">Adresse email</label>
+        <input type="email" id="email" class="input" placeholder="parent@email.com" />
+        <span class="helper">On t'enverra un lien de vérification.</span>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="phone">Téléphone</label>
+          <input type="tel" id="phone" class="input" placeholder="0555 12 34 56" />
+        </div>
+        <div class="field">
+          <label for="wilaya">Wilaya</label>
+          <select id="wilaya" class="select">
+            <option>Choisir…</option>
+            <option>Alger</option>
+            <option>Oran</option>
+            <option>Constantine</option>
+            <option>Annaba</option>
+            <option>Blida</option>
+            <option>Sétif</option>
+            <option>Tlemcen</option>
+            <option>— et 51 autres</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pwd">Mot de passe</label>
+        <input type="password" id="pwd" class="input" placeholder="Au moins 8 caractères" />
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" />
+        <span>J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a>. Je confirme être un parent ou tuteur légal.</span>
+      </label>
+
+      <button type="button" class="btn btn-primary btn-block btn-lg mt-6">Continuer →</button>
+    </form>
+
+    <p class="auth-foot">Déjà un compte ? <a href="connexion.html">Se connecter</a></p>
+  </div>
+</div>
+
+<nav class="preview-nav">
+  <a href="index.html">Accueil</a>
+  <a href="connexion.html">Connexion</a>
+  <a href="inscription.html" class="active">Inscription</a>
+  <a href="parent.html">Parent</a>
+  <a href="eleve.html">Élève</a>
+  <a href="quiz.html">Quiz</a>
+</nav>
+
+<script src="script.js"></script>
+</body>
+</html>

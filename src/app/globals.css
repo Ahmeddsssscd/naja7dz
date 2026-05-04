@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply text-ink bg-white antialiased;
+    font-family: var(--font-poppins), system-ui, sans-serif;
+  }
+  body[dir="rtl"] {
+    font-family: var(--font-tajawal), var(--font-poppins), system-ui, sans-serif;
+  }
+
+  /* Default focus ring — accessible + on-brand */
+  :focus-visible {
+    outline: 2px solid theme("colors.navy.DEFAULT");
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Buttons — built once, used everywhere. Never re-style ad hoc. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 h-11 px-5 rounded-btn text-sm font-semibold transition-all whitespace-nowrap;
+  }
+  .btn:active {
+    @apply translate-y-px;
+  }
+  .btn-primary {
+    @apply bg-navy text-white hover:bg-navy-soft;
+  }
+  .btn-secondary {
+    @apply bg-gold text-navy hover:bg-gold-soft;
+  }
+  .btn-outline {
+    @apply bg-transparent text-navy border border-pale-blue-deep hover:border-navy;
+  }
+  .btn-ghost {
+    @apply bg-transparent text-ink-soft hover:text-navy hover:bg-pale-blue;
+  }
+  .btn-text {
+    @apply text-navy font-medium px-0 h-auto hover:text-gold;
+  }
+  .btn-lg {
+    @apply h-14 px-7 text-base;
+  }
+
+  /* Card — consistent container */
+  .card {
+    @apply bg-white border border-pale-blue rounded-card p-6;
+  }
+
+  /* Eyebrow — gold uppercase label above section titles */
+  .eyebrow {
+    @apply inline-block text-xs font-semibold text-gold uppercase tracking-[0.08em];
+  }
+
+  /* Container — centered max-width */
+  .container-x {
+    @apply w-full mx-auto px-6;
+    max-width: theme("maxWidth.container");
+  }
+}
+
+@layer utilities {
+  /* Logical-property helpers — work in both LTR and RTL */
+  .text-start { text-align: start; }
+  .text-end { text-align: end; }
+}
