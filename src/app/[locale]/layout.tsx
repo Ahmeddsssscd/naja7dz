@@ -1,10 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Poppins, Tajawal } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
+
+// Viewport + color scheme (Next 15 requires this in its own export, not Metadata)
+export const viewport: Viewport = {
+  themeColor: "#FAF9F6",
+  colorScheme: "light",
+};
 
 const poppins = Poppins({
   subsets: ["latin"],

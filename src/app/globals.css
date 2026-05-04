@@ -3,15 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  /* Tell the browser this site is light-only — prevents OS dark-mode from
+     auto-styling form inputs, scrollbars, and other UA widgets. */
+  :root {
+    color-scheme: light;
+  }
   html {
     scroll-behavior: smooth;
+    background: theme("colors.white");
+    color-scheme: light;
   }
   body {
     @apply text-ink bg-white antialiased;
     font-family: var(--font-poppins), system-ui, sans-serif;
+    color-scheme: light;
   }
   body[dir="rtl"] {
     font-family: var(--font-tajawal), var(--font-poppins), system-ui, sans-serif;
+  }
+  /* Hard-override OS dark-mode preference for the whole site */
+  @media (prefers-color-scheme: dark) {
+    :root { color-scheme: light; }
+    html, body { background: #FFFFFF; color: #0F1B33; }
   }
 
   /* Default focus ring — accessible + on-brand */
