@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-cream flex items-center justify-center p-6">
       <div className="text-center">
         <div className="mb-6 flex justify-center">
-          <Logo />
+          <Logo height={40} />
         </div>
         <p className="eyebrow mb-3">404</p>
         <h1 className="text-3xl font-bold text-navy mb-3">Page introuvable</h1>

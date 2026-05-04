@@ -43,8 +43,8 @@ function SiteNav() {
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-nav border-b border-pale-blue">
       <div className="container-x flex items-center justify-between h-18 py-4">
-        <Link href="/" aria-label="Najaح">
-          <Logo />
+        <Link href="/" aria-label="Najaح" className="flex-shrink-0">
+          <Logo height={32} />
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-soft">
           <a href="#features" className="hover:text-navy transition-colors">
@@ -414,7 +414,7 @@ function SiteFooter() {
       <div className="container-x">
         <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 mb-10">
           <div>
-            <Logo />
+            <Logo height={36} />
             <p className="text-ink-soft text-sm mt-4 max-w-xs">{t("tagline")}</p>
           </div>
           <FooterCol title={t("product")}>
