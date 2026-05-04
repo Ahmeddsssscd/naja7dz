@@ -241,6 +241,7 @@ function Pricing() {
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           <PlanCard
+            planId="eleve_monthly"
             name={t("eleve_name")}
             price={t("eleve_price")}
             currency={t("eleve_currency")}
@@ -249,6 +250,7 @@ function Pricing() {
             cta={t("eleve_cta")}
           />
           <PlanCard
+            planId="famille_monthly"
             name={t("famille_name")}
             price={t("famille_price")}
             currency={t("famille_currency")}
@@ -265,6 +267,7 @@ function Pricing() {
             badge={t("popular")}
           />
           <PlanCard
+            planId="pack_bac"
             name={t("bac_name")}
             price={t("bac_price")}
             currency={t("bac_currency")}
@@ -279,6 +282,7 @@ function Pricing() {
 }
 
 function PlanCard({
+  planId,
   name,
   price,
   currency,
@@ -288,6 +292,7 @@ function PlanCard({
   featured = false,
   badge,
 }: {
+  planId: string;
   name: string;
   price: string;
   currency: string;
@@ -333,7 +338,7 @@ function PlanCard({
         ))}
       </ul>
       <Link
-        href="/inscription"
+        href={{ pathname: "/checkout", query: { plan: planId } }}
         className={`btn w-full ${
           featured
             ? "bg-gold text-navy hover:bg-gold-soft"

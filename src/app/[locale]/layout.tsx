@@ -6,6 +6,7 @@ import { Poppins, Tajawal } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CookieBanner } from "@/components/CookieBanner";
+import { StructuredData } from "@/components/StructuredData";
 import "../globals.css";
 
 const poppins = Poppins({
@@ -40,16 +41,67 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Meta" });
+  const url = locale === "fr" ? "https://naja7dz.com" : `https://naja7dz.com/${locale}`;
+
   return {
-    title: t("title"),
+    title: {
+      default: t("title"),
+      template: "%s — Najaح",
+    },
     description: t("description"),
     metadataBase: new URL("https://naja7dz.com"),
+    alternates: {
+      canonical: url,
+      languages: {
+        fr: "https://naja7dz.com",
+        ar: "https://naja7dz.com/ar",
+        "x-default": "https://naja7dz.com",
+      },
+    },
+    keywords: [
+      "Najaح",
+      "naja7dz",
+      "education algerie",
+      "bac algerie",
+      "BEM algerie",
+      "programme officiel",
+      "cours en ligne",
+      "tuteur en ligne",
+      "soutien scolaire",
+      "1AP",
+      "3AS",
+      "kezakoo",
+      "نجاح",
+      "تعليم الجزائر",
+    ],
+    authors: [{ name: "Najaح" }],
+    creator: "Najaح",
+    publisher: "Najaح",
+    formatDetection: { email: false, address: false, telephone: false },
     openGraph: {
       title: t("title"),
       description: t("description"),
       type: "website",
       locale: locale === "ar" ? "ar_DZ" : "fr_DZ",
-      url: "https://naja7dz.com",
+      alternateLocale: locale === "ar" ? ["fr_DZ"] : ["ar_DZ"],
+      url,
+      siteName: "Najaح",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("title"),
+      description: t("description"),
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
   };
 }
@@ -79,6 +131,7 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <body>
+        <StructuredData />
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
             {children}

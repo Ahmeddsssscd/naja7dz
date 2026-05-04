@@ -1,0 +1,130 @@
+"use client";
+
+import { useState } from "react";
+import { useLocale } from "next-intl";
+
+export function CheckoutForm({ planId }: { planId: string }) {
+  const locale = useLocale();
+  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [status, setStatus] = useState<"idle" | "loading" | "err">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, planId, locale }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.checkoutUrl) {
+        throw new Error(data.error ?? "Erreur de paiement");
+      }
+      // Redirect to Chargily hosted checkout
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      setStatus("err");
+      setErrorMsg(err instanceof Error ? err.message : "Erreur");
+    }
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <Field label="Nom complet">
+        <input
+          name="name"
+          type="text"
+          required
+          value={form.name}
+          onChange={onChange}
+          className="checkout-input"
+          placeholder="Ahmed Benali"
+          autoComplete="name"
+        />
+      </Field>
+      <Field label="Adresse email">
+        <input
+          name="email"
+          type="email"
+          required
+          value={form.email}
+          onChange={onChange}
+          className="checkout-input"
+          placeholder="parent@email.com"
+          autoComplete="email"
+        />
+      </Field>
+      <Field label="Téléphone (optionnel)">
+        <input
+          name="phone"
+          type="tel"
+          value={form.phone}
+          onChange={onChange}
+          className="checkout-input"
+          placeholder="0555 12 34 56"
+          autoComplete="tel"
+        />
+      </Field>
+
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="btn btn-primary w-full btn-lg disabled:opacity-60"
+      >
+        {status === "loading" ? "Redirection vers Chargily…" : "Procéder au paiement →"}
+      </button>
+
+      {status === "err" && (
+        <p className="text-sm text-red-500 text-center" role="alert">
+          {errorMsg}
+        </p>
+      )}
+
+      <p className="text-xs text-fg-faint text-center mt-4">
+        En cliquant sur « Procéder au paiement », tu acceptes nos{" "}
+        <a href="/legal/conditions" className="underline hover:text-fg">
+          conditions d&apos;utilisation
+        </a>
+        .
+      </p>
+
+      <style jsx>{`
+        :global(.checkout-input) {
+          width: 100%;
+          padding: 12px 14px;
+          background: var(--surface);
+          border: 1.5px solid var(--line-strong);
+          border-radius: 8px;
+          color: var(--fg);
+          font-size: 15px;
+          font-family: inherit;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        :global(.checkout-input:focus) {
+          outline: none;
+          border-color: var(--fg);
+          box-shadow: 0 0 0 3px rgba(212, 167, 44, 0.2);
+        }
+        :global(.checkout-input::placeholder) {
+          color: var(--fg-faint);
+        }
+      `}</style>
+    </form>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-sm font-medium text-fg mb-1.5">{label}</span>
+      {children}
+    </label>
+  );
+}

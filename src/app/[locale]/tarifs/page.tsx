@@ -37,6 +37,7 @@ function Plans() {
       <div className="container-x">
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           <Plan
+            planId="eleve_monthly"
             name={t("eleve_name")}
             price={t("eleve_price")}
             currency={t("eleve_currency")}
@@ -45,6 +46,7 @@ function Plans() {
             cta={t("eleve_cta")}
           />
           <Plan
+            planId="famille_monthly"
             name={t("famille_name")}
             price={t("famille_price")}
             currency={t("famille_currency")}
@@ -61,6 +63,7 @@ function Plans() {
             badge={t("popular")}
           />
           <Plan
+            planId="pack_bac"
             name={t("bac_name")}
             price={t("bac_price")}
             currency={t("bac_currency")}
@@ -75,6 +78,7 @@ function Plans() {
 }
 
 function Plan({
+  planId,
   name,
   price,
   currency,
@@ -84,6 +88,7 @@ function Plan({
   featured,
   badge,
 }: {
+  planId: string;
   name: string;
   price: string;
   currency: string;
@@ -129,7 +134,7 @@ function Plan({
         ))}
       </ul>
       <Link
-        href="/inscription"
+        href={{ pathname: "/checkout", query: { plan: planId } }}
         className={`btn w-full ${
           featured ? "bg-gold text-navy hover:bg-gold-soft" : "btn-primary"
         }`}
