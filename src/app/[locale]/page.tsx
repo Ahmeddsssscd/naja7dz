@@ -44,7 +44,7 @@ function SiteNav() {
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-nav border-b border-pale-blue">
       <div className="container-x flex items-center justify-between h-18 py-4">
         <Link href="/" aria-label="Najaح" className="flex-shrink-0">
-          <Logo height={32} />
+          <Logo height={36} priority />
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-soft">
           <a href="#features" className="hover:text-navy transition-colors">
