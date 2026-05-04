@@ -29,9 +29,9 @@ export function PageShell({
   return (
     <>
       <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-nav border-b border-line">
-        <div className="container-x flex items-center justify-between h-18 py-4">
+        <div className="container-x flex items-center justify-between h-20 py-3">
           <Link href="/" aria-label="Najaح" className="flex-shrink-0">
-            <Logo height={36} priority />
+            <Logo variant="combined" height={44} priority />
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
             <Link href="/tarifs" className={navLinkClass("tarifs")}>
