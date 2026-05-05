@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
+import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -8,6 +9,14 @@ const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * table exists (added in a future migration), we just log + return ok.
  */
 export async function POST(req: Request) {
+  const rl = rateLimit(`contact:${getClientKey(req)}`, { max: 3, windowSec: 60 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Trop de tentatives. Réessaye dans un instant." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } },
+    );
+  }
+
   let body: {
     name?: string;
     email?: string;

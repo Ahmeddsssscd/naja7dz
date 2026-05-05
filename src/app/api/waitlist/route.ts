@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: Request) {
+  // 5 signups per IP per minute is plenty
+  const rl = rateLimit(`waitlist:${getClientKey(req)}`, { max: 5, windowSec: 60 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Trop de tentatives. Réessaye dans un instant." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } },
+    );
+  }
+
   let body: { email?: string; locale?: string; source?: string };
   try {
     body = await req.json();

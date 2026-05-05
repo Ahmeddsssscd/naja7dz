@@ -4,6 +4,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import { Poppins, Tajawal } from "next/font/google";
 import { routing } from "@/i18n/routing";
+import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CookieBanner } from "@/components/CookieBanner";
 import { StructuredData } from "@/components/StructuredData";
@@ -136,6 +137,18 @@ export default async function LocaleLayout({
           <NextIntlClientProvider messages={messages}>
             {children}
             <CookieBanner />
+            <Toaster
+              position="top-center"
+              richColors
+              closeButton
+              toastOptions={{
+                style: {
+                  background: "var(--surface)",
+                  color: "var(--fg)",
+                  border: "1px solid var(--line)",
+                },
+              }}
+            />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

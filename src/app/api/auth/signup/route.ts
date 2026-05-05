@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
+import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://naja7dz.com";
@@ -14,6 +15,14 @@ interface SignupRequest {
 }
 
 export async function POST(req: Request) {
+  const rl = rateLimit(`signup:${getClientKey(req)}`, { max: 5, windowSec: 60 * 15 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Trop de tentatives. Réessaye dans 15 minutes." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 900) } },
+    );
+  }
+
   let body: SignupRequest;
   try {
     body = await req.json();

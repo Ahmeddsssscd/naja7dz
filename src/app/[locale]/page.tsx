@@ -3,6 +3,7 @@ import { Link } from "@/i18n/routing";
 import { Logo } from "@/components/Logo";
 import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MobileMenu } from "@/components/MobileMenu";
 import { EmailCapture } from "@/components/EmailCapture";
 import {
   CheckIcon,
@@ -60,9 +61,19 @@ function SiteNav() {
           <Link href="/connexion" className="hidden md:inline text-sm font-medium text-fg ms-2">
             {t("login")}
           </Link>
-          <Link href="/inscription" className="btn btn-primary">
+          <Link href="/inscription" className="btn btn-primary hidden md:inline-flex">
             {t("start")}
           </Link>
+          <MobileMenu
+            items={[
+              { href: "/tarifs", label: t("pricing") },
+              { href: "/pour-les-parents", label: t("parents") },
+              { href: "/faq", label: t("faq") },
+              { href: "/contact", label: "Contact" },
+              { href: "/connexion", label: t("login") },
+            ]}
+            ctaLabel={t("start")}
+          />
         </div>
       </div>
     </header>
