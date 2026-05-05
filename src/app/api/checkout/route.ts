@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { createCheckout, createCustomer } from "@/lib/chargily";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Email invalide" }, { status: 400 });
   if (!name) return NextResponse.json({ error: "Nom requis" }, { status: 400 });
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
 
   // ----- Look up the plan from DB (source of truth on price) -----
   const { data: plan, error: planErr } = await supabase

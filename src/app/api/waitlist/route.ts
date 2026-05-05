@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const supabase = createServerClient();
+    const supabase = createAdminClient();
     const { error } = await supabase
       .from("early_access_signups")
       .insert({ email, locale, source });

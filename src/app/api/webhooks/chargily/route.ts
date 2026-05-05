@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { verifyWebhookSignature } from "@/lib/chargily";
 
 /**
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     };
   };
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
 
   // Audit log every event regardless of validity
   await supabase.from("payment_events").insert({

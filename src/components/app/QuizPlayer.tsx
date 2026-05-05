@@ -1,0 +1,162 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "@/i18n/routing";
+import { CheckIcon } from "@/components/Icon";
+
+export interface DemoQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export function QuizPlayer({
+  title,
+  questions,
+}: {
+  quizId: string;
+  title: string;
+  questions: DemoQuestion[];
+}) {
+  const router = useRouter();
+  const [index, setIndex] = useState(0);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+
+  const q = questions[index];
+  const total = questions.length;
+
+  const onPick = (i: number) => {
+    if (picked !== null) return;
+    setPicked(i);
+    if (i === q.correctIndex) setScore((s) => s + 1);
+  };
+
+  const onNext = () => {
+    if (index < total - 1) {
+      setIndex((i) => i + 1);
+      setPicked(null);
+    } else {
+      setDone(true);
+    }
+  };
+
+  if (done) {
+    const pct = Math.round((score / total) * 100);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-2 px-5">
+        <div className="bg-surface border border-line rounded-modal p-8 max-w-md w-full text-center">
+          <span className="inline-flex w-16 h-16 rounded-full bg-gold text-navy items-center justify-center mb-5">
+            <CheckIcon size={32} />
+          </span>
+          <h2 className="text-2xl font-bold text-fg mb-2">Quiz terminé 🎉</h2>
+          <p className="text-fg-soft mb-6">Tu as obtenu</p>
+          <div className="text-5xl font-bold text-navy mb-1">{pct}%</div>
+          <p className="text-sm text-fg-soft mb-8">
+            {score} / {total} bonnes réponses
+          </p>
+          <button onClick={() => router.push("/eleve")} className="btn btn-primary w-full">
+            Retour à l&apos;accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-surface-2 flex flex-col">
+      {/* Top bar */}
+      <header className="bg-surface border-b border-line sticky top-0 z-20">
+        <div className="max-w-2xl mx-auto px-5 h-16 flex items-center gap-4">
+          <button onClick={() => router.push("/eleve")} className="text-fg-soft" aria-label="Quitter">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs text-fg-soft truncate">{title}</div>
+            <div className="text-xs font-semibold text-fg">Question {index + 1} / {total}</div>
+            <div className="h-1 bg-pale-blue rounded mt-1 overflow-hidden">
+              <div className="h-full bg-gold rounded transition-all" style={{ width: `${((index + 1) / total) * 100}%` }} />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Question */}
+      <main className="flex-1 max-w-2xl mx-auto w-full px-5 py-8 pb-32">
+        <div className="text-xs font-semibold text-gold uppercase tracking-wider mb-3">
+          Question {index + 1}
+        </div>
+        <h2 className="text-xl md:text-2xl font-semibold text-fg leading-snug mb-8">
+          {q.prompt}
+        </h2>
+
+        <div className="space-y-3">
+          {q.options.map((opt, i) => {
+            const isPickedHere = picked === i;
+            const isCorrect = i === q.correctIndex;
+            const showCorrect = picked !== null && isCorrect;
+            const showWrong = picked !== null && isPickedHere && !isCorrect;
+            const cls = showCorrect
+              ? "border-green-600 bg-green-50 dark:bg-green-950/30"
+              : showWrong
+              ? "border-red-600 bg-red-50 dark:bg-red-950/30"
+              : isPickedHere
+              ? "border-fg"
+              : "border-line-strong hover:border-fg";
+            return (
+              <button
+                key={i}
+                onClick={() => onPick(i)}
+                disabled={picked !== null}
+                className={`w-full bg-surface text-start px-5 py-4 rounded-card border-2 transition-all ${cls} ${
+                  picked !== null && !isPickedHere && !isCorrect ? "opacity-60" : ""
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0
+                    bg-cream text-fg-soft">
+                    {String.fromCharCode(65 + i)}
+                  </span>
+                  <span className="text-base text-fg">{opt}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {picked !== null && (
+          <div className="mt-6 bg-surface border-l-4 border-gold rounded-card p-5">
+            <div className="text-xs font-semibold text-gold uppercase tracking-wider mb-2">
+              Explication
+            </div>
+            <p className="text-fg text-sm leading-relaxed">{q.explanation}</p>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="fixed bottom-0 inset-x-0 bg-surface border-t border-line p-4">
+        <div className="max-w-2xl mx-auto flex justify-between gap-3">
+          <div className="flex gap-2">
+            <button className="w-11 h-11 rounded-full bg-cream text-fg" title="Indice" aria-label="Indice">
+              💡
+            </button>
+            <button className="w-11 h-11 rounded-full bg-cream text-fg" title="Audio" aria-label="Audio">
+              🔊
+            </button>
+          </div>
+          <button
+            onClick={onNext}
+            disabled={picked === null}
+            className="btn btn-primary px-6 disabled:opacity-50"
+          >
+            {index === total - 1 ? "Terminer" : "Suivant →"}
+          </button>
+        </div>
+      </footer>
+    </div>
+  );
+}

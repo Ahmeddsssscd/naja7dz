@@ -1,6 +1,6 @@
 import { PageShell } from "@/components/landing/PageShell";
 import { CheckoutForm } from "@/components/CheckoutForm";
-import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 
 export const metadata = { title: "Finaliser ta commande — Najaح" };
@@ -27,7 +27,7 @@ export default async function CheckoutPage({
   }
 
   // Look up the plan to display
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { data: plan } = await supabase
     .from("plans")
     .select("id, name_fr, amount_dzd, period, description_fr")

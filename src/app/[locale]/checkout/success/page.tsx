@@ -1,7 +1,7 @@
 import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 import { CheckIcon } from "@/components/Icon";
-import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Merci — Najaح" };
 
@@ -14,7 +14,7 @@ export default async function CheckoutSuccessPage({
 
   let summary: { plan?: string; amount?: number; status?: string } = {};
   if (sessionId) {
-    const supabase = createServerClient();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("checkout_sessions")
       .select("plan_id, amount_dzd, status, plans(name_fr)")
