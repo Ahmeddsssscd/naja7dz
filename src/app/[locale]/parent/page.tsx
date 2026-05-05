@@ -41,7 +41,7 @@ export default async function ParentHome() {
         </div>
 
         {/* Insight card */}
-        <div className="bg-navy text-white rounded-card p-6 md:p-8 mb-8 relative overflow-hidden">
+        <div className="accent-block rounded-card p-6 md:p-8 mb-8 relative overflow-hidden">
           <span className="text-xs font-semibold text-gold uppercase tracking-wider">Cette semaine</span>
           <h3 className="text-xl md:text-2xl font-bold mt-2 mb-3">
             Ton enfant n&apos;a pas encore commencé. Lance la première session.

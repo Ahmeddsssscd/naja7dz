@@ -29,7 +29,7 @@ export default async function BacListPage() {
       </p>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <Link href="/eleve/bac/countdown" className="bg-navy text-white rounded-card p-4">
+        <Link href="/eleve/bac/countdown" className="accent-block rounded-card p-4">
           <div className="text-xs text-gold uppercase tracking-wider mb-1">Compte à rebours</div>
           <div className="text-2xl font-bold">— jours</div>
           <div className="text-xs text-white/60 mt-1">avant le Bac</div>

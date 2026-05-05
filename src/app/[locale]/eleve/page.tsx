@@ -22,7 +22,7 @@ export default async function StudentHome() {
   return (
     <StudentShell active="home" childName={child?.full_name ?? "Étudiant"} childGrade={child?.grade}>
       {/* Hero mission card */}
-      <div className="bg-navy text-white rounded-modal p-6 mb-6 relative overflow-hidden">
+      <div className="accent-block rounded-modal p-6 mb-6 relative overflow-hidden">
         <span className="text-xs font-semibold text-gold uppercase tracking-wider">Aujourd&apos;hui</span>
         <h1 className="text-xl font-bold mt-2 mb-1">Commence ton parcours</h1>
         <p className="text-white/70 text-sm mb-4">3 missions · 25 minutes</p>

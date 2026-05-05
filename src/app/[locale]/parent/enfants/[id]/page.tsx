@@ -72,7 +72,7 @@ export default async function ChildProfilePage({
 
         {/* Recommendations */}
         <h2 className="text-lg font-semibold text-fg mb-4">Recommandations</h2>
-        <div className="bg-navy text-white rounded-card p-6">
+        <div className="accent-block rounded-card p-6">
           <p className="text-white/80">
             Aucune recommandation personnalisée pour le moment. Une fois que ton enfant
             aura complété quelques exercices, des suggestions ciblées apparaîtront ici.

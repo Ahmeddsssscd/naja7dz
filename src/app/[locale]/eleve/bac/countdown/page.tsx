@@ -25,7 +25,7 @@ export default async function BacCountdownPage() {
 
   return (
     <StudentShell active="subjects" childName={child?.full_name} childGrade={child?.grade}>
-      <div className="bg-navy text-white rounded-modal p-8 text-center mb-6 relative overflow-hidden">
+      <div className="accent-block rounded-modal p-8 text-center mb-6 relative overflow-hidden">
         <div className="text-xs uppercase tracking-widest text-gold mb-2">Compte à rebours</div>
         <div className="text-7xl font-bold mb-1 leading-none">{days}</div>
         <div className="text-white/80 mb-4">jours avant le Bac</div>

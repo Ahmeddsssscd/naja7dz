@@ -34,7 +34,7 @@ export default async function KidsHome() {
       </header>
 
       {/* Hero with mascot */}
-      <section className="mx-5 mb-5 bg-navy text-white rounded-[28px] p-6 relative overflow-hidden">
+      <section className="mx-5 mb-5 accent-block rounded-[28px] p-6 relative overflow-hidden">
         <div className="absolute -bottom-6 -end-3 text-7xl">🦊</div>
         <div className="relative">
           <div className="text-xs font-bold text-gold uppercase tracking-wider mb-2">Fennec dit</div>

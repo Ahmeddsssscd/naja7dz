@@ -388,7 +388,7 @@ function FAQ() {
 function FinalCTA() {
   const t = useTranslations("CTA");
   return (
-    <section className="bg-navy py-24 md:py-26 text-center">
+    <section className="accent-block py-24 md:py-26 text-center">
       <div className="container-x">
         <h2 className="text-[clamp(28px,4vw,40px)] font-bold text-white leading-tight mb-4">
           {t("title")}

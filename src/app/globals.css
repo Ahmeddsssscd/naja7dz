@@ -5,27 +5,33 @@
 @layer base {
   /* Light theme tokens (default) */
   :root {
-    --surface: #FFFFFF;
-    --surface-2: #FAF9F6;     /* cream */
-    --surface-3: #E8EDF5;     /* pale-blue */
+    --surface: #FFFFFF;       /* cards / headers (lightest, "raised") */
+    --surface-2: #FAF9F6;     /* cream — alternating section bg */
+    --surface-3: #EEF2F8;     /* pale-blue — decorative accent */
     --fg: #0F1B33;
     --fg-soft: #5A6478;
-    --fg-faint: #8A92A4;
+    --fg-faint: #8E96A8;
     --line: #E8EDF5;
     --line-strong: #D4DCE8;
     color-scheme: light;
   }
 
-  /* Dark theme tokens — kicks in when <html> has class="dark" (set by next-themes) */
+  /*
+    Dark theme. Designed so the visual hierarchy mirrors the light theme:
+    - cards / headers (`bg-surface`) are visibly LIGHTER than body
+    - alternating section bg (`bg-surface-2`) is the page-background tone
+    - `bg-surface-3` is the lightest accent (for icon chips, decoration)
+    All values lean cool-navy to keep the brand temperature.
+  */
   .dark {
-    --surface: #070D1E;       /* near-black navy */
-    --surface-2: #0F1B33;     /* deep navy */
-    --surface-3: #1a2748;     /* navy-soft, used for raised elements */
-    --fg: #FAF9F6;            /* cream as text */
-    --fg-soft: #B5BCD0;
-    --fg-faint: #8A92A4;
-    --line: #1a2748;
-    --line-strong: #2a3958;
+    --surface: #141E3B;       /* mid navy — cards / headers ("raised") */
+    --surface-2: #0A1124;     /* deepest navy — page + alternating section */
+    --surface-3: #1F2B4F;     /* lightest navy — decorative accents */
+    --fg: #F2EBDC;            /* warm cream text */
+    --fg-soft: #A8B0C8;
+    --fg-faint: #6F7796;
+    --line: #1E2849;          /* subtle border on cards */
+    --line-strong: #2D3960;   /* visible border on inputs */
     color-scheme: dark;
   }
 
@@ -94,6 +100,13 @@
   /* Card — uses semantic surface */
   .card {
     @apply bg-surface border border-line rounded-card p-6;
+  }
+
+  /* Inverted accent block — used for hero CTAs, featured plan, parent insight.
+     Stays navy in light mode, switches to a warmer raised navy in dark to
+     avoid the "two flat navy blocks on top of each other" look. */
+  .accent-block {
+    @apply bg-navy text-white dark:bg-[#1A254A];
   }
 
   /* Eyebrow — gold uppercase label above section titles */
