@@ -44,12 +44,14 @@ export default async function KidsHome() {
         </div>
       </section>
 
-      {/* 2x2 huge tiles */}
+      {/* 2x3 tiles */}
       <section className="grid grid-cols-2 gap-3 px-5 mb-6">
         <Tile href="/petits/coloriage" emoji="🎨" title="Coloriage" subtitle="Maths cachées" color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
-        <Tile href="/petits/maths" emoji="🧮" title="Jeux de maths" subtitle="Ninja, détective, souk" color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
-        <Tile href="/petits/lecture" emoji="📖" title="Lis avec moi" subtitle="Histoires + dessins" color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
-        <Tile href="/petits/jeux-malins" emoji="🧩" title="Jeux malins" subtitle="Sudoku, mémoire, échecs" color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+        <Tile href="/petits/maths" emoji="🧮" title="Jeux de maths" subtitle="Ninja & Souk" color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
+        <Tile href="/petits/jeux-malins" emoji="🧩" title="Jeux malins" subtitle="Sudoku, mémoire, motifs" color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+        <Tile href="/petits/monde-reel" emoji="🌍" title="Le monde réel" subtitle="Heure, wilayas, manières" color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+        <Tile href="/petits/lecture" emoji="📖" title="Lis avec moi" subtitle="Coran & histoires" color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />
+        <Tile href="/petits/jeux-malins/enigme" emoji="🤔" title="Énigme du jour" subtitle="Une nouvelle chaque jour" color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
       </section>
 
       {/* Trophy strip */}

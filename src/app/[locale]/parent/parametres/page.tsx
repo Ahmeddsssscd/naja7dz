@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
+import { Link } from "@/i18n/routing";
 
 export const metadata = { title: "Paramètres — Najaح" };
 
@@ -30,6 +31,16 @@ export default async function SettingsPage() {
             <Row label="Wilaya" value={profile?.wilaya ?? "—"} />
             <Row label="Langue préférée" value={profile?.language_pref === "ar" ? "العربية" : "Français"} />
           </dl>
+        </section>
+
+        <section className="bg-surface border border-line rounded-card p-7 mb-6">
+          <h2 className="text-lg font-semibold text-fg mb-3">Sécurité</h2>
+          <p className="text-fg-soft text-sm mb-4">
+            Gère ton mot de passe et les options de connexion.
+          </p>
+          <Link href="/parent/parametres/mot-de-passe" className="btn btn-outline">
+            Changer mon mot de passe
+          </Link>
         </section>
 
         <section className="bg-surface border border-line rounded-card p-7">

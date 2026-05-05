@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
+import { Link } from "@/i18n/routing";
 
 export const metadata = { title: "Profil enfant — Najaح" };
 
@@ -33,15 +34,21 @@ export default async function ChildProfilePage({
       <div className="max-w-5xl">
         {/* Header */}
         <div className="flex items-center gap-5 mb-8">
-          <span className="w-20 h-20 rounded-full bg-pale-blue text-navy text-3xl font-bold flex items-center justify-center">
+          <span className="w-20 h-20 rounded-full bg-pale-blue dark:bg-surface-3 text-navy dark:text-cream text-3xl font-bold flex items-center justify-center">
             {child.full_name.split(" ").map((s: string) => s[0]).slice(0, 2).join("")}
           </span>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold text-fg">{child.full_name}</h1>
             <p className="text-fg-soft">
               {child.age ? `${child.age} ans` : ""} · Classe {child.grade ?? "—"}
             </p>
           </div>
+          <Link
+            href={{ pathname: "/parent/enfants/[id]/controles", params: { id: child.id } } as never}
+            className="btn btn-outline btn-sm"
+          >
+            Contrôle parental
+          </Link>
         </div>
 
         {/* KPIs */}
