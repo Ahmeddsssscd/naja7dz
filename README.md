@@ -45,12 +45,24 @@ npm install
 # 2. Copy env vars (then fill in real values from Supabase)
 cp .env.example .env.local
 
-# 3. Run the dev server
+# 3. ⚠ Apply the database schema ONCE
+#    Open https://supabase.com/dashboard/project/<YOUR-PROJECT>/sql/new
+#    Paste the full contents of database/SETUP.sql
+#    Click "Run"
+#    (The file is idempotent — safe to re-run.)
+
+# 4. Run the dev server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) — French (default).
 Open [http://localhost:3000/ar](http://localhost:3000/ar) — Arabic with full RTL.
+
+### Health check
+
+Visit [/api/health/db](http://localhost:3000/api/health/db) at any time to see which tables are missing.
+If you see a friendly **"Configuration requise"** screen on a protected page, it means the schema
+isn't applied yet — paste `database/SETUP.sql` into the Supabase SQL Editor.
 
 ## Brand discipline
 

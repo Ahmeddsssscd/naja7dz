@@ -48,7 +48,16 @@ export function SignupForm() {
         body: JSON.stringify({ ...form, locale }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      if (!res.ok) {
+        if (data.setupRequired) {
+          setStatus("err");
+          setErrorMsg(
+            "Configuration de la base de données incomplète. L'admin doit appliquer database/SETUP.sql dans Supabase.",
+          );
+          return;
+        }
+        throw new Error(data.error ?? "Erreur");
+      }
       setStatus("ok");
     } catch (err) {
       setStatus("err");

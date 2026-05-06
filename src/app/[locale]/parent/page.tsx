@@ -3,6 +3,8 @@ import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
 import { ParentTrendChart } from "@/components/app/ParentTrendChart";
+import { isSetupIncompleteError } from "@/lib/db-errors";
+import { SetupRequiredScreen } from "@/components/app/SetupRequiredScreen";
 
 export const metadata = { title: "Espace parent — Najaح" };
 
@@ -11,10 +13,18 @@ export default async function ParentHome() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
 
-  const [{ data: profile }, { data: children }] = await Promise.all([
+  const [profileRes, childrenRes] = await Promise.all([
     supabase.from("parent_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     supabase.from("children").select("*").eq("parent_id", user.id).order("created_at"),
   ]);
+
+  // If the schema isn't set up, show a friendly setup screen instead of crashing
+  if (isSetupIncompleteError(profileRes.error) || isSetupIncompleteError(childrenRes.error)) {
+    return <SetupRequiredScreen missing={["parent_profiles", "children"]} />;
+  }
+
+  const profile = profileRes.data;
+  const children = childrenRes.data;
 
   if (!profile?.onboarded || !children?.length) {
     redirect("/parent/bienvenue");

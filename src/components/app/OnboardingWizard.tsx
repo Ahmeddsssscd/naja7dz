@@ -27,7 +27,14 @@ export function OnboardingWizard({ parentName }: { parentName: string }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      if (!res.ok) {
+        if (data.setupRequired) {
+          throw new Error(
+            "Configuration de la base de données incomplète. Applique database/SETUP.sql dans Supabase.",
+          );
+        }
+        throw new Error(data.error ?? "Erreur");
+      }
       setStep(3);
     } catch (err) {
       setStatus("err");

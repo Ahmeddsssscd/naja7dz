@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
+import { isSetupIncompleteError } from "@/lib/db-errors";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://naja7dz.com";
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
   if (data.user) {
     try {
       const admin = createAdminClient();
-      await admin.from("parent_profiles").upsert({
+      const { error: profileErr } = await admin.from("parent_profiles").upsert({
         user_id: data.user.id,
         full_name: fullName,
         phone,
@@ -70,6 +71,17 @@ export async function POST(req: Request) {
         language_pref: locale,
         onboarded: false,
       });
+      if (isSetupIncompleteError(profileErr)) {
+        // Auth user was created (in auth.users) but profile table is missing.
+        // Tell the user clearly what to do.
+        return NextResponse.json(
+          {
+            error: "Configuration de la base de données incomplète. L'admin doit appliquer database/SETUP.sql dans Supabase.",
+            setupRequired: true,
+          },
+          { status: 503 },
+        );
+      }
     } catch (err) {
       console.error("[signup] profile insert failed", err);
       // Don't block signup if profile creation fails — user can complete it on first login
