@@ -72,18 +72,24 @@ alter table public.checkout_sessions enable row level security;
 alter table public.payment_events enable row level security;
 
 -- Plans: anyone can read the catalog (public product info)
+-- idempotent guard for "anon can read active plans"
+drop policy if exists "anon can read active plans" on public.plans;
 create policy "anon can read active plans"
   on public.plans for select
   to anon, authenticated
   using (active = true);
 
 -- Checkout sessions: only service_role can read/write (anon never touches them)
+-- idempotent guard for "service role full access on checkouts"
+drop policy if exists "service role full access on checkouts" on public.checkout_sessions;
 create policy "service role full access on checkouts"
   on public.checkout_sessions for all
   to service_role
   using (true) with check (true);
 
 -- Payment events: service_role only
+-- idempotent guard for "service role full access on events"
+drop policy if exists "service role full access on events" on public.payment_events;
 create policy "service role full access on events"
   on public.payment_events for all
   to service_role

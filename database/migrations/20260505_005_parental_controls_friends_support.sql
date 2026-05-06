@@ -17,8 +17,12 @@ create table if not exists public.parent_controls (
 );
 
 alter table public.parent_controls enable row level security;
+-- idempotent guard for "parent reads own child controls"
+drop policy if exists "parent reads own child controls" on public.parent_controls;
 create policy "parent reads own child controls" on public.parent_controls
   for select to authenticated using (parent_id = auth.uid());
+-- idempotent guard for "parent updates own child controls"
+drop policy if exists "parent updates own child controls" on public.parent_controls;
 create policy "parent updates own child controls" on public.parent_controls
   for all to authenticated using (parent_id = auth.uid()) with check (parent_id = auth.uid());
 
@@ -43,6 +47,8 @@ create table if not exists public.support_messages (
 create index if not exists idx_support_status_created on public.support_messages (status, created_at desc);
 
 alter table public.support_messages enable row level security;
+-- idempotent guard for "service role support"
+drop policy if exists "service role support" on public.support_messages;
 create policy "service role support" on public.support_messages
   for all to service_role using (true) with check (true);
 
@@ -60,7 +66,11 @@ create table if not exists public.logic_riddles (
 );
 
 alter table public.logic_riddles enable row level security;
+-- idempotent guard for "auth reads riddles"
+drop policy if exists "auth reads riddles" on public.logic_riddles;
 create policy "auth reads riddles" on public.logic_riddles for select to authenticated using (active);
+-- idempotent guard for "service role riddles"
+drop policy if exists "service role riddles" on public.logic_riddles;
 create policy "service role riddles" on public.logic_riddles for all to service_role using (true) with check (true);
 
 insert into public.logic_riddles (question_fr, question_ar, answer, hint_fr) values
@@ -147,6 +157,8 @@ insert into public.wilayas (code, name_fr, name_ar, region_fr, fact_fr) values
 on conflict (code) do nothing;
 
 alter table public.wilayas enable row level security;
+-- idempotent guard for "anyone reads wilayas"
+drop policy if exists "anyone reads wilayas" on public.wilayas;
 create policy "anyone reads wilayas" on public.wilayas for select to anon, authenticated using (true);
 
 -- 5. Quran surahs (114) — minimal seed
@@ -160,6 +172,8 @@ create table if not exists public.quran_surahs (
 );
 
 alter table public.quran_surahs enable row level security;
+-- idempotent guard for "anyone reads surahs"
+drop policy if exists "anyone reads surahs" on public.quran_surahs;
 create policy "anyone reads surahs" on public.quran_surahs for select to anon, authenticated using (true);
 
 -- Insert all 114 surahs (compact form)
@@ -207,6 +221,8 @@ create table if not exists public.adab_lessons (
 );
 
 alter table public.adab_lessons enable row level security;
+-- idempotent guard for "anyone reads adab"
+drop policy if exists "anyone reads adab" on public.adab_lessons;
 create policy "anyone reads adab" on public.adab_lessons for select to anon, authenticated using (true);
 
 insert into public.adab_lessons (slug, title_fr, title_ar, body_fr, body_ar, sort_order) values
@@ -234,8 +250,12 @@ create unique index if not exists uq_quran_progress_student_surah
   on public.quran_progress (student_id, surah_number);
 
 alter table public.quran_progress enable row level security;
+-- idempotent guard for "parent reads child quran"
+drop policy if exists "parent reads child quran" on public.quran_progress;
 create policy "parent reads child quran" on public.quran_progress
   for select to authenticated using (student_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role quran"
+drop policy if exists "service role quran" on public.quran_progress;
 create policy "service role quran" on public.quran_progress
   for all to service_role using (true) with check (true);
 
@@ -251,6 +271,8 @@ create table if not exists public.auth_audit (
 );
 create index if not exists idx_auth_audit_user on public.auth_audit (user_id, created_at desc);
 alter table public.auth_audit enable row level security;
+-- idempotent guard for "service role audit"
+drop policy if exists "service role audit" on public.auth_audit;
 create policy "service role audit" on public.auth_audit for all to service_role using (true) with check (true);
 
 comment on table public.parent_controls is 'Per-child screen time and feature limits, set by parent.';

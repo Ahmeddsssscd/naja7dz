@@ -74,8 +74,12 @@ create table if not exists public.writing_prompts (
 );
 
 alter table public.writing_prompts enable row level security;
+-- idempotent guard for "auth reads writing prompts"
+drop policy if exists "auth reads writing prompts" on public.writing_prompts;
 create policy "auth reads writing prompts" on public.writing_prompts
   for select to authenticated using (active = true);
+-- idempotent guard for "service role writing prompts"
+drop policy if exists "service role writing prompts" on public.writing_prompts;
 create policy "service role writing prompts" on public.writing_prompts
   for all to service_role using (true) with check (true);
 
@@ -123,8 +127,14 @@ alter table public.study_groups enable row level security;
 alter table public.group_members enable row level security;
 alter table public.group_messages enable row level security;
 
+-- idempotent guard for "service role groups"
+drop policy if exists "service role groups" on public.study_groups;
 create policy "service role groups" on public.study_groups for all to service_role using (true) with check (true);
+-- idempotent guard for "service role members"
+drop policy if exists "service role members" on public.group_members;
 create policy "service role members" on public.group_members for all to service_role using (true) with check (true);
+-- idempotent guard for "service role messages"
+drop policy if exists "service role messages" on public.group_messages;
 create policy "service role messages" on public.group_messages for all to service_role using (true) with check (true);
 
 -- 5. Teacher profiles
@@ -139,8 +149,14 @@ create table if not exists public.teacher_profiles (
 );
 
 alter table public.teacher_profiles enable row level security;
+-- idempotent guard for "teacher reads own"
+drop policy if exists "teacher reads own" on public.teacher_profiles;
 create policy "teacher reads own" on public.teacher_profiles for select to authenticated using (user_id = auth.uid());
+-- idempotent guard for "teacher updates own"
+drop policy if exists "teacher updates own" on public.teacher_profiles;
 create policy "teacher updates own" on public.teacher_profiles for update to authenticated using (user_id = auth.uid());
+-- idempotent guard for "service role teachers"
+drop policy if exists "service role teachers" on public.teacher_profiles;
 create policy "service role teachers" on public.teacher_profiles for all to service_role using (true) with check (true);
 
 -- 6. Helpful indexes for activity / KPIs

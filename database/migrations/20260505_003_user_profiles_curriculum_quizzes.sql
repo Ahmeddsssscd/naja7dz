@@ -291,77 +291,139 @@ alter table public.trophies enable row level security;
 alter table public.activity_logs enable row level security;
 
 -- Parent profiles: parent can read/write their own
+-- idempotent guard for "parent reads own profile"
+drop policy if exists "parent reads own profile" on public.parent_profiles;
 create policy "parent reads own profile" on public.parent_profiles
   for select to authenticated using (user_id = auth.uid());
+-- idempotent guard for "parent updates own profile"
+drop policy if exists "parent updates own profile" on public.parent_profiles;
 create policy "parent updates own profile" on public.parent_profiles
   for update to authenticated using (user_id = auth.uid());
+-- idempotent guard for "parent inserts own profile"
+drop policy if exists "parent inserts own profile" on public.parent_profiles;
 create policy "parent inserts own profile" on public.parent_profiles
   for insert to authenticated with check (user_id = auth.uid());
 
 -- Children: parent can manage own children
+-- idempotent guard for "parent reads own children"
+drop policy if exists "parent reads own children" on public.children;
 create policy "parent reads own children" on public.children
   for select to authenticated using (parent_id = auth.uid());
+-- idempotent guard for "parent inserts own children"
+drop policy if exists "parent inserts own children" on public.children;
 create policy "parent inserts own children" on public.children
   for insert to authenticated with check (parent_id = auth.uid());
+-- idempotent guard for "parent updates own children"
+drop policy if exists "parent updates own children" on public.children;
 create policy "parent updates own children" on public.children
   for update to authenticated using (parent_id = auth.uid());
+-- idempotent guard for "parent deletes own children"
+drop policy if exists "parent deletes own children" on public.children;
 create policy "parent deletes own children" on public.children
   for delete to authenticated using (parent_id = auth.uid());
 
 -- Curriculum: anyone authenticated can read
+-- idempotent guard for "auth reads grades"
+drop policy if exists "auth reads grades" on public.grades;
 create policy "auth reads grades" on public.grades for select to authenticated using (true);
+-- idempotent guard for "auth reads subjects"
+drop policy if exists "auth reads subjects" on public.subjects;
 create policy "auth reads subjects" on public.subjects for select to authenticated using (true);
+-- idempotent guard for "auth reads chapters"
+drop policy if exists "auth reads chapters" on public.chapters;
 create policy "auth reads chapters" on public.chapters for select to authenticated using (true);
+-- idempotent guard for "anon reads grades"
+drop policy if exists "anon reads grades" on public.grades;
 create policy "anon reads grades" on public.grades for select to anon using (true);
+-- idempotent guard for "anon reads subjects"
+drop policy if exists "anon reads subjects" on public.subjects;
 create policy "anon reads subjects" on public.subjects for select to anon using (true);
+-- idempotent guard for "anon reads chapters"
+drop policy if exists "anon reads chapters" on public.chapters;
 create policy "anon reads chapters" on public.chapters for select to anon using (true);
 
 -- Quizzes/questions/attempts: parent reads child's, service role full access
+-- idempotent guard for "parent reads child quizzes"
+drop policy if exists "parent reads child quizzes" on public.quizzes;
 create policy "parent reads child quizzes" on public.quizzes
   for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role quizzes"
+drop policy if exists "service role quizzes" on public.quizzes;
 create policy "service role quizzes" on public.quizzes
   for all to service_role using (true) with check (true);
+-- idempotent guard for "service role questions"
+drop policy if exists "service role questions" on public.questions;
 create policy "service role questions" on public.questions
   for all to service_role using (true) with check (true);
+-- idempotent guard for "service role attempts"
+drop policy if exists "service role attempts" on public.attempts;
 create policy "service role attempts" on public.attempts
   for all to service_role using (true) with check (true);
 
 -- Tutor conversations
+-- idempotent guard for "parent reads child convs"
+drop policy if exists "parent reads child convs" on public.tutor_conversations;
 create policy "parent reads child convs" on public.tutor_conversations
   for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role tutor conv"
+drop policy if exists "service role tutor conv" on public.tutor_conversations;
 create policy "service role tutor conv" on public.tutor_conversations
   for all to service_role using (true) with check (true);
+-- idempotent guard for "service role tutor msg"
+drop policy if exists "service role tutor msg" on public.tutor_messages;
 create policy "service role tutor msg" on public.tutor_messages
   for all to service_role using (true) with check (true);
 
 -- Exam papers: anyone authenticated reads (published exams are public per ONEC)
+-- idempotent guard for "auth reads exam papers"
+drop policy if exists "auth reads exam papers" on public.exam_papers;
 create policy "auth reads exam papers" on public.exam_papers
   for select to authenticated using (true);
+-- idempotent guard for "service role exam papers"
+drop policy if exists "service role exam papers" on public.exam_papers;
 create policy "service role exam papers" on public.exam_papers
   for all to service_role using (true) with check (true);
+-- idempotent guard for "service role mock exams"
+drop policy if exists "service role mock exams" on public.mock_exams;
 create policy "service role mock exams" on public.mock_exams
   for all to service_role using (true) with check (true);
 
 -- Speeches: anyone authenticated reads approved ones; child submits theirs
+-- idempotent guard for "auth reads approved speeches"
+drop policy if exists "auth reads approved speeches" on public.motivational_speeches;
 create policy "auth reads approved speeches" on public.motivational_speeches
   for select to authenticated using (status = 'approved');
+-- idempotent guard for "service role speeches"
+drop policy if exists "service role speeches" on public.motivational_speeches;
 create policy "service role speeches" on public.motivational_speeches
   for all to service_role using (true) with check (true);
 
 -- Games: parent reads child's, service role full access
+-- idempotent guard for "parent reads child games"
+drop policy if exists "parent reads child games" on public.game_progress;
 create policy "parent reads child games" on public.game_progress
   for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role games"
+drop policy if exists "service role games" on public.game_progress;
 create policy "service role games" on public.game_progress
   for all to service_role using (true) with check (true);
 
+-- idempotent guard for "parent reads child trophies"
+drop policy if exists "parent reads child trophies" on public.trophies;
 create policy "parent reads child trophies" on public.trophies
   for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role trophies"
+drop policy if exists "service role trophies" on public.trophies;
 create policy "service role trophies" on public.trophies
   for all to service_role using (true) with check (true);
 
 -- Activity logs
+-- idempotent guard for "parent reads child activity"
+drop policy if exists "parent reads child activity" on public.activity_logs;
 create policy "parent reads child activity" on public.activity_logs
   for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role activity"
+drop policy if exists "service role activity" on public.activity_logs;
 create policy "service role activity" on public.activity_logs
   for all to service_role using (true) with check (true);
 

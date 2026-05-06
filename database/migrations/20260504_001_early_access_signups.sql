@@ -23,6 +23,8 @@ alter table public.early_access_signups enable row level security;
 
 -- Public can INSERT (so the landing page can save signups via anon key)
 -- but cannot read (so anon key cannot scrape the email list)
+-- idempotent guard for "anon can insert signups"
+drop policy if exists "anon can insert signups" on public.early_access_signups;
 create policy "anon can insert signups"
   on public.early_access_signups
   for insert
@@ -30,6 +32,8 @@ create policy "anon can insert signups"
   with check (true);
 
 -- Only service_role (server-side) can read — used by future admin dashboard
+-- idempotent guard for "service role full access"
+drop policy if exists "service role full access" on public.early_access_signups;
 create policy "service role full access"
   on public.early_access_signups
   for all
