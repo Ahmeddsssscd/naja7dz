@@ -220,7 +220,16 @@ insert into public.adab_lessons (slug, title_fr, title_ar, body_fr, body_ar, sor
   ('voisin', 'Respecter les voisins', 'احترام الجار', 'Tes voisins font partie de ta famille élargie. Salue-les, aide-les, et ne fais pas de bruit la nuit.', 'جيرانك جزء من عائلتك. حيهم وساعدهم ولا تزعجهم في الليل.', 8)
 on conflict (slug) do nothing;
 
--- 7. Unique constraint on quran_progress (student + surah)
+-- 7. Quran progress tracker per child (referenced by /api/quran/progress)
+create table if not exists public.quran_progress (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null references public.children(id) on delete cascade,
+  surah_number integer not null,
+  verses_memorized integer default 0,
+  last_practiced timestamptz default now(),
+  created_at timestamptz default now()
+);
+
 create unique index if not exists uq_quran_progress_student_surah
   on public.quran_progress (student_id, surah_number);
 
