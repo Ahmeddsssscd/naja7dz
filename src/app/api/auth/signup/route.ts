@@ -60,31 +60,36 @@ export async function POST(req: Request) {
   }
 
   // Create the parent profile row (service role so RLS doesn't block on first request)
+  // We intentionally DO surface non-setup errors now: silently swallowing them
+  // caused a real bug where the auth user existed but no parent_profiles row
+  // ever got created, sending the user into an infinite redirect loop between
+  // /parent and /parent/bienvenue. The /api/children handler has a defensive
+  // INSERT-if-missing fallback now too, but we want to know early if this fails.
   if (data.user) {
-    try {
-      const admin = createAdminClient();
-      const { error: profileErr } = await admin.from("parent_profiles").upsert({
-        user_id: data.user.id,
-        full_name: fullName,
-        phone,
-        wilaya,
-        language_pref: locale,
-        onboarded: false,
-      });
-      if (isSetupIncompleteError(profileErr)) {
-        // Auth user was created (in auth.users) but profile table is missing.
-        // Tell the user clearly what to do.
-        return NextResponse.json(
-          {
-            error: "Configuration de la base de données incomplète. L'admin doit appliquer database/SETUP.sql dans Supabase.",
-            setupRequired: true,
-          },
-          { status: 503 },
-        );
-      }
-    } catch (err) {
-      console.error("[signup] profile insert failed", err);
-      // Don't block signup if profile creation fails — user can complete it on first login
+    const admin = createAdminClient();
+    const { error: profileErr } = await admin.from("parent_profiles").upsert({
+      user_id: data.user.id,
+      full_name: fullName,
+      phone,
+      wilaya,
+      language_pref: locale,
+      onboarded: false,
+    });
+    if (isSetupIncompleteError(profileErr)) {
+      return NextResponse.json(
+        {
+          error: "Configuration de la base de données incomplète. L'admin doit appliquer database/SETUP.sql dans Supabase.",
+          setupRequired: true,
+        },
+        { status: 503 },
+      );
+    }
+    if (profileErr) {
+      console.error("[signup] profile upsert failed", profileErr);
+      // Don't block signup — child API has a defensive INSERT-if-missing path —
+      // but log it so we notice in monitoring. Auth user was created and
+      // verification email was sent; user can still log in and the wizard
+      // will create their profile on the first onboarding action.
     }
   }
 
