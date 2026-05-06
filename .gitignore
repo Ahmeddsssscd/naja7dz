@@ -1,3 +1,6 @@
+# claude code internal state — never commit
+/.claude/
+
 # dependencies
 /node_modules
 /.pnp
