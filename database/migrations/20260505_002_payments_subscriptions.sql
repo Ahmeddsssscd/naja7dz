@@ -17,13 +17,23 @@ create table if not exists public.plans (
   created_at timestamptz not null default now()
 );
 
--- Seed the 4 plans from spec
-insert into public.plans (id, name_fr, name_ar, amount_dzd, period, description_fr) values
-  ('eleve_monthly', 'Élève — Mensuel', 'تلميذ — شهري', 990, 'monthly', '1 enfant, toutes matières, accès complet'),
-  ('eleve_annual', 'Élève — Annuel', 'تلميذ — سنوي', 7400, 'annual', '1 enfant, paiement annuel (-38%)'),
-  ('famille_monthly', 'Famille — Mensuel', 'عائلة — شهري', 1990, 'monthly', 'Jusqu''à 4 enfants + espace parents complet'),
-  ('famille_annual', 'Famille — Annuel', 'عائلة — سنوي', 14900, 'annual', 'Jusqu''à 4 enfants, paiement annuel (-38%)'),
-  ('pack_bac', 'Pack Bac 90 jours', 'حزمة البكالوريا 90 يوم', 9000, 'one_time', 'Programme intensif de préparation au Bac')
+-- Seed the 5 plans from spec (with both FR + AR descriptions for the AR locale)
+insert into public.plans (id, name_fr, name_ar, amount_dzd, period, description_fr, description_ar) values
+  ('eleve_monthly', 'Élève — Mensuel', 'تلميذ — شهري', 990, 'monthly',
+    '1 enfant, toutes matières, accès complet',
+    'طفل واحد، جميع المواد، وصول كامل'),
+  ('eleve_annual', 'Élève — Annuel', 'تلميذ — سنوي', 7400, 'annual',
+    '1 enfant, paiement annuel (-38%)',
+    'طفل واحد، دفع سنوي (-38%)'),
+  ('famille_monthly', 'Famille — Mensuel', 'عائلة — شهري', 1990, 'monthly',
+    'Jusqu''à 4 enfants + espace parents complet',
+    'حتى 4 أطفال + فضاء الآباء كامل'),
+  ('famille_annual', 'Famille — Annuel', 'عائلة — سنوي', 14900, 'annual',
+    'Jusqu''à 4 enfants, paiement annuel (-38%)',
+    'حتى 4 أطفال، دفع سنوي (-38%)'),
+  ('pack_bac', 'Pack Bac 90 jours', 'حزمة البكالوريا 90 يوم', 9000, 'one_time',
+    'Programme intensif de préparation au Bac',
+    'برنامج مكثف للتحضير للبكالوريا')
 on conflict (id) do nothing;
 
 -- ===== Checkout sessions (created when user clicks "Pay") =====
