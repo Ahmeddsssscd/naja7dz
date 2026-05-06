@@ -3,7 +3,13 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { createCheckout, createCustomer } from "@/lib/chargily";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://naja7dz.com";
+// Defensive: env vars sometimes have stray "\n" / whitespace from CLI input.
+// A bad value here corrupts the redirect URLs we hand to Chargily.
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://naja7dz.com")
+  .replace(/\\n|\\r/g, "")
+  .replace(/[\r\n\t]/g, "")
+  .trim()
+  .replace(/\/+$/, "");
 
 interface CheckoutRequest {
   planId?: string;

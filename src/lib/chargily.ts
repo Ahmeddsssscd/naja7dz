@@ -12,8 +12,20 @@
  */
 import "server-only";
 
-const BASE = process.env.CHARGILY_API_BASE ?? "https://pay.chargily.net/test/api/v2";
-const SECRET = process.env.CHARGILY_SECRET_KEY ?? "";
+// Defensive: env vars copied from CLI/UI sometimes carry trailing whitespace,
+// CR, LF, or escaped "\n" sequences. Strip them — they corrupt the URL path
+// and the Authorization header (Chargily rejects with cryptic errors).
+function cleanEnv(v: string | undefined): string {
+  if (!v) return "";
+  return v
+    .replace(/\\n/g, "")    // literal backslash-n
+    .replace(/\\r/g, "")
+    .replace(/[\r\n\t]/g, "")
+    .trim();
+}
+
+const BASE = cleanEnv(process.env.CHARGILY_API_BASE) || "https://pay.chargily.net/test/api/v2";
+const SECRET = cleanEnv(process.env.CHARGILY_SECRET_KEY);
 
 if (!SECRET && process.env.NODE_ENV === "production") {
   console.warn("[chargily] CHARGILY_SECRET_KEY missing in production!");
