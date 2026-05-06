@@ -45,7 +45,7 @@ export function PageShell({
               {t("faq")}
             </Link>
             <Link href="/contact" className={navLinkClass("contact")}>
-              Contact
+              {t("contact")}
             </Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export function PageShell({
                 { href: "/tarifs", label: t("pricing") },
                 { href: "/pour-les-parents", label: t("parents") },
                 { href: "/faq", label: t("faq") },
-                { href: "/contact", label: "Contact" },
+                { href: "/contact", label: t("contact") },
                 { href: "/connexion", label: t("login") },
               ]}
               ctaLabel={t("start")}

@@ -338,7 +338,8 @@ function PlanCard({
         {name}
       </div>
       <div className={`text-4xl font-bold leading-none mb-1 ${featured ? "text-white" : "text-fg"}`}>
-        {price} <span className="text-base font-medium">{currency}</span>
+        {/* bdi keeps multi-token numbers (e.g. "1 990") as a single LTR atom in RTL layout */}
+        <bdi>{price}</bdi> <span className="text-base font-medium">{currency}</span>
       </div>
       <div className={`text-sm mb-7 ${featured ? "text-white/65" : "text-fg-soft"}`}>{period}</div>
       <ul className="flex-1 mb-7 space-y-2">
