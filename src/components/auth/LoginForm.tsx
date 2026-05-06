@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
 
 export function LoginForm() {
+  const t = useTranslations("Connexion");
   const params = useSearchParams();
   const next = params.get("next") || "/parent";
 
@@ -26,19 +28,19 @@ export function LoginForm() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      if (!res.ok) throw new Error(data.error ?? t("generic_error"));
       // Use full reload so middleware picks up the new session cookies
       window.location.href = next;
     } catch (err) {
       setStatus("err");
-      setErrorMsg(err instanceof Error ? err.message : "Erreur");
+      setErrorMsg(err instanceof Error ? err.message : t("generic_error"));
     }
   };
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <label className="block">
-        <span className="block text-sm font-medium text-fg mb-1.5">Adresse email</span>
+        <span className="block text-sm font-medium text-fg mb-1.5">{t("field_email")}</span>
         <input
           name="email"
           type="email"
@@ -46,16 +48,16 @@ export function LoginForm() {
           value={form.email}
           onChange={onChange}
           className="auth-input"
-          placeholder="parent@email.com"
+          placeholder={t("field_email_placeholder")}
           autoComplete="email"
         />
       </label>
 
       <label className="block">
         <span className="flex justify-between items-center text-sm font-medium text-fg mb-1.5">
-          <span>Mot de passe</span>
+          <span>{t("field_password")}</span>
           <Link href="/connexion/oublie" className="text-xs text-fg-soft hover:text-gold font-normal">
-            Mot de passe oublié ?
+            {t("forgot_password")}
           </Link>
         </span>
         <input
@@ -65,7 +67,7 @@ export function LoginForm() {
           value={form.password}
           onChange={onChange}
           className="auth-input"
-          placeholder="••••••••"
+          placeholder={t("field_password_placeholder")}
           autoComplete="current-password"
         />
       </label>
@@ -75,7 +77,7 @@ export function LoginForm() {
         disabled={status === "loading"}
         className="btn btn-primary w-full btn-lg disabled:opacity-60"
       >
-        {status === "loading" ? "Connexion…" : "Se connecter"}
+        {status === "loading" ? t("submitting") : t("submit")}
       </button>
 
       {status === "err" && (

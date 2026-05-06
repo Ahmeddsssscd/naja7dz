@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CheckIcon } from "@/components/Icon";
 
 const WILAYAS = [
   "Alger","Oran","Constantine","Annaba","Blida","Sétif","Tlemcen","Béjaïa","Tizi Ouzou","Batna",
   "Béchar","Ouargla","Mostaganem","Médéa","Skikda","Bordj Bou Arreridj","Boumerdès","Chlef","Djelfa",
   "Ghardaïa","Tiaret","Tipaza","Adrar","Aïn Defla","Aïn Témouchent","Biskra","Bouira","El Bayadh",
-  "El Oued","El Tarf","Ghardaïa","Guelma","Illizi","Jijel","Khenchela","Laghouat","Mascara","M'Sila",
+  "El Oued","El Tarf","Guelma","Illizi","Jijel","Khenchela","Laghouat","Mascara","M'Sila",
   "Naâma","Oum El Bouaghi","Relizane","Saïda","Sidi Bel Abbès","Souk Ahras","Tamanrasset","Tébessa",
-  "Tindouf","Tissemsilt", "— autre",
+  "Tindouf","Tissemsilt",
 ];
 
 export function SignupForm() {
   const locale = useLocale();
+  const t = useTranslations("Inscription");
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -36,7 +37,7 @@ export function SignupForm() {
     e.preventDefault();
     if (!form.accepted) {
       setStatus("err");
-      setErrorMsg("Tu dois accepter les conditions pour continuer.");
+      setErrorMsg(t("must_accept"));
       return;
     }
     setStatus("loading");
@@ -51,17 +52,15 @@ export function SignupForm() {
       if (!res.ok) {
         if (data.setupRequired) {
           setStatus("err");
-          setErrorMsg(
-            "Configuration de la base de données incomplète. L'admin doit appliquer database/SETUP.sql dans Supabase.",
-          );
+          setErrorMsg(t("setup_required"));
           return;
         }
-        throw new Error(data.error ?? "Erreur");
+        throw new Error(data.error ?? t("generic_error"));
       }
       setStatus("ok");
     } catch (err) {
       setStatus("err");
-      setErrorMsg(err instanceof Error ? err.message : "Erreur");
+      setErrorMsg(err instanceof Error ? err.message : t("generic_error"));
     }
   };
 
@@ -71,10 +70,9 @@ export function SignupForm() {
         <span className="inline-flex w-14 h-14 rounded-full bg-gold text-navy items-center justify-center mb-4">
           <CheckIcon size={28} />
         </span>
-        <h3 className="text-lg font-semibold text-fg mb-2">Vérifie ton email</h3>
+        <h3 className="text-lg font-semibold text-fg mb-2">{t("success_title")}</h3>
         <p className="text-fg-soft text-sm">
-          Un lien de confirmation t&apos;attend dans <strong className="text-fg">{form.email}</strong>.
-          Clique dessus pour activer ton compte et continuer.
+          {t("success_text", { email: form.email })}
         </p>
       </div>
     );
@@ -82,28 +80,29 @@ export function SignupForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <Field label="Ton prénom et nom">
+      <Field label={t("field_name")}>
         <input name="fullName" type="text" required value={form.fullName} onChange={onChange}
-          className="auth-input" placeholder="Ahmed Benali" autoComplete="name" />
+          className="auth-input" placeholder={t("field_name_placeholder")} autoComplete="name" />
       </Field>
-      <Field label="Adresse email">
+      <Field label={t("field_email")}>
         <input name="email" type="email" required value={form.email} onChange={onChange}
-          className="auth-input" placeholder="parent@email.com" autoComplete="email" />
+          className="auth-input" placeholder={t("field_email_placeholder")} autoComplete="email" />
       </Field>
-      <Field label="Mot de passe">
+      <Field label={t("field_password")}>
         <input name="password" type="password" required minLength={8} value={form.password} onChange={onChange}
-          className="auth-input" placeholder="Au moins 8 caractères" autoComplete="new-password" />
-        <span className="text-xs text-fg-faint mt-1.5 block">8 caractères minimum.</span>
+          className="auth-input" placeholder={t("field_password_placeholder")} autoComplete="new-password" />
+        <span className="text-xs text-fg-faint mt-1.5 block">{t("password_hint")}</span>
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Téléphone (optionnel)">
+        <Field label={t("field_phone")}>
           <input name="phone" type="tel" value={form.phone} onChange={onChange}
-            className="auth-input" placeholder="0555 12 34 56" />
+            className="auth-input" placeholder={t("field_phone_placeholder")} />
         </Field>
-        <Field label="Wilaya">
+        <Field label={t("field_wilaya")}>
           <select name="wilaya" value={form.wilaya} onChange={onChange} className="auth-input">
-            <option value="">Choisir…</option>
+            <option value="">{t("wilaya_choose")}</option>
             {WILAYAS.map((w) => <option key={w} value={w}>{w}</option>)}
+            <option value="other">{t("wilaya_other")}</option>
           </select>
         </Field>
       </div>
@@ -117,15 +116,17 @@ export function SignupForm() {
           className="mt-1 w-4 h-4 accent-navy flex-shrink-0"
         />
         <span>
-          J&apos;accepte les <a href="/legal/conditions" target="_blank" className="text-fg underline">conditions d&apos;utilisation</a>
-          {" "}et la <a href="/legal/confidentialite" target="_blank" className="text-fg underline">politique de confidentialité</a>.
-          Je confirme être un parent ou tuteur légal.
+          {t("accept_pre")}{" "}
+          <a href="/legal/conditions" target="_blank" className="text-fg underline">{t("accept_terms")}</a>
+          {" "}{t("accept_and")}{" "}
+          <a href="/legal/confidentialite" target="_blank" className="text-fg underline">{t("accept_privacy")}</a>
+          {t("accept_post")}
         </span>
       </label>
 
       <button type="submit" disabled={status === "loading"}
         className="btn btn-primary w-full btn-lg disabled:opacity-60 mt-2">
-        {status === "loading" ? "Création du compte…" : "Créer mon compte parent"}
+        {status === "loading" ? t("submitting") : t("submit")}
       </button>
 
       {status === "err" && (

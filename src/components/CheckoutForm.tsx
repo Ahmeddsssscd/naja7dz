@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 
 export function CheckoutForm({ planId }: { planId: string }) {
   const locale = useLocale();
+  const t = useTranslations("Checkout");
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "err">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -26,19 +27,19 @@ export function CheckoutForm({ planId }: { planId: string }) {
       });
       const data = await res.json();
       if (!res.ok || !data.checkoutUrl) {
-        throw new Error(data.error ?? "Erreur de paiement");
+        throw new Error(data.error ?? t("generic_error"));
       }
       // Redirect to Chargily hosted checkout
       window.location.href = data.checkoutUrl;
     } catch (err) {
       setStatus("err");
-      setErrorMsg(err instanceof Error ? err.message : "Erreur");
+      setErrorMsg(err instanceof Error ? err.message : t("generic_error"));
     }
   };
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <Field label="Nom complet">
+      <Field label={t("field_name")}>
         <input
           name="name"
           type="text"
@@ -46,11 +47,11 @@ export function CheckoutForm({ planId }: { planId: string }) {
           value={form.name}
           onChange={onChange}
           className="checkout-input"
-          placeholder="Ahmed Benali"
+          placeholder={t("field_name_placeholder")}
           autoComplete="name"
         />
       </Field>
-      <Field label="Adresse email">
+      <Field label={t("field_email")}>
         <input
           name="email"
           type="email"
@@ -58,18 +59,18 @@ export function CheckoutForm({ planId }: { planId: string }) {
           value={form.email}
           onChange={onChange}
           className="checkout-input"
-          placeholder="parent@email.com"
+          placeholder={t("field_email_placeholder")}
           autoComplete="email"
         />
       </Field>
-      <Field label="Téléphone (optionnel)">
+      <Field label={t("field_phone")}>
         <input
           name="phone"
           type="tel"
           value={form.phone}
           onChange={onChange}
           className="checkout-input"
-          placeholder="0555 12 34 56"
+          placeholder={t("field_phone_placeholder")}
           autoComplete="tel"
         />
       </Field>
@@ -79,7 +80,7 @@ export function CheckoutForm({ planId }: { planId: string }) {
         disabled={status === "loading"}
         className="btn btn-primary w-full btn-lg disabled:opacity-60"
       >
-        {status === "loading" ? "Redirection vers Chargily…" : "Procéder au paiement →"}
+        {status === "loading" ? t("submitting") : t("submit")}
       </button>
 
       {status === "err" && (
@@ -89,9 +90,9 @@ export function CheckoutForm({ planId }: { planId: string }) {
       )}
 
       <p className="text-xs text-fg-faint text-center mt-4">
-        En cliquant sur « Procéder au paiement », tu acceptes nos{" "}
+        {t("terms_pre")}{" "}
         <Link href="/legal/conditions" className="underline hover:text-fg">
-          conditions d&apos;utilisation
+          {t("terms_link")}
         </Link>
         .
       </p>
