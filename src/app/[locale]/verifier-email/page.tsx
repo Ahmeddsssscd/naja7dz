@@ -5,7 +5,7 @@ import { Logo } from "@/components/Logo";
 import { CheckIcon } from "@/components/Icon";
 import { createServerClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Email vérifié — Najaح" };
+export const metadata = { title: "Email vérifié" };
 
 export default async function VerifyEmailPage() {
   // If user is already authenticated (clicked the link), send them straight to onboarding

@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { ChangePasswordForm } from "@/components/app/ChangePasswordForm";
 
-export const metadata = { title: "Changer mon mot de passe — Najaح" };
+export const metadata = { title: "Changer mon mot de passe" };
 
 export default async function ChangePasswordPage() {
   const supabase = await createServerClient();

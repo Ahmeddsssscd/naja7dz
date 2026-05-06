@@ -1,7 +1,7 @@
 import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Espace enseignant — Najaح" };
+export const metadata = { title: "Espace enseignant" };
 
 const TOOLS = [
   {

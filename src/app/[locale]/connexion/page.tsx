@@ -4,7 +4,7 @@ import { Logo } from "@/components/Logo";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Suspense } from "react";
 
-export const metadata = { title: "Connexion — Najaح" };
+export const metadata = { title: "Connexion" };
 
 export default function ConnexionPage() {
   return (

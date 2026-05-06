@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { MockExamMode } from "@/components/app/MockExamMode";
 
-export const metadata = { title: "Examen blanc — Najaح" };
+export const metadata = { title: "Examen blanc" };
 
 export default async function MockExamPage() {
   const supabase = await createServerClient();

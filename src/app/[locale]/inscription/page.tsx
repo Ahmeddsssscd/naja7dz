@@ -2,7 +2,7 @@ import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 import { SignupForm } from "@/components/auth/SignupForm";
 
-export const metadata = { title: "Créer un compte parent — Najaح" };
+export const metadata = { title: "Créer un compte parent" };
 
 export default function InscriptionPage() {
   return (

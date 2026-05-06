@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Lis avec moi — Najaح" };
+export const metadata = { title: "Lis avec moi" };
 
 export default async function LectureHub() {
   const supabase = await createServerClient();

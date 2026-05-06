@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { TimeTellingGame } from "@/components/app/games/TimeTellingGame";
 
-export const metadata = { title: "Lire l'heure — Najaح" };
+export const metadata = { title: "Lire l'heure" };
 
 export default async function TimeTellingPage() {
   const supabase = await createServerClient();

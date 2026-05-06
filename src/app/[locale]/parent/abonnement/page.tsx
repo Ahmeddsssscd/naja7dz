@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Abonnement — Najaح" };
+export const metadata = { title: "Abonnement" };
 
 export default async function SubscriptionPage() {
   const supabase = await createServerClient();

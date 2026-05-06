@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Bac & BEM — Najaح" };
+export const metadata = { title: "Bac & BEM" };
 
 const SAMPLE_PAPERS = [
   { exam: "Bac 2024", subject: "Mathématiques", filiere: "Sciences exp." },

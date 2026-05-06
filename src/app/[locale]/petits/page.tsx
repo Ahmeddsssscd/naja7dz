@@ -4,7 +4,7 @@ import { Link } from "@/i18n/routing";
 import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export const metadata = { title: "Mon univers — Najaح" };
+export const metadata = { title: "Mon univers" };
 
 export default async function KidsHome() {
   const supabase = await createServerClient();

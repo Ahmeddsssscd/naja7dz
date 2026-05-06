@@ -1,7 +1,7 @@
 import { AdminShell, requireAdmin } from "@/components/app/AdminShell";
 import { createAdminClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Admin · Utilisateurs — Najaح" };
+export const metadata = { title: "Admin · Utilisateurs" };
 
 export default async function AdminUsers() {
   const { profile } = await requireAdmin();

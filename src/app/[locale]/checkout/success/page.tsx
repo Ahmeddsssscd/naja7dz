@@ -3,7 +3,7 @@ import { Link } from "@/i18n/routing";
 import { CheckIcon } from "@/components/Icon";
 import { createAdminClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Merci — Najaح" };
+export const metadata = { title: "Merci" };
 
 export default async function CheckoutSuccessPage({
   searchParams,

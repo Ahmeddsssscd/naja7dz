@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 
-export const metadata = { title: "Mes progrès — Najaح" };
+export const metadata = { title: "Mes progrès" };
 
 export default async function ProgressPage() {
   const supabase = await createServerClient();

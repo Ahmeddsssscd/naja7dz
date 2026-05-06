@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { AddChildForm } from "@/components/app/AddChildForm";
 
-export const metadata = { title: "Ajouter un enfant — Najaح" };
+export const metadata = { title: "Ajouter un enfant" };
 
 export default async function NewChildPage() {
   const supabase = await createServerClient();

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Jeux malins — Najaح" };
+export const metadata = { title: "Jeux malins" };
 
 const TILES = [
   { href: "/petits/jeux-malins/sudoku", emoji: "🧩", title: "Sudoku", color: "bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" },

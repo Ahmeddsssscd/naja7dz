@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Mes enfants — Najaح" };
+export const metadata = { title: "Mes enfants" };
 
 export default async function ChildrenListPage() {
   const supabase = await createServerClient();

@@ -3,7 +3,7 @@ import { EmailCapture } from "@/components/EmailCapture";
 import { Link } from "@/i18n/routing";
 
 export const metadata = {
-  title: "Blog — Najaح",
+  title: "Blog",
   description: "Conseils, retours d'expérience, et actualités de la plateforme éducative algérienne.",
 };
 

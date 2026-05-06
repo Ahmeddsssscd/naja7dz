@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 
-export const metadata = { title: "Rapports — Najaح" };
+export const metadata = { title: "Rapports" };
 
 export default async function ReportsPage() {
   const supabase = await createServerClient();

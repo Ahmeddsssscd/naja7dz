@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 
-export const metadata = { title: "Groupes d'étude — Najaح" };
+export const metadata = { title: "Groupes d'étude" };
 
 export default async function GroupsPage() {
   const supabase = await createServerClient();

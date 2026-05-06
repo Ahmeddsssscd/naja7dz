@@ -3,7 +3,7 @@ import { Link } from "@/i18n/routing";
 import { Logo } from "@/components/Logo";
 import { ResetForm } from "@/components/auth/ResetForm";
 
-export const metadata = { title: "Mot de passe oublié — Najaح" };
+export const metadata = { title: "Mot de passe oublié" };
 
 export default function ForgotPasswordPage() {
   return (

@@ -2,7 +2,7 @@ import { AdminShell, requireAdmin } from "@/components/app/AdminShell";
 import { createAdminClient } from "@/lib/supabase/server";
 import { SpeechModerationActions } from "@/components/app/SpeechModerationActions";
 
-export const metadata = { title: "Admin · Discours motivants — Najaح" };
+export const metadata = { title: "Admin · Discours motivants" };
 
 export default async function AdminSpeeches() {
   const { profile } = await requireAdmin();

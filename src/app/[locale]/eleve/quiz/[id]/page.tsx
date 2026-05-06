@@ -10,7 +10,7 @@ const DEMO_QUESTIONS = [
   { id: "q5", prompt: "Combien font 25 % de 80 ?", options: ["15", "20", "25", "30"], correctIndex: 1, explanation: "25 % de 80 = 80 × 0,25 = 20." },
 ];
 
-export const metadata = { title: "Quiz — Najaح" };
+export const metadata = { title: "Quiz" };
 
 export default async function QuizPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

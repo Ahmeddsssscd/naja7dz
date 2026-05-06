@@ -2,7 +2,7 @@ import { Link } from "@/i18n/routing";
 import { PageShell } from "@/components/landing/PageShell";
 
 export const metadata = {
-  title: "À propos — Najaح",
+  title: "À propos",
   description: "Notre mission : aider les enfants algériens à réussir, du primaire au Bac.",
 };
 

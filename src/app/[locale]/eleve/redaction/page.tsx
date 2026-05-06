@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 import { WritingPad } from "@/components/app/WritingPad";
 
-export const metadata = { title: "Rédaction — Najaح" };
+export const metadata = { title: "Rédaction" };
 
 export default async function WritingPage() {
   const supabase = await createServerClient();

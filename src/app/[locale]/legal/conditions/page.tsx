@@ -1,6 +1,6 @@
 import { LegalShell } from "@/components/landing/LegalShell";
 
-export const metadata = { title: "Conditions d'utilisation — Najaح" };
+export const metadata = { title: "Conditions d'utilisation" };
 
 export default function ConditionsPage() {
   return (

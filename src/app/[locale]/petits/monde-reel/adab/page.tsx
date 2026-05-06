@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
-import { useRouter } from "@/i18n/routing";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Manières — Najaح" };
+export const metadata = { title: "Manières" };
 
 export default async function AdabPage() {
   const supabase = await createServerClient();

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { TutorChat } from "@/components/app/TutorChat";
 
-export const metadata = { title: "Tuteur — Najaح" };
+export const metadata = { title: "Tuteur" };
 
 export default async function TutorPage() {
   const supabase = await createServerClient();

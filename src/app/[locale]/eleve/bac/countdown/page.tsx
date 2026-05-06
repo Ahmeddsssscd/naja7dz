@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 
-export const metadata = { title: "Bac countdown — Najaح" };
+export const metadata = { title: "Bac countdown" };
 
 // Bac usually starts mid-June. Use next June 15 as placeholder.
 function daysUntilBac() {

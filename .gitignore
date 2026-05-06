@@ -41,3 +41,5 @@ next-env.d.ts
 
 # preview mockups (not part of the real app)
 # preview/ stays in repo as design reference
+
+.vercel

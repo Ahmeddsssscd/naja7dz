@@ -112,20 +112,21 @@ function Hero() {
 }
 
 function HeroQuizMock() {
+  const t = useTranslations("HeroMock");
   return (
     <div
       aria-hidden
       className="bg-surface rounded-modal p-7 shadow-card-hover border border-line max-w-md w-full mx-auto md:ms-auto"
     >
       <div className="flex items-center gap-3 pb-4 mb-5 border-b border-line text-sm text-fg-soft">
-        <span>Mathématiques · 4AM</span>
+        <span>{t("subject")}</span>
         <div className="flex-1 h-1 bg-surface-3 rounded overflow-hidden">
           <div className="h-full w-3/5 bg-gold rounded" />
         </div>
         <span>3/5</span>
       </div>
       <div className="text-lg font-semibold text-fg mb-5 leading-snug">
-        Quelle est la solution de l&rsquo;équation 2x + 6 = 14 ?
+        {t("question")}
       </div>
       <div className="flex flex-col gap-2.5">
         <MockOption letter="A" text="x = 2" />

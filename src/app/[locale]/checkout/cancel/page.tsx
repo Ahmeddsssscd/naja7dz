@@ -1,7 +1,7 @@
 import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Paiement annulé — Najaح" };
+export const metadata = { title: "Paiement annulé" };
 
 export default function CheckoutCancelPage() {
   return (

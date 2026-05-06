@@ -1,7 +1,7 @@
 import { LegalShell } from "@/components/landing/LegalShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Politique de confidentialité — Najaح" };
+export const metadata = { title: "Politique de confidentialité" };
 
 export default function ConfidentialitePage() {
   return (

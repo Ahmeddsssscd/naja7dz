@@ -3,7 +3,7 @@ import { CheckoutForm } from "@/components/CheckoutForm";
 import { createAdminClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Finaliser ta commande — Najaح" };
+export const metadata = { title: "Finaliser ta commande" };
 
 export default async function CheckoutPage({
   searchParams,

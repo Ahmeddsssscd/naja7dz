@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Le monde réel — Najaح" };
+export const metadata = { title: "Le monde réel" };
 
 const TILES = [
   { href: "/petits/monde-reel/heure", emoji: "⏰", title: "Lire l'heure", color: "bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" },

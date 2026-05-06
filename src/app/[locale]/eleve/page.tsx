@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Mon espace — Najaح" };
+export const metadata = { title: "Mon espace" };
 
 export default async function StudentHome() {
   const supabase = await createServerClient();

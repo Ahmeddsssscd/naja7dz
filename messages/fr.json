@@ -20,6 +20,10 @@
     "cta_secondary": "Voir comment ça marche →",
     "trust": "Sans carte bancaire · Annulation en un clic"
   },
+  "HeroMock": {
+    "subject": "Mathématiques · 4AM",
+    "question": "Quelle est la solution de l'équation 2x + 6 = 14 ?"
+  },
   "Waitlist": {
     "placeholder": "ton@email.com",
     "cta": "Rejoindre la liste",

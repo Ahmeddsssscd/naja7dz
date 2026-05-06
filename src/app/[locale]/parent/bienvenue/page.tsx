@@ -5,7 +5,7 @@ import { OnboardingWizard } from "@/components/app/OnboardingWizard";
 import { isSetupIncompleteError } from "@/lib/db-errors";
 import { SetupRequiredScreen } from "@/components/app/SetupRequiredScreen";
 
-export const metadata = { title: "Bienvenue — Najaح" };
+export const metadata = { title: "Bienvenue" };
 
 export default async function WelcomePage() {
   const supabase = await createServerClient();

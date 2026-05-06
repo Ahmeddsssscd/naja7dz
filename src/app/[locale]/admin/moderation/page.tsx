@@ -1,6 +1,6 @@
 import { AdminShell, requireAdmin } from "@/components/app/AdminShell";
 
-export const metadata = { title: "Admin · Modération — Najaح" };
+export const metadata = { title: "Admin · Modération" };
 
 export default async function ModerationPage() {
   const { profile } = await requireAdmin();

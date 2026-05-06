@@ -62,28 +62,29 @@ def alpha_extract(img: Image.Image, mode: str) -> Image.Image:
 
     text_color = NAVY if mode == "light" else CREAM
 
+    # Source brand kit's "white" background is actually noisy (R/G/B in 246-254
+    # range, not pure 255). A loose threshold left those near-white pixels
+    # rendered as faint-alpha navy, producing a visible checker pattern.
+    # Raise threshold so anything within 32 units of pure white is fully transparent.
+    WHITE_TOLERANCE = 32
+
     for r, g, b, a in src:
-        # Distance from white = how non-white this pixel is = how opaque
         d = max(255 - r, 255 - g, 255 - b)
 
-        if d < 8:
-            # Pure white or near-white → fully transparent
-            out.append((0, 0, 0, 0))
+        if d < WHITE_TOLERANCE:
+            out.append((0, 0, 0, 0))  # fully transparent
             continue
 
-        # Pick the brand color (gold for the tassel, text for everything else)
         target = GOLD if is_gold_pixel(r, g, b) else text_color
 
-        # Final alpha. Boost lightly for crispness — non-linear curve helps.
-        # Pixels at 95%+ darkness should be fully opaque.
+        # Smooth alpha curve from threshold to fully opaque
         if d >= 220:
             alpha = 255
         else:
-            # Smooth ramp: alpha grows quadratically with distance from white
-            alpha = int((d / 255) * 255)
-            # Soft floor so very faint pixels don't disappear
-            if 8 <= d < 32:
-                alpha = max(alpha, 24)
+            # Remap d from [WHITE_TOLERANCE, 220] to [0, 255]
+            normalized = (d - WHITE_TOLERANCE) / (220 - WHITE_TOLERANCE)
+            alpha = int(normalized * 255)
+            alpha = max(0, min(255, alpha))
 
         out.append((target[0], target[1], target[2], alpha))
 

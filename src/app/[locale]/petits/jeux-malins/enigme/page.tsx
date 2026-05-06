@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { LogicRiddle } from "@/components/app/games/LogicRiddle";
 
-export const metadata = { title: "Énigme du jour — Najaح" };
+export const metadata = { title: "Énigme du jour" };
 
 export default async function RiddlePage() {
   const supabase = await createServerClient();

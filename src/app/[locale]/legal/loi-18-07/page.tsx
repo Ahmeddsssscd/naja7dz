@@ -1,7 +1,7 @@
 import { LegalShell } from "@/components/landing/LegalShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Conformité Loi 18-07 — Najaح" };
+export const metadata = { title: "Conformité Loi 18-07" };
 
 export default function Loi1807Page() {
   return (

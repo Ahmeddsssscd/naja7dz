@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Jeux de maths — Najaح" };
+export const metadata = { title: "Jeux de maths" };
 
 const TILES = [
   { href: "/petits/maths/number-ninja", emoji: "🥷", title: "Number Ninja", color: "bg-red-100 dark:bg-red-950/30 text-red-900 dark:text-red-100" },

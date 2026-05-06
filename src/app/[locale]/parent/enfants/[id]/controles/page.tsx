@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app/AppShell";
 import { ControlsForm } from "@/components/app/ControlsForm";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Contrôle parental — Najaح" };
+export const metadata = { title: "Contrôle parental" };
 
 export default async function ControlsPage({
   params,

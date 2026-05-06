@@ -1,6 +1,6 @@
 import { AdminShell, requireAdmin } from "@/components/app/AdminShell";
 
-export const metadata = { title: "Admin · Support — Najaح" };
+export const metadata = { title: "Admin · Support" };
 
 export default async function AdminSupport() {
   const { profile } = await requireAdmin();

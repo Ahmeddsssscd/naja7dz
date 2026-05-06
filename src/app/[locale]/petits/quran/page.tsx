@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { QuranTracker } from "@/components/app/games/QuranTracker";
 
-export const metadata = { title: "Coran — Najaح" };
+export const metadata = { title: "Coran" };
 
 export default async function QuranPage() {
   const supabase = await createServerClient();

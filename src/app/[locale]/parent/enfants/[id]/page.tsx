@@ -3,7 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
 
-export const metadata = { title: "Profil enfant — Najaح" };
+export const metadata = { title: "Profil enfant" };
 
 const SUBJECT_DEMO = [
   { name: "Mathématiques", score: 0 },

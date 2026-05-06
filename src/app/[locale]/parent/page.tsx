@@ -6,7 +6,7 @@ import { ParentTrendChart } from "@/components/app/ParentTrendChart";
 import { isSetupIncompleteError } from "@/lib/db-errors";
 import { SetupRequiredScreen } from "@/components/app/SetupRequiredScreen";
 
-export const metadata = { title: "Espace parent — Najaح" };
+export const metadata = { title: "Espace parent" };
 
 export default async function ParentHome() {
   const supabase = await createServerClient();
