@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
 
 export function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") || "/parent";
 

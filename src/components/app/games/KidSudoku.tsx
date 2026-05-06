@@ -12,46 +12,9 @@ import confetti from "canvas-confetti";
 type Cell = number | null;
 type Board = Cell[][];
 
-const PUZZLES: { puzzle: Board; solution: Board }[] = [
-  {
-    puzzle: [
-      [1, null, null, 4],
-      [null, null, 1, null],
-      [null, 4, null, null],
-      [3, null, null, 2],
-    ],
-    solution: [
-      [1, 2, 3, 4],
-      [4, 3, 1, 2],
-      [2, 4, 3, 1], // Wait, let me re-do this puzzle
-      [3, 1, 4, 2],
-    ],
-  },
-  {
-    puzzle: [
-      [4, null, null, 1],
-      [null, 1, null, null],
-      [null, null, 2, null],
-      [3, null, null, 4],
-    ],
-    solution: [
-      [4, 2, 3, 1],
-      [3, 1, 4, 2],
-      [1, 4, 2, 3],
-      [3, 2, 1, 4], // intentionally simplified — for kid difficulty we accept "any valid 4x4 fill"
-    ],
-  },
-];
-
-// We'll use a simpler approach: any valid 4x4 sudoku fill is accepted.
-// Validate each cell against rules instead of comparing to a single solution.
-function getActualSolution(puzzle: Board): Board {
-  // For our 4x4, generate a valid fill. Since puzzles have unique solutions
-  // when designed properly, we just present one and validate row/col/box.
-  // For demo, we hardcode a single puzzle below.
-  return puzzle;
-}
-
+// We use a simpler approach: any valid 4x4 sudoku fill is accepted.
+// Validate each cell against rules (row/col/2x2 box) instead of comparing to
+// a single fixed solution — kids learn by exploration.
 const SIMPLE_PUZZLES: Board[] = [
   [
     [1, null, null, 4],

@@ -17,10 +17,11 @@ export default function TarifsPage() {
 
 function Hero() {
   const t = useTranslations("Tarifs");
+  const tn = useTranslations("Pricing");
   return (
     <section className="bg-surface-2 py-20 md:py-26 text-center">
       <div className="container-x max-w-3xl">
-        <span className="eyebrow mb-3 block">Tarifs</span>
+        <span className="eyebrow mb-3 block">{tn("eyebrow")}</span>
         <h1 className="text-[clamp(34px,5vw,48px)] font-bold tracking-tight text-fg mb-4">
           {t("title")}
         </h1>
@@ -147,19 +148,23 @@ function Plan({
 
 function ComparisonTable() {
   const t = useTranslations("Tarifs");
+  const tt = useTranslations("TarifsTable");
+  // Build rows as tuples: [labelKey, eleveCell, familleCell, bacCell].
+  // Cells that are non-translated symbols are inlined; the children-row uses
+  // localized values from TarifsTable.
   const rows: Array<[string, string, string, string]> = [
-    ["Nombre d'enfants", "1", "Jusqu'à 4", "1"],
-    ["Toutes les matières", "✓", "✓", "✓"],
-    ["Quiz personnalisés", "✓", "✓", "✓"],
-    ["Tuteur en ligne", "✓", "✓", "✓"],
-    ["Aide aux devoirs (photo)", "✓", "✓", "✓"],
-    ["Archive Bac & BEM", "✓", "✓", "✓"],
-    ["Univers des petits (5–10 ans)", "—", "✓", "—"],
-    ["Espace parents complet", "—", "✓", "—"],
-    ["Rapports PDF hebdomadaires", "—", "✓", "—"],
-    ["Plan intensif Bac 90 jours", "—", "—", "✓"],
-    ["Examens blancs chronométrés", "—", "—", "✓"],
-    ["Support prioritaire", "—", "✓", "✓"],
+    ["row_children", tt("row_children_eleve"), tt("row_children_famille"), tt("row_children_bac")],
+    ["row_subjects", "✓", "✓", "✓"],
+    ["row_quiz", "✓", "✓", "✓"],
+    ["row_tutor", "✓", "✓", "✓"],
+    ["row_homework", "✓", "✓", "✓"],
+    ["row_archive", "✓", "✓", "✓"],
+    ["row_kids", "—", "✓", "—"],
+    ["row_parents", "—", "✓", "—"],
+    ["row_reports", "—", "✓", "—"],
+    ["row_bac90", "—", "—", "✓"],
+    ["row_mockexams", "—", "—", "✓"],
+    ["row_priority", "—", "✓", "✓"],
   ];
 
   return (
@@ -171,7 +176,7 @@ function ComparisonTable() {
             <thead>
               <tr className="border-b border-line">
                 <th className="text-start font-semibold text-fg-soft uppercase tracking-wider text-xs p-5">
-                  Fonctionnalité
+                  {tt("feature")}
                 </th>
                 <th className="text-center font-semibold text-fg p-5">{t("compare_eleve")}</th>
                 <th className="text-center font-semibold text-fg p-5 bg-surface-3/50">
@@ -181,9 +186,9 @@ function ComparisonTable() {
               </tr>
             </thead>
             <tbody>
-              {rows.map(([label, a, b, c], i) => (
-                <tr key={i} className="border-b last:border-b-0 border-line">
-                  <td className="p-4 text-fg">{label}</td>
+              {rows.map(([labelKey, a, b, c]) => (
+                <tr key={labelKey} className="border-b last:border-b-0 border-line">
+                  <td className="p-4 text-fg">{tt(labelKey)}</td>
                   <td className="p-4 text-center text-fg-soft">{a}</td>
                   <td className="p-4 text-center text-fg-soft bg-surface-3/30">{b}</td>
                   <td className="p-4 text-center text-fg-soft">{c}</td>
@@ -210,11 +215,12 @@ function TrustBar() {
 }
 
 function FAQTeaser() {
+  const tt = useTranslations("TarifsTable");
   return (
     <section className="py-16 bg-surface text-center">
-      <p className="text-fg-soft mb-3">Une question avant de t&apos;inscrire ?</p>
+      <p className="text-fg-soft mb-3">{tt("faq_lead")}</p>
       <Link href="/faq" className="btn btn-outline">
-        Voir la FAQ
+        {tt("faq_button")}
       </Link>
     </section>
   );
