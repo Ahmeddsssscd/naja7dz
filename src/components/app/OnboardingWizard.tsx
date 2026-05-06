@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Link } from "@/i18n/routing";
 import { CheckIcon } from "@/components/Icon";
 
 const GRADES = ["1AP","2AP","3AP","4AP","5AP","1AM","2AM","3AM","4AM","1AS","2AS","3AS"] as const;
@@ -143,9 +144,9 @@ export function OnboardingWizard({ parentName }: { parentName: string }) {
             Tu peux maintenant explorer ton espace, ajouter d&apos;autres enfants, ou
             laisser ton enfant commencer son premier exercice.
           </p>
-          <a href="/parent" className="btn btn-primary btn-lg w-full">
+          <Link href="/parent" className="btn btn-primary btn-lg w-full">
             Découvrir mon espace →
-          </a>
+          </Link>
         </div>
       )}
 

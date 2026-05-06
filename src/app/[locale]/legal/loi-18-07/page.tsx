@@ -1,4 +1,5 @@
 import { LegalShell } from "@/components/landing/LegalShell";
+import { Link } from "@/i18n/routing";
 
 export const metadata = { title: "Conformité Loi 18-07 — Najaح" };
 
@@ -32,7 +33,7 @@ export default function Loi1807Page() {
       <h3>2. Finalité limitée</h3>
       <p>
         Vos données ne sont utilisées que pour les finalités explicitement déclarées dans
-        notre <a href="/legal/confidentialite">politique de confidentialité</a> :
+        notre <Link href="/legal/confidentialite">politique de confidentialité</Link> :
         fourniture du service éducatif, communication, sécurité, amélioration pédagogique.
         Aucune utilisation à des fins publicitaires ou commerciales tierces.
       </p>
@@ -65,7 +66,7 @@ export default function Loi1807Page() {
 
       <h3>7. Transparence</h3>
       <p>
-        Cette politique et notre <a href="/legal/confidentialite">page de confidentialité</a>{" "}
+        Cette politique et notre <Link href="/legal/confidentialite">page de confidentialité</Link>{" "}
         détaillent toutes les pratiques de collecte et de traitement. Aucune pratique cachée.
       </p>
 

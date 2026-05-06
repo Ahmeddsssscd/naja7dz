@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLocale } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 export function CheckoutForm({ planId }: { planId: string }) {
   const locale = useLocale();
@@ -89,9 +90,9 @@ export function CheckoutForm({ planId }: { planId: string }) {
 
       <p className="text-xs text-fg-faint text-center mt-4">
         En cliquant sur « Procéder au paiement », tu acceptes nos{" "}
-        <a href="/legal/conditions" className="underline hover:text-fg">
+        <Link href="/legal/conditions" className="underline hover:text-fg">
           conditions d&apos;utilisation
-        </a>
+        </Link>
         .
       </p>
 

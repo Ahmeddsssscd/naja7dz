@@ -1,4 +1,5 @@
 import { LegalShell } from "@/components/landing/LegalShell";
+import { Link } from "@/i18n/routing";
 
 export const metadata = { title: "Politique de confidentialité — Najaح" };
 
@@ -134,7 +135,7 @@ export default function ConfidentialitePage() {
         Najaح n&apos;utilise que des cookies <strong>strictement nécessaires</strong> au
         fonctionnement du site (session, langue, thème). Aucun cookie publicitaire, aucun
         pistage tiers. Voir notre{" "}
-        <a href="/legal/loi-18-07">page Loi 18-07</a> pour plus de détails.
+        <Link href="/legal/loi-18-07">page Loi 18-07</Link> pour plus de détails.
       </p>
 
       <h2>10. Mineurs</h2>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 const STORAGE_KEY = "naja7-cookie-ack-v1";
 
@@ -40,9 +41,9 @@ export function CookieBanner() {
         <button onClick={dismiss} className="btn btn-primary btn-sm flex-1">
           {t("accept")}
         </button>
-        <a href="/legal/confidentialite" className="btn btn-outline btn-sm">
+        <Link href="/legal/confidentialite" className="btn btn-outline btn-sm">
           {t("more")}
-        </a>
+        </Link>
       </div>
     </div>
   );
