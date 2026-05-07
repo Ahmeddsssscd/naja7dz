@@ -29,7 +29,7 @@ export default async function ControlsPage({
   return (
     <AppShell active="children" parentName={profile?.full_name ?? ""}>
       <div className="max-w-2xl">
-        <Link href={{ pathname: "/parent/enfants/[id]", params: { id: child.id } } as never} className="text-sm text-fg-soft hover:text-fg mb-3 inline-block">
+        <Link href={`/parent/enfants/${child.id}` as never} className="text-sm text-fg-soft hover:text-fg mb-3 inline-block">
           {t("back_to_profile")} {child.full_name}
         </Link>
         <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">{t("page_title")}</h1>

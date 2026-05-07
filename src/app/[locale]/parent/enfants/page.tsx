@@ -35,7 +35,7 @@ export default async function ChildrenListPage() {
           {(children ?? []).map((c) => (
             <Link
               key={c.id}
-              href={{ pathname: "/parent/enfants/[id]", params: { id: c.id } } as never}
+              href={`/parent/enfants/${c.id}` as never}
               className="bg-surface border border-line rounded-card p-6 hover:shadow-card-hover transition-all"
             >
               <div className="flex items-center gap-4 mb-4">

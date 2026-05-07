@@ -177,7 +177,7 @@ function ChildCard({
   const initials = child.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("");
   return (
     <Link
-      href={{ pathname: "/parent/enfants/[id]", params: { id: child.id } } as never}
+      href={`/parent/enfants/${child.id}` as never}
       className="bg-surface border border-line rounded-card p-6 hover:shadow-card-hover hover:border-transparent transition-all"
     >
       <div className="flex items-center gap-4 mb-4">

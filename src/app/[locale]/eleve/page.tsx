@@ -27,7 +27,7 @@ export default async function StudentHome() {
         <h1 className="text-xl font-bold mt-2 mb-1">Commence ton parcours</h1>
         <p className="text-white/70 text-sm mb-4">3 missions · 25 minutes</p>
         <Link
-          href={{ pathname: "/eleve/quiz/[id]", params: { id: "demo" } } as never}
+          href="/eleve/quiz/demo"
           className="bg-gold text-navy font-semibold px-4 py-2 rounded-btn text-sm inline-block"
         >
           Continuer →
@@ -75,7 +75,7 @@ export default async function StudentHome() {
 function Mission({ title, meta, xp }: { title: string; meta: string; xp: string }) {
   return (
     <Link
-      href={{ pathname: "/eleve/quiz/[id]", params: { id: "demo" } } as never}
+      href="/eleve/quiz/demo"
       className="bg-surface border border-line rounded-card p-3.5 flex items-center gap-3 hover:border-fg/30 transition-colors"
     >
       <span className="w-10 h-10 rounded-[10px] bg-pale-blue text-navy flex items-center justify-center flex-shrink-0">

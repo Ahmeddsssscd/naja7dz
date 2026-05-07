@@ -48,7 +48,7 @@ export default async function ChildProfilePage({
             </p>
           </div>
           <Link
-            href={{ pathname: "/parent/enfants/[id]/controles", params: { id: child.id } } as never}
+            href={`/parent/enfants/${child.id}/controles` as never}
             className="btn btn-outline btn-sm"
           >
             {t("parental_controls")}
