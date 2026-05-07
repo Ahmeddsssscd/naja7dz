@@ -1,10 +1,16 @@
 /**
- * /eleve/pratique — the one-stop "Practice" hub.
+ * /eleve/pratique — the unified Practice hub.
  *
- * Lists every chapter that has a usable question bank, grouped by subject.
- * Sources content for the active child's grade first; if that grade has zero
- * ready chapters, falls back to the closest neighboring grades so the kid
- * always has something to practice (instead of a dead "À venir" page).
+ * Sections:
+ *   1. 🎯 Quiz       — chapter quizzes by subject
+ *   2. 📝 Activités  — calligraphie, rédaction, dictée, lecture, adab
+ *   3. 🎮 Jeux        — kids-universe games (sudoku, mémoire, motifs, énigme,
+ *                       coloriage, number ninja, souk, heure, wilayas)
+ *   4. 🎓 Examens    — Bac archive, examen blanc, countdown (3AS/4AM only)
+ *
+ * For 2AP/younger kids the games section is the most fun-friendly one, so
+ * it's prominently shown. For 3AS/Bac students, the Examens section sits at
+ * the top.
  */
 import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -15,8 +21,6 @@ import { getActiveSubscription, hasAccessForGrade } from "@/lib/subscriptions";
 
 export const metadata = { title: "Pratique" };
 
-// Order of grades along the schooling path. Used for "nearest grade with
-// content" fallback when the child's own grade has no quiz-ready chapters.
 const GRADE_ORDER = [
   "1AP", "2AP", "3AP", "4AP", "5AP",
   "1AM", "2AM", "3AM", "4AM",
@@ -37,6 +41,9 @@ function nearestGrades(target: string, available: Set<string>): string[] {
   return result;
 }
 
+// Bac/BEM-relevant grades for the Examens section.
+const BAC_GRADES = new Set(["3AS", "4AM"]);
+
 interface ReadyChapter {
   id: string;
   title: string;
@@ -55,7 +62,7 @@ export default async function PracticeHub() {
 
   const { data: child } = await supabase
     .from("children")
-    .select("full_name, grade")
+    .select("full_name, grade, age")
     .eq("parent_id", user.id)
     .order("created_at")
     .limit(1)
@@ -65,8 +72,14 @@ export default async function PracticeHub() {
   const canAccess = await hasAccessForGrade(user.id, child?.grade);
   const isAr = locale === "ar";
   const admin = createAdminClient();
+  const childGrade = child?.grade ?? null;
+  const childAge = child?.age ?? null;
+  // Below 11 = primary kid → games up top; 12+ = older student → quizzes up top.
+  const isYoungKid = (childAge !== null && childAge <= 11) ||
+    (childGrade !== null && childGrade.endsWith("AP"));
+  const isBacStudent = childGrade !== null && BAC_GRADES.has(childGrade);
 
-  // Pull all active questions in one go and bucket per chapter.
+  // ---- Quiz section data --------------------------------------------------
   const { data: allQs } = await admin
     .from("quiz_questions")
     .select("chapter_id")
@@ -75,7 +88,6 @@ export default async function PracticeHub() {
   for (const q of allQs ?? []) counts[q.chapter_id] = (counts[q.chapter_id] ?? 0) + 1;
   const readyChapterIds = Object.keys(counts).filter((id) => counts[id] >= 3);
 
-  // Resolve those chapter IDs into rich rows (subject + grade).
   let readyChapters: ReadyChapter[] = [];
   if (readyChapterIds.length) {
     const { data: chapters } = await admin
@@ -95,27 +107,18 @@ export default async function PracticeHub() {
       };
     });
   }
-
-  // Pick chapters for the active child's grade. If empty, fall back to the
-  // two nearest grades so practice is never dead.
   const availableGrades = new Set(readyChapters.map((c) => c.grade_code));
-  const childGrade = child?.grade ?? null;
-
   let primary: ReadyChapter[] = [];
   let fallback: ReadyChapter[] = [];
   let fallbackGrades: string[] = [];
-
   if (childGrade && availableGrades.has(childGrade)) {
     primary = readyChapters.filter((c) => c.grade_code === childGrade);
   } else if (childGrade) {
     fallbackGrades = nearestGrades(childGrade, availableGrades);
     fallback = readyChapters.filter((c) => fallbackGrades.includes(c.grade_code));
   } else {
-    // No active child grade — show everything.
     primary = readyChapters;
   }
-
-  // Group by subject for display.
   const groupBySubject = (rows: ReadyChapter[]) => {
     const m = new Map<string, { name: string; subject_id: string; chapters: ReadyChapter[] }>();
     for (const r of rows) {
@@ -127,67 +130,18 @@ export default async function PracticeHub() {
   };
   const primaryGrouped = groupBySubject(primary);
   const fallbackGrouped = groupBySubject(fallback);
+  const showSection = primaryGrouped.length > 0 || fallbackGrouped.length > 0;
 
-  // Total ready chapters for the dashboard stat
-  const totalReadyForChild = primary.length || fallback.length;
-  const totalQuestions = (primary.length ? primary : fallback).reduce((s, c) => s + c.questionCount, 0);
-
-  return (
-    <StudentShell active="practice" childName={child?.full_name ?? undefined} childGrade={childGrade}>
-      <div className="max-w-6xl">
-        <div className="mb-2 flex items-baseline justify-between gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-fg">{t("page_title")}</h1>
-          {childGrade && (
-            <span className="text-xs md:text-sm text-fg-soft font-mono px-2 py-1 rounded-btn bg-pale-blue dark:bg-surface-3">
-              {childGrade}
-            </span>
-          )}
-        </div>
-        <p className="text-fg-soft text-sm md:text-base mb-6 md:mb-8">{t("subtitle")}</p>
-
-        {/* Desktop stats bar */}
-        {totalReadyForChild > 0 && (
-          <div className="hidden md:grid md:grid-cols-3 gap-4 mb-8">
-            <Stat label={t("stat_chapters")} value={String(totalReadyForChild)} />
-            <Stat label={t("stat_questions")} value={String(totalQuestions)} />
-            <Stat label={t("stat_subjects")} value={String((primary.length ? primaryGrouped : fallbackGrouped).length)} />
-          </div>
-        )}
-
-      {/* Subscription gate — info only, never blocks the page from rendering */}
-      {!sub && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-5 text-sm">
-          <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
-            🔒 {t("locked_title")}
-          </div>
-          <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">
-            {t("locked_text")}
-          </p>
-          <Link href="/tarifs" className="btn btn-primary btn-sm">
-            {t("view_plans")} →
-          </Link>
-        </div>
-      )}
-      {sub && !canAccess && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-5 text-sm">
-          <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
-            ⚠️ {t("tier_limit_title")}
-          </div>
-          <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">
-            {t("tier_limit_text")}
-          </p>
-          <Link href="/parent/abonnement" className="btn btn-outline btn-sm">
-            {t("change_plan")}
-          </Link>
-        </div>
-      )}
-
-      {/* Primary content — chapters for the child's own grade */}
-      {primaryGrouped.length > 0 && (
-        <SubjectGroups groups={primaryGrouped} t={t} />
-      )}
-
-      {/* Fallback — the child's grade is empty, but neighboring grades aren't */}
+  // ---- Sections ordered by audience --------------------------------------
+  const QuizSection = () => (
+    <Section
+      icon="🎯"
+      title={t("section_quiz_title")}
+      subtitle={t("section_quiz_subtitle")}
+      stat={primary.length || fallback.length}
+      statLabel={t("stat_chapters")}
+    >
+      {primaryGrouped.length > 0 && <SubjectGroups groups={primaryGrouped} t={t} />}
       {primaryGrouped.length === 0 && fallbackGrouped.length > 0 && (
         <>
           <div className="bg-pale-blue/30 dark:bg-surface-3 border border-line rounded-card p-4 mb-5 text-sm">
@@ -201,29 +155,213 @@ export default async function PracticeHub() {
           <SubjectGroups groups={fallbackGrouped} t={t} showGrade />
         </>
       )}
-
-      {/* Truly nothing available — should be rare */}
-      {primaryGrouped.length === 0 && fallbackGrouped.length === 0 && (
-        <div className="bg-surface border border-line rounded-card p-8 text-center">
-          <div className="text-4xl mb-3">📚</div>
-          <h3 className="font-semibold text-fg mb-1">{t("empty_title")}</h3>
-          <p className="text-fg-soft text-sm mb-4">{t("empty_text")}</p>
-          <Link href="/eleve/matieres" className="btn btn-outline btn-sm">
-            {t("browse_subjects")}
-          </Link>
+      {!showSection && (
+        <div className="bg-surface border border-line rounded-card p-6 text-center">
+          <div className="text-3xl mb-2">📚</div>
+          <p className="text-fg-soft text-sm">{t("empty_text")}</p>
         </div>
       )}
+    </Section>
+  );
+
+  const ActivitiesSection = () => (
+    <Section icon="📝" title={t("section_activities_title")} subtitle={t("section_activities_subtitle")}>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <ActivityTile
+          href="/eleve/redaction"
+          emoji="✍️"
+          title={t("act_redaction_title")}
+          subtitle={t("act_redaction_sub")}
+          color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900"
+        />
+        <ActivityTile
+          href="/eleve/calligraphie"
+          emoji="🎨"
+          title={t("act_calligraphie_title")}
+          subtitle={t("act_calligraphie_sub")}
+          color="bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900"
+        />
+        <ActivityTile
+          href="/petits/lecture"
+          emoji="📖"
+          title={t("act_lecture_title")}
+          subtitle={t("act_lecture_sub")}
+          color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900"
+        />
+        <ActivityTile
+          href="/petits/quran"
+          emoji="📿"
+          title={t("act_quran_title")}
+          subtitle={t("act_quran_sub")}
+          color="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900"
+        />
+        <ActivityTile
+          href="/petits/monde-reel/adab"
+          emoji="🤲"
+          title={t("act_adab_title")}
+          subtitle={t("act_adab_sub")}
+          color="bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900"
+        />
+        <ActivityTile
+          href="/petits/monde-reel/wilayas"
+          emoji="🇩🇿"
+          title={t("act_wilayas_title")}
+          subtitle={t("act_wilayas_sub")}
+          color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900"
+        />
+      </div>
+    </Section>
+  );
+
+  const GamesSection = () => (
+    <Section icon="🎮" title={t("section_games_title")} subtitle={t("section_games_subtitle")}>
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+        <ActivityTile href="/petits/coloriage" emoji="🎨" title={t("game_coloriage")} color="bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900" compact />
+        <ActivityTile href="/petits/maths/number-ninja" emoji="🥷" title={t("game_ninja")} color="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900" compact />
+        <ActivityTile href="/petits/maths/souk" emoji="🛒" title={t("game_souk")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
+        <ActivityTile href="/petits/jeux-malins/sudoku" emoji="🧩" title={t("game_sudoku")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
+        <ActivityTile href="/petits/jeux-malins/memoire" emoji="🧠" title={t("game_memory")} color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900" compact />
+        <ActivityTile href="/petits/jeux-malins/motifs" emoji="🔷" title={t("game_pattern")} color="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900" compact />
+        <ActivityTile href="/petits/jeux-malins/enigme" emoji="🤔" title={t("game_riddle")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
+        <ActivityTile href="/petits/monde-reel/heure" emoji="⏰" title={t("game_clock")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
+      </div>
+    </Section>
+  );
+
+  const ExamsSection = () => (
+    <Section icon="🎓" title={t("section_exams_title")} subtitle={t("section_exams_subtitle")}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <ActivityTile
+          href="/eleve/bac"
+          emoji="📄"
+          title={t("exam_archive_title")}
+          subtitle={t("exam_archive_sub")}
+          color="bg-navy/5 dark:bg-navy/20 border-navy/20"
+        />
+        <ActivityTile
+          href="/eleve/bac/examen"
+          emoji="⏱️"
+          title={t("exam_mock_title")}
+          subtitle={t("exam_mock_sub")}
+          color="bg-gold/10 dark:bg-gold/15 border-gold/40"
+        />
+        <ActivityTile
+          href="/eleve/bac/countdown"
+          emoji="📅"
+          title={t("exam_countdown_title")}
+          subtitle={t("exam_countdown_sub")}
+          color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900"
+        />
+      </div>
+    </Section>
+  );
+
+  return (
+    <StudentShell active="practice" childName={child?.full_name ?? undefined} childGrade={childGrade}>
+      <div className="max-w-6xl">
+        <div className="mb-2 flex items-baseline justify-between gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-fg">{t("page_title")}</h1>
+          {childGrade && (
+            <span className="text-xs md:text-sm text-fg-soft font-mono px-2 py-1 rounded-btn bg-pale-blue dark:bg-surface-3">
+              {childGrade}
+            </span>
+          )}
+        </div>
+        <p className="text-fg-soft text-sm md:text-base mb-6 md:mb-8">{t("subtitle_unified")}</p>
+
+        {/* Subscription gate — info only, never blocks the page from rendering */}
+        {!sub && (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-6 text-sm">
+            <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
+              🔒 {t("locked_title")}
+            </div>
+            <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">{t("locked_text")}</p>
+            <Link href="/tarifs" className="btn btn-primary btn-sm">{t("view_plans")} →</Link>
+          </div>
+        )}
+        {sub && !canAccess && (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-6 text-sm">
+            <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
+              ⚠️ {t("tier_limit_title")}
+            </div>
+            <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">{t("tier_limit_text")}</p>
+            <Link href="/parent/abonnement" className="btn btn-outline btn-sm">{t("change_plan")}</Link>
+          </div>
+        )}
+
+        {/* Section order changes by audience: Bac students see exams first;
+            young kids see games first; everyone else sees quizzes first. */}
+        <div className="space-y-10">
+          {isBacStudent && <ExamsSection />}
+          {isYoungKid && <GamesSection />}
+          <QuizSection />
+          {!isYoungKid && <GamesSection />}
+          <ActivitiesSection />
+          {!isBacStudent && childGrade && <ExamsSection />}
+        </div>
       </div>
     </StudentShell>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+/* ============================================================ */
+/* Sub-components                                               */
+/* ============================================================ */
+
+function Section({
+  icon, title, subtitle, stat, statLabel, children,
+}: {
+  icon: string;
+  title: string;
+  subtitle?: string;
+  stat?: number;
+  statLabel?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="bg-surface border border-line rounded-card p-5">
-      <div className="text-xs font-semibold text-fg-soft uppercase tracking-wider mb-2">{label}</div>
-      <div className="text-2xl font-bold text-fg leading-none">{value}</div>
-    </div>
+    <section>
+      <div className="flex items-baseline justify-between mb-3 md:mb-4">
+        <div>
+          <h2 className="text-xl md:text-2xl font-bold text-fg flex items-center gap-2">
+            <span className="text-2xl">{icon}</span>
+            {title}
+          </h2>
+          {subtitle && <p className="text-fg-soft text-sm mt-1">{subtitle}</p>}
+        </div>
+        {stat !== undefined && stat > 0 && (
+          <span className="text-xs text-fg-soft whitespace-nowrap">
+            {stat} {statLabel}
+          </span>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function ActivityTile({
+  href, emoji, title, subtitle, color, compact = false,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  subtitle?: string;
+  color: string;
+  compact?: boolean;
+}) {
+  return (
+    <Link
+      href={href as never}
+      className={`${color} border rounded-card p-4 ${compact ? "" : "md:p-5"} flex flex-col justify-between hover:shadow-card-hover hover:-translate-y-0.5 transition-all min-h-[110px] active:scale-[0.98]`}
+    >
+      <div className={compact ? "text-3xl" : "text-4xl mb-2"}>{emoji}</div>
+      <div>
+        <div className={`font-bold text-fg leading-tight ${compact ? "text-sm" : "text-base"}`}>{title}</div>
+        {!compact && subtitle && (
+          <div className="text-xs text-fg-soft mt-1">{subtitle}</div>
+        )}
+      </div>
+    </Link>
   );
 }
 
@@ -237,11 +375,11 @@ function SubjectGroups({
   showGrade?: boolean;
 }) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {groups.map((g) => (
         <section key={g.subject_id}>
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-base md:text-lg font-semibold text-fg">{g.name}</h2>
+          <div className="flex items-baseline justify-between mb-2">
+            <h3 className="text-sm md:text-base font-semibold text-fg">{g.name}</h3>
             <span className="text-xs text-fg-soft">
               {t("question_count", { count: g.chapters.reduce((s, c) => s + c.questionCount, 0) })}
             </span>
