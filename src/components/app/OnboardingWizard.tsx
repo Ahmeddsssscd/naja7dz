@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { CheckIcon } from "@/components/Icon";
 
 const GRADES = ["1AP","2AP","3AP","4AP","5AP","1AM","2AM","3AM","4AM","1AS","2AS","3AS"] as const;
 
 export function OnboardingWizard({ parentName }: { parentName: string }) {
+  const t = useTranslations("Onboarding");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [child, setChild] = useState({ fullName: "", age: "", grade: "" as (typeof GRADES)[number] | "" });
   const [status, setStatus] = useState<"idle" | "loading" | "err">("idle");
@@ -30,16 +32,14 @@ export function OnboardingWizard({ parentName }: { parentName: string }) {
       const data = await res.json();
       if (!res.ok) {
         if (data.setupRequired) {
-          throw new Error(
-            "Configuration de la base de données incomplète. Applique database/SETUP.sql dans Supabase.",
-          );
+          throw new Error(t("setup_required"));
         }
-        throw new Error(data.error ?? "Erreur");
+        throw new Error(data.error ?? t("generic_error"));
       }
       setStep(3);
     } catch (err) {
       setStatus("err");
-      setErrorMsg(err instanceof Error ? err.message : "Erreur");
+      setErrorMsg(err instanceof Error ? err.message : t("generic_error"));
     }
   };
 
@@ -54,44 +54,39 @@ export function OnboardingWizard({ parentName }: { parentName: string }) {
         <div className={`flex-1 h-1 rounded ${step >= 3 ? "bg-gold" : "bg-line"}`} />
       </div>
       <div className="text-xs uppercase tracking-wider text-fg-soft mb-6">
-        Étape {step} sur 3
+        {t("step_label", { current: step, total: 3 })}
       </div>
 
       {step === 1 && (
         <>
           <h1 className="text-2xl md:text-3xl font-bold text-fg mb-3">
-            Bienvenue {firstName ? firstName : "dans Najaح"} 👋
+            {firstName ? t("s1_welcome_named", { name: firstName }) : t("s1_welcome_default")}
           </h1>
-          <p className="text-fg-soft mb-8">
-            On va configurer ton compte en deux minutes. À chaque étape, tu peux modifier
-            tes choix plus tard depuis ton espace.
-          </p>
+          <p className="text-fg-soft mb-8">{t("s1_lead")}</p>
           <button onClick={() => setStep(2)} className="btn btn-primary btn-lg w-full">
-            Commencer →
+            {t("s1_cta")}
           </button>
         </>
       )}
 
       {step === 2 && (
         <>
-          <h2 className="text-2xl font-bold text-fg mb-2">Ton premier enfant</h2>
-          <p className="text-fg-soft mb-8">
-            Tu pourras ajouter d&apos;autres enfants dès la prochaine étape.
-          </p>
+          <h2 className="text-2xl font-bold text-fg mb-2">{t("s2_title")}</h2>
+          <p className="text-fg-soft mb-8">{t("s2_lead")}</p>
           <form onSubmit={onSubmitChild} className="space-y-4">
-            <Field label="Prénom de l'enfant">
+            <Field label={t("s2_field_name")}>
               <input
                 type="text"
                 required
                 value={child.fullName}
                 onChange={(e) => setChild((c) => ({ ...c, fullName: e.target.value }))}
                 className="onb-input"
-                placeholder="Yacine"
+                placeholder={t("s2_field_name_placeholder")}
                 autoFocus
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Âge">
+              <Field label={t("s2_field_age")}>
                 <input
                   type="number"
                   min={5}
@@ -100,17 +95,17 @@ export function OnboardingWizard({ parentName }: { parentName: string }) {
                   value={child.age}
                   onChange={(e) => setChild((c) => ({ ...c, age: e.target.value }))}
                   className="onb-input"
-                  placeholder="14"
+                  placeholder={t("s2_field_age_placeholder")}
                 />
               </Field>
-              <Field label="Classe">
+              <Field label={t("s2_field_grade")}>
                 <select
                   required
                   value={child.grade}
                   onChange={(e) => setChild((c) => ({ ...c, grade: e.target.value as (typeof GRADES)[number] }))}
                   className="onb-input"
                 >
-                  <option value="">Choisir…</option>
+                  <option value="">{t("s2_grade_choose")}</option>
                   {GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
                 </select>
               </Field>
@@ -120,14 +115,14 @@ export function OnboardingWizard({ parentName }: { parentName: string }) {
               disabled={status === "loading"}
               className="btn btn-primary btn-lg w-full mt-2 disabled:opacity-60"
             >
-              {status === "loading" ? "Création…" : "Continuer"}
+              {status === "loading" ? t("s2_submitting") : t("s2_submit")}
             </button>
             <button
               type="button"
               onClick={() => setStep(1)}
               className="btn btn-ghost w-full"
             >
-              ← Retour
+              {t("s2_back")}
             </button>
             {status === "err" && <p className="text-sm text-red-500" role="alert">{errorMsg}</p>}
           </form>
@@ -139,13 +134,10 @@ export function OnboardingWizard({ parentName }: { parentName: string }) {
           <span className="inline-flex w-16 h-16 rounded-full bg-gold text-navy items-center justify-center mb-6">
             <CheckIcon size={32} />
           </span>
-          <h2 className="text-2xl font-bold text-fg mb-3">Tout est prêt 🎉</h2>
-          <p className="text-fg-soft mb-8 max-w-prose mx-auto">
-            Tu peux maintenant explorer ton espace, ajouter d&apos;autres enfants, ou
-            laisser ton enfant commencer son premier exercice.
-          </p>
+          <h2 className="text-2xl font-bold text-fg mb-3">{t("s3_title")}</h2>
+          <p className="text-fg-soft mb-8 max-w-prose mx-auto">{t("s3_lead")}</p>
           <Link href="/parent" className="btn btn-primary btn-lg w-full">
-            Découvrir mon espace →
+            {t("s3_cta")}
           </Link>
         </div>
       )}

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 const GRADES = ["1AP","2AP","3AP","4AP","5AP","1AM","2AM","3AM","4AM","1AS","2AS","3AS"] as const;
 
 export function AddChildForm() {
+  const t = useTranslations("AddChild");
   const [form, setForm] = useState({ fullName: "", age: "", grade: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "err">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -24,39 +26,39 @@ export function AddChildForm() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erreur");
+      if (!res.ok) throw new Error(data.error ?? t("generic_error"));
       window.location.href = "/parent/enfants";
     } catch (err) {
       setStatus("err");
-      setErrorMsg(err instanceof Error ? err.message : "Erreur");
+      setErrorMsg(err instanceof Error ? err.message : t("generic_error"));
     }
   };
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <Field label="Prénom de l'enfant">
+      <Field label={t("field_name")}>
         <input type="text" required value={form.fullName}
           onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-          className="addchild-input" placeholder="Yacine" />
+          className="addchild-input" placeholder={t("field_name_placeholder")} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Âge">
+        <Field label={t("field_age")}>
           <input type="number" min={5} max={18} required value={form.age}
             onChange={(e) => setForm((f) => ({ ...f, age: e.target.value }))}
-            className="addchild-input" placeholder="14" />
+            className="addchild-input" placeholder={t("field_age_placeholder")} />
         </Field>
-        <Field label="Classe">
+        <Field label={t("field_grade")}>
           <select required value={form.grade}
             onChange={(e) => setForm((f) => ({ ...f, grade: e.target.value }))}
             className="addchild-input">
-            <option value="">Choisir…</option>
+            <option value="">{t("grade_choose")}</option>
             {GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
           </select>
         </Field>
       </div>
       <button type="submit" disabled={status === "loading"}
         className="btn btn-primary w-full btn-lg disabled:opacity-60 mt-2">
-        {status === "loading" ? "Ajout…" : "Ajouter cet enfant"}
+        {status === "loading" ? t("submitting") : t("submit")}
       </button>
       {status === "err" && <p className="text-sm text-red-500 text-center">{errorMsg}</p>}
       <style jsx>{`

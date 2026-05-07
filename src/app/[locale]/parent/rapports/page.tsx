@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 
 export const metadata = { title: "Rapports" };
 
 export default async function ReportsPage() {
+  const t = await getTranslations("ParentReports");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -18,16 +20,11 @@ export default async function ReportsPage() {
   return (
     <AppShell active="reports" parentName={profile?.full_name ?? ""}>
       <div className="max-w-3xl">
-        <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">Rapports hebdomadaires</h1>
-        <p className="text-fg-soft mb-8">
-          Chaque dimanche, on t&apos;envoie un PDF récapitulatif (en arabe + français)
-          des progrès de chaque enfant.
-        </p>
+        <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">{t("page_title")}</h1>
+        <p className="text-fg-soft mb-8">{t("subtitle")}</p>
         <div className="bg-surface border border-line rounded-card p-12 text-center">
-          <p className="text-fg-soft mb-2 text-base">Aucun rapport pour le moment.</p>
-          <p className="text-xs text-fg-faint">
-            Le premier rapport arrive après une semaine d&apos;activité.
-          </p>
+          <p className="text-fg-soft mb-2 text-base">{t("empty_title")}</p>
+          <p className="text-xs text-fg-faint">{t("empty_text")}</p>
         </div>
       </div>
     </AppShell>

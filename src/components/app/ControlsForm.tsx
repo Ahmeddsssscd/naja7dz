@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 interface Controls {
@@ -13,6 +14,7 @@ interface Controls {
 }
 
 export function ControlsForm({ childId, initial }: { childId: string; initial: Controls }) {
+  const t = useTranslations("ParentControls");
   const [form, setForm] = useState<Controls>(initial);
   const [saving, setSaving] = useState(false);
 
@@ -25,9 +27,9 @@ export function ControlsForm({ childId, initial }: { childId: string; initial: C
         body: JSON.stringify({ childId, ...form }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Réglages enregistrés ✓");
+      toast.success(t("saved"));
     } catch {
-      toast.error("Erreur — réessaie");
+      toast.error(t("save_error"));
     } finally {
       setSaving(false);
     }
@@ -36,7 +38,7 @@ export function ControlsForm({ childId, initial }: { childId: string; initial: C
   return (
     <div className="space-y-6">
       {/* Time limit */}
-      <Section title="Temps d'écran quotidien" desc="Durée maximale d'utilisation par jour, tous écrans confondus.">
+      <Section title={t("screen_time_title")} desc={t("screen_time_text")}>
         <div className="flex items-center gap-4">
           <input
             type="range"
@@ -48,30 +50,30 @@ export function ControlsForm({ childId, initial }: { childId: string; initial: C
             className="flex-1 accent-navy"
           />
           <div className="text-fg font-semibold tabular-nums w-24 text-end">
-            {form.daily_time_limit_minutes ?? 60} min
+            <bdi>{form.daily_time_limit_minutes ?? 60}</bdi> {t("minutes_unit")}
           </div>
         </div>
-        <div className="text-xs text-fg-faint mt-1.5">0 = illimité, 240 = 4 heures max</div>
+        <div className="text-xs text-fg-faint mt-1.5">{t("screen_time_hint")}</div>
       </Section>
 
       {/* Toggles */}
-      <Section title="Univers des petits (5–10 ans)" desc="Donne accès aux jeux ludiques (coloriage, sudoku kids, etc).">
+      <Section title={t("kids_world_title")} desc={t("kids_world_text")}>
         <Toggle checked={form.allowed_kids_universe} onChange={(v) => setForm((f) => ({ ...f, allowed_kids_universe: v }))} />
       </Section>
 
-      <Section title="Fonctions sociales" desc="Groupes d'étude, communauté, demandes d'amitié. Désactivé par défaut.">
+      <Section title={t("social_title")} desc={t("social_text")}>
         <Toggle checked={form.allowed_social} onChange={(v) => setForm((f) => ({ ...f, allowed_social: v }))} />
       </Section>
 
-      <Section title="Bloquer les jeux jusqu'à la fin des exercices" desc="L'enfant doit compléter ses missions avant d'accéder aux jeux.">
+      <Section title={t("block_games_title")} desc={t("block_games_text")}>
         <Toggle checked={form.lock_games_until_quizzes} onChange={(v) => setForm((f) => ({ ...f, lock_games_until_quizzes: v }))} />
       </Section>
 
       {/* Bedtime */}
-      <Section title="Heures de sommeil" desc="Najaح bloquera l'accès entre ces heures.">
+      <Section title={t("sleep_title")} desc={t("sleep_text")}>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="block text-xs text-fg-soft mb-1">Début (par exemple 21h)</span>
+            <span className="block text-xs text-fg-soft mb-1">{t("sleep_start")}</span>
             <input
               type="time"
               value={form.bedtime_start ?? ""}
@@ -80,7 +82,7 @@ export function ControlsForm({ childId, initial }: { childId: string; initial: C
             />
           </label>
           <label className="block">
-            <span className="block text-xs text-fg-soft mb-1">Fin (par exemple 7h)</span>
+            <span className="block text-xs text-fg-soft mb-1">{t("sleep_end")}</span>
             <input
               type="time"
               value={form.bedtime_end ?? ""}
@@ -92,7 +94,7 @@ export function ControlsForm({ childId, initial }: { childId: string; initial: C
       </Section>
 
       <button onClick={onSave} disabled={saving} className="btn btn-primary btn-lg w-full mt-4 disabled:opacity-60">
-        {saving ? "Enregistrement…" : "Enregistrer les réglages"}
+        {saving ? t("submitting") : t("submit")}
       </button>
 
       <style jsx>{`

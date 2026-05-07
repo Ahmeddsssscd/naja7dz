@@ -1,16 +1,10 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
 
 export const metadata = { title: "Profil enfant" };
-
-const SUBJECT_DEMO = [
-  { name: "Mathématiques", score: 0 },
-  { name: "Physique", score: 0 },
-  { name: "Arabe", score: 0 },
-  { name: "Français", score: 0 },
-];
 
 export default async function ChildProfilePage({
   params,
@@ -18,6 +12,8 @@ export default async function ChildProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const t = await getTranslations("ChildProfile");
+  const tHome = await getTranslations("ParentHome");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -28,6 +24,13 @@ export default async function ChildProfilePage({
   ]);
 
   if (!child) notFound();
+
+  const subjects = [
+    { name: t("subj_math"), score: 0 },
+    { name: t("subj_physics"), score: 0 },
+    { name: t("subj_arabic"), score: 0 },
+    { name: t("subj_french"), score: 0 },
+  ];
 
   return (
     <AppShell active="children" parentName={profile?.full_name ?? ""}>
@@ -40,29 +43,30 @@ export default async function ChildProfilePage({
           <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold text-fg">{child.full_name}</h1>
             <p className="text-fg-soft">
-              {child.age ? `${child.age} ans` : ""} · Classe {child.grade ?? "—"}
+              {child.age ? tHome("years_old", { age: child.age }) : ""} ·{" "}
+              {t("grade_label", { grade: child.grade ?? "—" })}
             </p>
           </div>
           <Link
             href={{ pathname: "/parent/enfants/[id]/controles", params: { id: child.id } } as never}
             className="btn btn-outline btn-sm"
           >
-            Contrôle parental
+            {t("parental_controls")}
           </Link>
         </div>
 
         {/* KPIs */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <Kpi label="Temps d'étude" value="0h" />
-          <Kpi label="Quiz complétés" value="0" />
-          <Kpi label="Note moyenne" value="—" />
+          <Kpi label={t("study_time")} value="0h" />
+          <Kpi label={t("quizzes_completed")} value="0" />
+          <Kpi label={t("avg_score")} value="—" />
         </div>
 
         {/* Subjects */}
-        <h2 className="text-lg font-semibold text-fg mb-4">Performance par matière</h2>
+        <h2 className="text-lg font-semibold text-fg mb-4">{t("perf_by_subject")}</h2>
         <div className="bg-surface border border-line rounded-card p-6 mb-8">
           <ul className="space-y-4">
-            {SUBJECT_DEMO.map((s) => (
+            {subjects.map((s) => (
               <li key={s.name} className="flex items-center gap-3">
                 <span className="w-32 text-sm text-fg">{s.name}</span>
                 <div className="flex-1 h-2 bg-pale-blue rounded">
@@ -72,18 +76,13 @@ export default async function ChildProfilePage({
               </li>
             ))}
           </ul>
-          <p className="text-xs text-fg-faint mt-4">
-            Les performances apparaîtront dès que ton enfant aura complété ses premiers exercices.
-          </p>
+          <p className="text-xs text-fg-faint mt-4">{t("perf_empty")}</p>
         </div>
 
         {/* Recommendations */}
-        <h2 className="text-lg font-semibold text-fg mb-4">Recommandations</h2>
+        <h2 className="text-lg font-semibold text-fg mb-4">{t("recommendations")}</h2>
         <div className="accent-block rounded-card p-6">
-          <p className="text-white/80">
-            Aucune recommandation personnalisée pour le moment. Une fois que ton enfant
-            aura complété quelques exercices, des suggestions ciblées apparaîtront ici.
-          </p>
+          <p className="text-white/80">{t("rec_empty")}</p>
         </div>
       </div>
     </AppShell>

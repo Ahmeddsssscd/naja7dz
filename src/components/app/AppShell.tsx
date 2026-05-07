@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Logo } from "@/components/Logo";
 import { LangSwitch } from "@/components/LangSwitch";
@@ -18,6 +19,7 @@ export function AppShell({
   active?: "home" | "children" | "reports" | "subscription" | "settings";
   parentName?: string;
 }) {
+  const t = useTranslations("Shell");
   return (
     <div className="dash-grid bg-surface-2 min-h-screen">
       {/* TOP */}
@@ -40,13 +42,13 @@ export function AppShell({
 
       {/* SIDEBAR */}
       <aside className="dash-side bg-surface border-e border-line p-4 hidden lg:block">
-        <SideLink href="/parent" active={active === "home"} icon="home">Accueil</SideLink>
-        <SideLink href="/parent/enfants" active={active === "children"} icon="children">Mes enfants</SideLink>
-        <SideLink href="/parent/rapports" active={active === "reports"} icon="report">Rapports</SideLink>
-        <SideLink href="/parent/abonnement" active={active === "subscription"} icon="card">Abonnement</SideLink>
-        <div className="text-xs font-semibold text-fg-faint uppercase tracking-wider px-3 mt-6 mb-2">Outils</div>
-        <SideLink href="/parent/parametres" active={active === "settings"} icon="settings">Paramètres</SideLink>
-        <SideLink href="/contact" icon="help">Aide</SideLink>
+        <SideLink href="/parent" active={active === "home"} icon="home">{t("nav_home")}</SideLink>
+        <SideLink href="/parent/enfants" active={active === "children"} icon="children">{t("nav_children")}</SideLink>
+        <SideLink href="/parent/rapports" active={active === "reports"} icon="report">{t("nav_reports")}</SideLink>
+        <SideLink href="/parent/abonnement" active={active === "subscription"} icon="card">{t("nav_subscription")}</SideLink>
+        <div className="text-xs font-semibold text-fg-faint uppercase tracking-wider px-3 mt-6 mb-2">{t("nav_tools")}</div>
+        <SideLink href="/parent/parametres" active={active === "settings"} icon="settings">{t("nav_settings")}</SideLink>
+        <SideLink href="/contact" icon="help">{t("nav_help")}</SideLink>
       </aside>
 
       {/* MAIN */}

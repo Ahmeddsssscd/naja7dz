@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
@@ -9,6 +10,8 @@ import { SetupRequiredScreen } from "@/components/app/SetupRequiredScreen";
 export const metadata = { title: "Espace parent" };
 
 export default async function ParentHome() {
+  const t = await getTranslations("ParentHome");
+  const locale = await getLocale();
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -67,7 +70,7 @@ export default async function ParentHome() {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const key = d.toISOString().slice(0, 10);
-    const dayLabel = d.toLocaleDateString("fr-FR", { weekday: "short" });
+    const dayLabel = d.toLocaleDateString(locale === "ar" ? "ar-DZ" : "fr-FR", { weekday: "short" });
     trendByDay[key] = { day: dayLabel, score: 0, count: 0 };
   }
   for (const q of completed) {
@@ -86,66 +89,61 @@ export default async function ParentHome() {
     <AppShell active="home" parentName={profile?.full_name ?? ""}>
       <div className="max-w-6xl">
         <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-fg mb-1">Bonjour {firstName} 👋</h1>
-          <p className="text-fg-soft">Voici un résumé de la semaine de tes enfants.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-fg mb-1">{t("greeting", { name: firstName })}</h1>
+          <p className="text-fg-soft">{t("subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Kpi label="Temps d'étude" value={`${studyHours}h ${studyMinutes.toString().padStart(2, "0")}min`} hint="cette semaine" />
-          <Kpi label="Quiz complétés" value={String(completed.length)} hint={completed.length > 0 ? "cette semaine" : "commence aujourd'hui"} />
-          <Kpi label="Note moyenne" value={avgScore !== null ? `${avgScore}%` : "—"} hint={avgScore !== null ? "—" : "premier quiz à venir"} />
-          <Kpi label="Enfants" value={String(childList.length)} hint="dans ta famille" />
+          <Kpi label={t("kpi_study_time")} value={`${studyHours}h ${studyMinutes.toString().padStart(2, "0")}min`} hint={t("hint_this_week")} />
+          <Kpi label={t("kpi_quizzes")} value={String(completed.length)} hint={completed.length > 0 ? t("hint_this_week") : t("hint_start_today")} />
+          <Kpi label={t("kpi_avg_score")} value={avgScore !== null ? `${avgScore}%` : "—"} hint={avgScore !== null ? "—" : t("hint_first_quiz")} />
+          <Kpi label={t("kpi_children")} value={String(childList.length)} hint={t("hint_in_family")} />
         </div>
 
         {/* Trend chart */}
         {completed.length > 0 ? (
           <div className="bg-surface border border-line rounded-card p-6 mb-8">
-            <h3 className="text-base font-semibold text-fg mb-4">Évolution des notes — 7 derniers jours</h3>
+            <h3 className="text-base font-semibold text-fg mb-4">{t("trend_title")}</h3>
             <ParentTrendChart data={chartData} />
           </div>
         ) : (
           <div className="accent-block rounded-card p-6 md:p-8 mb-8 relative overflow-hidden">
-            <span className="text-xs font-semibold text-gold uppercase tracking-wider">Cette semaine</span>
-            <h3 className="text-xl md:text-2xl font-bold mt-2 mb-3">
-              Ton enfant n&apos;a pas encore commencé. Lance la première session.
-            </h3>
-            <p className="text-white/70 text-sm md:text-base max-w-prose">
-              Donne à ton enfant ses identifiants et fais-lui découvrir la plateforme.
-              Au bout de 5–10 minutes d&apos;activité, des recommandations personnalisées
-              apparaissent ici.
-            </p>
+            <span className="text-xs font-semibold text-gold uppercase tracking-wider">{t("empty_eyebrow")}</span>
+            <h3 className="text-xl md:text-2xl font-bold mt-2 mb-3">{t("empty_title")}</h3>
+            <p className="text-white/70 text-sm md:text-base max-w-prose">{t("empty_text")}</p>
           </div>
         )}
 
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-fg">Mes enfants</h2>
-          <Link href="/parent/enfants/nouveau" className="text-sm text-fg-soft hover:text-fg">+ Ajouter un enfant</Link>
+          <h2 className="text-lg font-semibold text-fg">{t("children_title")}</h2>
+          <Link href="/parent/enfants/nouveau" className="text-sm text-fg-soft hover:text-fg">{t("add_child")}</Link>
         </div>
         <div className="grid sm:grid-cols-2 gap-5 mb-10">
           {childList.map((c) => {
             const childQuizzes = completed.filter((q) => q.child_id === c.id);
             const childAvg = childQuizzes.length > 0 ? Math.round(childQuizzes.reduce((s, q) => s + Number(q.score_pct ?? 0), 0) / childQuizzes.length) : null;
-            return <ChildCard key={c.id} child={c} weekQuizzes={childQuizzes.length} avgScore={childAvg} />;
+            return <ChildCard key={c.id} child={c} weekQuizzes={childQuizzes.length} avgScore={childAvg} t={t} locale={locale} />;
           })}
         </div>
 
-        <h2 className="text-lg font-semibold text-fg mb-4">Activité récente</h2>
+        <h2 className="text-lg font-semibold text-fg mb-4">{t("activity_title")}</h2>
         {recentActivity && recentActivity.length > 0 ? (
           <div className="bg-surface border border-line rounded-card overflow-hidden">
             {recentActivity.map((row, i) => (
-              <ActivityRow key={i} row={row} />
+              <ActivityRow key={i} row={row} t={t} locale={locale} />
             ))}
           </div>
         ) : (
           <div className="bg-surface border border-line rounded-card p-8 text-center text-fg-soft">
-            Pas encore d&apos;activité. Une fois que tes enfants commencent, leurs progrès
-            apparaissent ici en temps réel.
+            {t("activity_empty")}
           </div>
         )}
       </div>
     </AppShell>
   );
 }
+
+type TFn = (key: string, vars?: Record<string, string | number>) => string;
 
 function Kpi({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
@@ -168,10 +166,13 @@ function ChildCard({
   child,
   weekQuizzes,
   avgScore,
+  t,
 }: {
   child: ChildRow;
   weekQuizzes: number;
   avgScore: number | null;
+  t: TFn;
+  locale: string;
 }) {
   const initials = child.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("");
   return (
@@ -185,16 +186,16 @@ function ChildCard({
         </span>
         <div>
           <h3 className="font-semibold text-fg">{child.full_name}</h3>
-          <p className="text-xs text-fg-soft">{child.age ? `${child.age} ans` : ""} · {child.grade ?? "—"}</p>
+          <p className="text-xs text-fg-soft">{child.age ? t("years_old", { age: child.age }) : ""} · {child.grade ?? "—"}</p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-line">
         <div>
-          <div className="text-xs text-fg-soft">Quiz · 7j</div>
+          <div className="text-xs text-fg-soft">{t("child_quizzes_7d")}</div>
           <div className="text-lg font-bold text-fg">{weekQuizzes}</div>
         </div>
         <div>
-          <div className="text-xs text-fg-soft">Moyenne</div>
+          <div className="text-xs text-fg-soft">{t("child_avg")}</div>
           <div className="text-lg font-bold text-fg">{avgScore !== null ? `${avgScore}%` : "—"}</div>
         </div>
       </div>
@@ -210,14 +211,17 @@ interface ActivityRow {
   children: { full_name: string } | { full_name: string }[] | null;
 }
 
-function ActivityRow({ row }: { row: ActivityRow }) {
+function ActivityRow({ row, t, locale }: { row: ActivityRow; t: TFn; locale: string }) {
   const child = Array.isArray(row.children) ? row.children[0] : row.children;
   const childName = child?.full_name ?? "—";
-  const time = new Date(row.occurred_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" });
+  const time = new Date(row.occurred_at).toLocaleString(
+    locale === "ar" ? "ar-DZ" : "fr-FR",
+    { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" },
+  );
   let label = row.activity_type;
   if (row.activity_type === "quiz_completed") {
-    const pct = row.metadata_json?.score_pct;
-    label = `a complété un quiz — ${pct ?? "—"}%`;
+    const pct = row.metadata_json?.score_pct ?? "—";
+    label = t("activity_quiz_completed", { score: pct });
   }
   return (
     <div className="px-5 py-3 border-b last:border-b-0 border-line flex items-center gap-3">

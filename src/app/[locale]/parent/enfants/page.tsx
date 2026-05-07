@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
@@ -6,6 +7,8 @@ import { Link } from "@/i18n/routing";
 export const metadata = { title: "Mes enfants" };
 
 export default async function ChildrenListPage() {
+  const t = await getTranslations("ParentChildren");
+  const tHome = await getTranslations("ParentHome");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -20,11 +23,11 @@ export default async function ChildrenListPage() {
       <div className="max-w-5xl">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-fg mb-1">Mes enfants</h1>
-            <p className="text-fg-soft">Gère les profils, contrôles et accès.</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-fg mb-1">{t("page_title")}</h1>
+            <p className="text-fg-soft">{t("subtitle")}</p>
           </div>
           <Link href="/parent/enfants/nouveau" className="btn btn-primary">
-            + Ajouter un enfant
+            {t("add_child")}
           </Link>
         </div>
 
@@ -42,20 +45,20 @@ export default async function ChildrenListPage() {
                 <div>
                   <h3 className="font-semibold text-fg">{c.full_name}</h3>
                   <p className="text-xs text-fg-soft">
-                    {c.age ? `${c.age} ans` : ""} · {c.grade ?? "—"}
+                    {c.age ? tHome("years_old", { age: c.age }) : ""} · {c.grade ?? "—"}
                   </p>
                 </div>
               </div>
-              <div className="text-sm text-fg-soft">Voir le profil →</div>
+              <div className="text-sm text-fg-soft">{t("view_profile")}</div>
             </Link>
           ))}
         </div>
 
         {(!children || children.length === 0) && (
           <div className="bg-surface border border-line rounded-card p-12 text-center">
-            <p className="text-fg-soft mb-4">Tu n&apos;as pas encore ajouté d&apos;enfant.</p>
+            <p className="text-fg-soft mb-4">{t("empty_title")}</p>
             <Link href="/parent/enfants/nouveau" className="btn btn-primary">
-              Ajouter mon premier enfant
+              {t("empty_cta")}
             </Link>
           </div>
         )}

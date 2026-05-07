@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { ControlsForm } from "@/components/app/ControlsForm";
@@ -12,6 +13,7 @@ export default async function ControlsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const t = await getTranslations("ParentControls");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -28,11 +30,11 @@ export default async function ControlsPage({
     <AppShell active="children" parentName={profile?.full_name ?? ""}>
       <div className="max-w-2xl">
         <Link href={{ pathname: "/parent/enfants/[id]", params: { id: child.id } } as never} className="text-sm text-fg-soft hover:text-fg mb-3 inline-block">
-          ← Retour au profil de {child.full_name}
+          {t("back_to_profile")} {child.full_name}
         </Link>
-        <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">Contrôle parental</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">{t("page_title")}</h1>
         <p className="text-fg-soft mb-8">
-          Définis le temps d&apos;écran et les fonctionnalités accessibles à <strong className="text-fg">{child.full_name}</strong>.
+          {t("page_subtitle")} <strong className="text-fg">{child.full_name}</strong>.
         </p>
 
         <ControlsForm
