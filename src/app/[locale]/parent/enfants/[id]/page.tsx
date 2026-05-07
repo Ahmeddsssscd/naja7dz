@@ -47,12 +47,23 @@ export default async function ChildProfilePage({
               {t("grade_label", { grade: child.grade ?? "—" })}
             </p>
           </div>
-          <Link
-            href={`/parent/enfants/${child.id}/controles` as never}
-            className="btn btn-outline btn-sm"
-          >
-            {t("parental_controls")}
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/eleve/pratique"
+              className="btn btn-primary btn-sm inline-flex items-center gap-2"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+              </svg>
+              {t("open_practice")}
+            </Link>
+            <Link
+              href={`/parent/enfants/${child.id}/controles` as never}
+              className="btn btn-outline btn-sm"
+            >
+              {t("parental_controls")}
+            </Link>
+          </div>
         </div>
 
         {/* KPIs */}

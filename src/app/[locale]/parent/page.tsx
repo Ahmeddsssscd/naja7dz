@@ -88,9 +88,21 @@ export default async function ParentHome() {
   return (
     <AppShell active="home" parentName={profile?.full_name ?? ""}>
       <div className="max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-fg mb-1">{t("greeting", { name: firstName })}</h1>
-          <p className="text-fg-soft">{t("subtitle")}</p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-fg mb-1">{t("greeting", { name: firstName })}</h1>
+            <p className="text-fg-soft">{t("subtitle")}</p>
+          </div>
+          <Link
+            href="/eleve"
+            className="btn btn-primary inline-flex items-center gap-2 self-start md:self-auto"
+            aria-label={t("open_student_space")}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+            {t("open_student_space")}
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -176,30 +188,43 @@ function ChildCard({
 }) {
   const initials = child.full_name.split(" ").map((s) => s[0]).slice(0, 2).join("");
   return (
-    <Link
-      href={`/parent/enfants/${child.id}` as never}
-      className="bg-surface border border-line rounded-card p-6 hover:shadow-card-hover hover:border-transparent transition-all"
-    >
-      <div className="flex items-center gap-4 mb-4">
-        <span className="w-14 h-14 rounded-full bg-pale-blue dark:bg-surface-3 text-navy dark:text-cream text-xl font-bold flex items-center justify-center">
-          {initials}
-        </span>
-        <div>
-          <h3 className="font-semibold text-fg">{child.full_name}</h3>
-          <p className="text-xs text-fg-soft">{child.age ? t("years_old", { age: child.age }) : ""} · {child.grade ?? "—"}</p>
+    <div className="bg-surface border border-line rounded-card p-6 hover:shadow-card-hover hover:border-transparent transition-all">
+      <Link href={`/parent/enfants/${child.id}` as never} className="block">
+        <div className="flex items-center gap-4 mb-4">
+          <span className="w-14 h-14 rounded-full bg-pale-blue dark:bg-surface-3 text-navy dark:text-cream text-xl font-bold flex items-center justify-center">
+            {initials}
+          </span>
+          <div>
+            <h3 className="font-semibold text-fg">{child.full_name}</h3>
+            <p className="text-xs text-fg-soft">{child.age ? t("years_old", { age: child.age }) : ""} · {child.grade ?? "—"}</p>
+          </div>
         </div>
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-line">
+          <div>
+            <div className="text-xs text-fg-soft">{t("child_quizzes_7d")}</div>
+            <div className="text-lg font-bold text-fg">{weekQuizzes}</div>
+          </div>
+          <div>
+            <div className="text-xs text-fg-soft">{t("child_avg")}</div>
+            <div className="text-lg font-bold text-fg">{avgScore !== null ? `${avgScore}%` : "—"}</div>
+          </div>
+        </div>
+      </Link>
+      <div className="mt-4 pt-4 border-t border-line flex gap-2">
+        <Link
+          href="/eleve/pratique"
+          className="btn btn-primary btn-sm flex-1 justify-center"
+        >
+          🎯 {t("child_practice")}
+        </Link>
+        <Link
+          href={`/parent/enfants/${child.id}` as never}
+          className="btn btn-outline btn-sm"
+        >
+          {t("child_details")}
+        </Link>
       </div>
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-line">
-        <div>
-          <div className="text-xs text-fg-soft">{t("child_quizzes_7d")}</div>
-          <div className="text-lg font-bold text-fg">{weekQuizzes}</div>
-        </div>
-        <div>
-          <div className="text-xs text-fg-soft">{t("child_avg")}</div>
-          <div className="text-lg font-bold text-fg">{avgScore !== null ? `${avgScore}%` : "—"}</div>
-        </div>
-      </div>
-    </Link>
+    </div>
   );
 }
 
