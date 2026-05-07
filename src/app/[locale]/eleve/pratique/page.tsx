@@ -259,13 +259,13 @@ function SubjectGroups({
                   </svg>
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-fg truncate">{c.title}</div>
-                  <div className="text-xs text-fg-soft">
+                  <div className="text-sm font-semibold text-fg leading-snug line-clamp-2">{c.title}</div>
+                  <div className="text-xs text-fg-soft mt-0.5">
                     {showGrade && <span className="font-mono mr-1">{c.grade_code}</span>}
                     {t("question_count", { count: c.questionCount })}
                   </div>
                 </div>
-                <span className="text-xs px-2.5 py-1 rounded-btn bg-pale-blue dark:bg-surface-3 text-navy dark:text-fg font-semibold whitespace-nowrap">
+                <span className="text-xs px-2.5 py-1 rounded-btn bg-pale-blue dark:bg-surface-3 text-navy dark:text-fg font-semibold whitespace-nowrap flex-shrink-0">
                   {t("start")}
                 </span>
               </Link>
