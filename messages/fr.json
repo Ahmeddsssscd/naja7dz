@@ -336,6 +336,18 @@
     "no_prompt": "Pas de sujet aujourd'hui — reviens demain.",
     "back": "← Retour"
   },
+  "ErrorBoundary": {
+    "title": "Quelque chose s'est mal passé",
+    "lead": "On enquête déjà. Tu peux essayer à nouveau, ou retourner à l'accueil.",
+    "retry": "Réessayer",
+    "home": "← Retour à l'accueil"
+  },
+  "NotFound": {
+    "title": "Page introuvable",
+    "lead": "Cette page n'existe pas ou a été déplacée. Retourne à l'accueil pour continuer.",
+    "home": "← Retour à l'accueil",
+    "tarifs": "Voir les tarifs"
+  },
   "Admin": {
     "badge": "Admin",
     "nav_overview": "Vue d'ensemble",
