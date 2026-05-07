@@ -1,5 +1,6 @@
 # claude code internal state — never commit
 /.claude/
+.commit-msg.txt
 
 # dependencies
 /node_modules
