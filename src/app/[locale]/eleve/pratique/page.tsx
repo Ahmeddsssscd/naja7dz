@@ -202,28 +202,44 @@ export default async function PracticeHub() {
           subtitle={t("act_adab_sub")}
           color="bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900"
         />
-        <ActivityTile
-          href="/petits/monde-reel/wilayas"
-          emoji="🇩🇿"
-          title={t("act_wilayas_title")}
-          subtitle={t("act_wilayas_sub")}
-          color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900"
-        />
       </div>
     </Section>
   );
 
   const GamesSection = () => (
     <Section icon="🎮" title={t("section_games_title")} subtitle={t("section_games_subtitle")}>
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-        <ActivityTile href="/petits/coloriage" emoji="🎨" title={t("game_coloriage")} color="bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900" compact />
-        <ActivityTile href="/petits/maths/number-ninja" emoji="🥷" title={t("game_ninja")} color="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900" compact />
-        <ActivityTile href="/petits/maths/souk" emoji="🛒" title={t("game_souk")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
-        <ActivityTile href="/petits/jeux-malins/sudoku" emoji="🧩" title={t("game_sudoku")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
-        <ActivityTile href="/petits/jeux-malins/memoire" emoji="🧠" title={t("game_memory")} color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900" compact />
-        <ActivityTile href="/petits/jeux-malins/motifs" emoji="🔷" title={t("game_pattern")} color="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900" compact />
-        <ActivityTile href="/petits/jeux-malins/enigme" emoji="🤔" title={t("game_riddle")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
-        <ActivityTile href="/petits/monde-reel/heure" emoji="⏰" title={t("game_clock")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
+      {/* Organized into 4 themed sub-groups so the ~13 games don't look like
+          a wall of identical tiles. */}
+      <div className="space-y-6">
+        {/* Math + numbers */}
+        <SubGroup label={t("games_group_math")}>
+          <ActivityTile href="/petits/maths/number-ninja" emoji="🥷" title={t("game_ninja")} color="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900" compact />
+          <ActivityTile href="/petits/maths/souk" emoji="🛒" title={t("game_souk")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
+          <ActivityTile href="/petits/jeux-malins/course-maths" emoji="🏁" title={t("game_mathrace")} color="bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900" compact />
+          <ActivityTile href="/petits/jeux-malins/pieces" emoji="🪙" title={t("game_coins")} color="bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900" compact />
+        </SubGroup>
+
+        {/* Logic + reasoning */}
+        <SubGroup label={t("games_group_logic")}>
+          <ActivityTile href="/petits/jeux-malins/sudoku" emoji="🧩" title={t("game_sudoku")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
+          <ActivityTile href="/petits/jeux-malins/memoire" emoji="🧠" title={t("game_memory")} color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900" compact />
+          <ActivityTile href="/petits/jeux-malins/motifs" emoji="🔷" title={t("game_pattern")} color="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900" compact />
+          <ActivityTile href="/petits/jeux-malins/enigme" emoji="🤔" title={t("game_riddle")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
+          <ActivityTile href="/petits/jeux-malins/morpion" emoji="❌" title={t("game_tictactoe")} color="bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900" compact />
+        </SubGroup>
+
+        {/* Letters + words */}
+        <SubGroup label={t("games_group_words")}>
+          <ActivityTile href="/petits/jeux-malins/mots-caches" emoji="🔍" title={t("game_wordsearch")} color="bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900" compact />
+          <ActivityTile href="/petits/jeux-malins/pendu" emoji="🪢" title={t("game_hangman")} color="bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700" compact />
+        </SubGroup>
+
+        {/* Real-world + creativity */}
+        <SubGroup label={t("games_group_world")}>
+          <ActivityTile href="/petits/coloriage" emoji="🎨" title={t("game_coloriage")} color="bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900" compact />
+          <ActivityTile href="/petits/monde-reel/heure" emoji="⏰" title={t("game_clock")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
+          <ActivityTile href="/petits/monde-reel/wilayas" emoji="🇩🇿" title={t("game_wilayas")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
+        </SubGroup>
       </div>
     </Section>
   );
@@ -336,6 +352,22 @@ function Section({
       </div>
       {children}
     </section>
+  );
+}
+
+function SubGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  // A sub-grouping header inside a Section. Used to break the games list
+  // into themed clusters (Math / Logic / Words / World) instead of a flat
+  // grid of 13 identical tiles.
+  return (
+    <div>
+      <div className="text-xs font-semibold text-fg-soft uppercase tracking-wider mb-2 ms-1">
+        {label}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+        {children}
+      </div>
+    </div>
   );
 }
 
