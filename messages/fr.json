@@ -499,10 +499,15 @@
     "page_title": "Lis avec moi",
     "tile_quran": "Le Coran",
     "tile_quran_sub": "Apprends sourate par sourate",
-    "tile_drawing": "Dessine ton histoire",
-    "tile_drawing_sub": "Bientôt disponible",
-    "tile_tafsir": "Tafsir pour les petits",
-    "tile_tafsir_sub": "Bientôt disponible"
+    "stories_title": "Histoires",
+    "empty_title": "Bientôt des histoires",
+    "empty_text": "On prépare de nouvelles histoires pour toi.",
+    "difficulty_easy": "Facile",
+    "difficulty_medium": "Moyen",
+    "difficulty_hard": "Difficile",
+    "back_to_stories": "Retour aux histoires",
+    "end_text": "Tu as fini cette histoire. Bravo !",
+    "more_stories": "Lire une autre histoire"
   },
   "PetitsWorld": {
     "page_title": "Le monde réel",

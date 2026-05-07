@@ -499,10 +499,15 @@
     "page_title": "اقرأ معي",
     "tile_quran": "القرآن",
     "tile_quran_sub": "تعلّم سورة سورة",
-    "tile_drawing": "ارسم قصّتك",
-    "tile_drawing_sub": "قريباً",
-    "tile_tafsir": "تفسير للصغار",
-    "tile_tafsir_sub": "قريباً"
+    "stories_title": "القصص",
+    "empty_title": "قصصٌ قريباً",
+    "empty_text": "نُحضّر قصصاً جديدة من أجلك.",
+    "difficulty_easy": "سهل",
+    "difficulty_medium": "متوسّط",
+    "difficulty_hard": "صعب",
+    "back_to_stories": "العودة إلى القصص",
+    "end_text": "أنهيتَ هذه القصّة. أحسنت!",
+    "more_stories": "اقرأ قصّةً أخرى"
   },
   "PetitsWorld": {
     "page_title": "العالم الحقيقي",
