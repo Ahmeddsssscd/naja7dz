@@ -24,7 +24,7 @@ while (true) {
   if (error) throw error;
   const targets = (data.users ?? []).filter((u) => {
     const e = (u.email ?? "").toLowerCase();
-    return e.startsWith("test+freshflow") || e.startsWith("test+admin");
+    return e.startsWith("test+freshflow") || e.startsWith("test+admin") || e.startsWith("test+student");
   });
   for (const u of targets) {
     const { error: dErr } = await admin.auth.admin.deleteUser(u.id);
@@ -35,3 +35,4 @@ while (true) {
   page++;
 }
 console.log("\nRemoved", removed, "test user(s).");
+
