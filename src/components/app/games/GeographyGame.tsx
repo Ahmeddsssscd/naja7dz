@@ -27,12 +27,14 @@ export function GeographyGame({ wilayas }: { wilayas: Wilaya[] }) {
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
-  const [target, setTarget] = useState<Wilaya | null>(() => wilayas[Math.floor(Math.random() * wilayas.length)] ?? null);
-  const [opts, setOpts] = useState<Wilaya[]>(() => {
-    if (!wilayas.length) return [];
+  // Initialize target + opts together so the target is GUARANTEED to be one
+  // of the four options. The previous code picked target and opts from two
+  // independent rolls, making round 1 unwinnable when they disagreed.
+  const [{ target, opts }, setRound1] = useState<{ target: Wilaya | null; opts: Wilaya[] }>(() => {
+    if (!wilayas.length) return { target: null, opts: [] };
     const t = wilayas[Math.floor(Math.random() * wilayas.length)];
     const others = pickN(wilayas.filter((w) => w.code !== t.code), 3);
-    return [...others, t].sort(() => Math.random() - 0.5);
+    return { target: t, opts: [...others, t].sort(() => Math.random() - 0.5) };
   });
 
   const finished = round >= 5 && picked !== null;
@@ -56,8 +58,9 @@ export function GeographyGame({ wilayas }: { wilayas: Wilaya[] }) {
       } else {
         const t = wilayas[Math.floor(Math.random() * wilayas.length)];
         const others = pickN(wilayas.filter((w) => w.code !== t.code), 3);
-        setTarget(t);
-        setOpts([...others, t].sort(() => Math.random() - 0.5));
+        // Update target + opts atomically so the next round always shows
+        // the target as one of the answer options.
+        setRound1({ target: t, opts: [...others, t].sort(() => Math.random() - 0.5) });
         setRound((r) => r + 1);
         setPicked(null);
       }

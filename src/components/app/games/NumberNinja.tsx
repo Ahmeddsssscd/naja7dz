@@ -72,6 +72,19 @@ export function NumberNinja() {
     return () => clearInterval(id);
   }, [running, time, hearts]);
 
+  // Fire confetti once when the game ends with a winning score, NOT on every
+  // re-render of the game-over screen. The previous version called
+  // setTimeout(confetti) inside the render body which queued infinite timers.
+  useEffect(() => {
+    if (!running && score >= 10) {
+      const id = setTimeout(
+        () => confetti({ particleCount: 80, spread: 100, colors: ["#D4A72C", "#0F1B33"] }),
+        100,
+      );
+      return () => clearTimeout(id);
+    }
+  }, [running, score]);
+
   const onPick = (n: number) => {
     if (!running || feedback !== "none") return;
     if (n === q.correct) {
@@ -92,9 +105,6 @@ export function NumberNinja() {
   };
 
   if (!running) {
-    if (score >= 10) {
-      setTimeout(() => confetti({ particleCount: 80, spread: 100, colors: ["#D4A72C", "#0F1B33"] }), 100);
-    }
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
