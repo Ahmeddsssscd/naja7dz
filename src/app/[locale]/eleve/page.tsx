@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 import { Link } from "@/i18n/routing";
@@ -6,6 +7,8 @@ import { Link } from "@/i18n/routing";
 export const metadata = { title: "Mon espace" };
 
 export default async function StudentHome() {
+  const t = await getTranslations("EleveHome");
+  const tStudent = await getTranslations("Student");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -19,52 +22,60 @@ export default async function StudentHome() {
     .limit(1)
     .maybeSingle();
 
+  const subjects = [
+    { key: "subj_math", name: t("subj_math") },
+    { key: "subj_physics", name: t("subj_physics") },
+    { key: "subj_arabic", name: t("subj_arabic") },
+    { key: "subj_french", name: t("subj_french") },
+    { key: "subj_english", name: t("subj_english") },
+  ];
+
   return (
-    <StudentShell active="home" childName={child?.full_name ?? "Étudiant"} childGrade={child?.grade}>
+    <StudentShell active="home" childName={child?.full_name ?? tStudent("default_name")} childGrade={child?.grade}>
       {/* Hero mission card */}
       <div className="accent-block rounded-modal p-6 mb-6 relative overflow-hidden">
-        <span className="text-xs font-semibold text-gold uppercase tracking-wider">Aujourd&apos;hui</span>
-        <h1 className="text-xl font-bold mt-2 mb-1">Commence ton parcours</h1>
-        <p className="text-white/70 text-sm mb-4">3 missions · 25 minutes</p>
+        <span className="text-xs font-semibold text-gold uppercase tracking-wider">{t("today_eyebrow")}</span>
+        <h1 className="text-xl font-bold mt-2 mb-1">{t("title")}</h1>
+        <p className="text-white/70 text-sm mb-4">{t("missions_summary", { count: 3, minutes: 25 })}</p>
         <Link
           href="/eleve/quiz/demo"
           className="bg-gold text-navy font-semibold px-4 py-2 rounded-btn text-sm inline-block"
         >
-          Continuer →
+          {t("continue")}
         </Link>
       </div>
 
       {/* Today's missions */}
       <div className="flex justify-between items-baseline mb-3">
-        <h2 className="text-base font-semibold text-fg">Missions du jour</h2>
+        <h2 className="text-base font-semibold text-fg">{t("missions_today")}</h2>
       </div>
       <div className="space-y-2 mb-8">
-        <Mission title="Quiz · Équations du 1er degré" meta="8 min · Mathématiques" xp="+50 XP" />
-        <Mission title="Lecture · chapitre 3" meta="10 min · Français" xp="+30 XP" />
-        <Mission title="Révision · erreurs d'hier" meta="7 min · 5 questions" xp="+40 XP" />
+        <Mission title={t("m1_title")} meta={t("m1_meta")} xp={t("xp", { n: 50 })} />
+        <Mission title={t("m2_title")} meta={t("m2_meta")} xp={t("xp", { n: 30 })} />
+        <Mission title={t("m3_title")} meta={t("m3_meta")} xp={t("xp", { n: 40 })} />
       </div>
 
       {/* Quick access */}
       <div className="grid grid-cols-2 gap-3 mb-8">
-        <Quick href="/eleve/tuteur" title="Tuteur" subtitle="Pose une question" />
-        <Quick href="/eleve/devoirs" title="Aide aux devoirs" subtitle="Photo de l'exercice" />
-        <Quick href="/eleve/bac" title="Bac · Sujets" subtitle="Archive complète" />
-        <Quick href="/eleve/bac/examen" title="Examen blanc" subtitle="Mode chronométré" />
+        <Quick href="/eleve/tuteur" title={t("quick_tutor")} subtitle={t("quick_tutor_sub")} />
+        <Quick href="/eleve/devoirs" title={t("quick_homework")} subtitle={t("quick_homework_sub")} />
+        <Quick href="/eleve/bac" title={t("quick_bac")} subtitle={t("quick_bac_sub")} />
+        <Quick href="/eleve/bac/examen" title={t("quick_exam")} subtitle={t("quick_exam_sub")} />
       </div>
 
       {/* Subjects scroll */}
       <div className="flex justify-between items-baseline mb-3">
-        <h2 className="text-base font-semibold text-fg">Mes matières</h2>
-        <Link href="/eleve/matieres" className="text-xs text-fg-soft">Tout voir</Link>
+        <h2 className="text-base font-semibold text-fg">{t("subjects_title")}</h2>
+        <Link href="/eleve/matieres" className="text-xs text-fg-soft">{t("subjects_view_all")}</Link>
       </div>
       <div className="-mx-5 px-5 flex gap-3 overflow-x-auto scrollbar-hide">
-        {["Mathématiques", "Physique", "Arabe", "Français", "Anglais"].map((s) => (
-          <div key={s} className="flex-none w-40 bg-surface border border-line rounded-card p-4">
+        {subjects.map((s) => (
+          <div key={s.key} className="flex-none w-40 bg-surface border border-line rounded-card p-4">
             <div className="w-9 h-9 rounded-full bg-pale-blue text-navy mb-3 flex items-center justify-center">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             </div>
-            <div className="text-sm font-semibold text-fg">{s}</div>
-            <div className="text-xs text-fg-soft mt-1">0% · — chap.</div>
+            <div className="text-sm font-semibold text-fg">{s.name}</div>
+            <div className="text-xs text-fg-soft mt-1">{t("subj_progress", { pct: 0, chapters: "—" })}</div>
           </div>
         ))}
       </div>

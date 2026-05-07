@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 
 export const metadata = { title: "Profil" };
 
 export default async function ProfilePage() {
+  const t = await getTranslations("EleveProfil");
+  const tStudent = await getTranslations("Student");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -20,11 +23,11 @@ export default async function ProfilePage() {
         <span className="inline-flex w-20 h-20 rounded-full bg-navy text-white text-2xl font-bold items-center justify-center mb-3">
           {initials}
         </span>
-        <h1 className="text-xl font-bold text-fg">{child?.full_name ?? "Étudiant"}</h1>
-        <p className="text-fg-soft text-sm">{child?.grade ?? "—"} · Niveau 1</p>
+        <h1 className="text-xl font-bold text-fg">{child?.full_name ?? tStudent("default_name")}</h1>
+        <p className="text-fg-soft text-sm">{child?.grade ?? "—"} · {t("level", { n: 1 })}</p>
       </div>
 
-      <h2 className="font-semibold text-fg mb-3">Mes trophées</h2>
+      <h2 className="font-semibold text-fg mb-3">{t("trophies")}</h2>
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="bg-surface border border-line rounded-card aspect-square flex items-center justify-center text-fg-faint text-2xl">
@@ -32,9 +35,7 @@ export default async function ProfilePage() {
           </div>
         ))}
       </div>
-      <p className="text-center text-xs text-fg-faint">
-        Termine ton premier quiz pour débloquer ton premier trophée.
-      </p>
+      <p className="text-center text-xs text-fg-faint">{t("trophy_unlock_hint")}</p>
     </StudentShell>
   );
 }

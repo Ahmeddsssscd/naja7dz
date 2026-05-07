@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 import { LangSwitch } from "@/components/LangSwitch";
@@ -7,12 +8,15 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 export const metadata = { title: "Mon univers" };
 
 export default async function KidsHome() {
+  const t = await getTranslations("Petits");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
 
   const { data: child } = await supabase
     .from("children").select("*").eq("parent_id", user.id).limit(1).maybeSingle();
+
+  const firstName = child?.full_name?.split(" ")[0];
 
   return (
     <div className="min-h-screen bg-cream pb-12">
@@ -23,8 +27,10 @@ export default async function KidsHome() {
             {(child?.full_name ?? "?").split(" ").map((s: string) => s[0]).slice(0, 2).join("")}
           </span>
           <div>
-            <div className="font-bold text-navy text-lg">Salut {child?.full_name?.split(" ")[0] ?? "petit champion"} !</div>
-            <div className="text-xs text-fg-soft">⭐ 0 étoiles · 🏆 0 trophées</div>
+            <div className="font-bold text-navy text-lg">
+              {firstName ? t("greeting", { name: firstName }) : t("greeting_default")}
+            </div>
+            <div className="text-xs text-fg-soft">{t("stats", { trophies: 0, stars: 0 })}</div>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -37,33 +43,19 @@ export default async function KidsHome() {
       <section className="mx-5 mb-5 accent-block rounded-[28px] p-6 relative overflow-hidden">
         <div className="absolute -bottom-6 -end-3 text-7xl">🦊</div>
         <div className="relative">
-          <div className="text-xs font-bold text-gold uppercase tracking-wider mb-2">Fennec dit</div>
-          <p className="text-lg font-semibold leading-snug max-w-[70%]">
-            Bienvenue ! Choisis un jeu pour commencer ton aventure.
-          </p>
+          <div className="text-xs font-bold text-gold uppercase tracking-wider mb-2">{t("fennec_says")}</div>
+          <p className="text-lg font-semibold leading-snug max-w-[70%]">{t("welcome")}</p>
         </div>
       </section>
 
       {/* 2x3 tiles */}
       <section className="grid grid-cols-2 gap-3 px-5 mb-6">
-        <Tile href="/petits/coloriage" emoji="🎨" title="Coloriage" subtitle="Maths cachées" color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
-        <Tile href="/petits/maths" emoji="🧮" title="Jeux de maths" subtitle="Ninja & Souk" color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
-        <Tile href="/petits/jeux-malins" emoji="🧩" title="Jeux malins" subtitle="Sudoku, mémoire, motifs" color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
-        <Tile href="/petits/monde-reel" emoji="🌍" title="Le monde réel" subtitle="Heure, wilayas, manières" color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
-        <Tile href="/petits/lecture" emoji="📖" title="Lis avec moi" subtitle="Coran & histoires" color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />
-        <Tile href="/petits/jeux-malins/enigme" emoji="🤔" title="Énigme du jour" subtitle="Une nouvelle chaque jour" color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
-      </section>
-
-      {/* Trophy strip */}
-      <section className="px-5">
-        <h2 className="text-lg font-bold text-navy mb-3">Mes trophées</h2>
-        <div className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="flex-none w-20 h-20 bg-white border-2 border-pale-blue rounded-3xl flex items-center justify-center text-3xl text-fg-faint shadow-card">
-              🔒
-            </div>
-          ))}
-        </div>
+        <Tile href="/petits/coloriage" emoji="🎨" title={t("tile_coloring")} subtitle={t("tile_coloring_sub")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
+        <Tile href="/petits/maths" emoji="🧮" title={t("tile_maths")} subtitle={t("tile_maths_sub")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
+        <Tile href="/petits/jeux-malins" emoji="🧩" title={t("tile_smart")} subtitle={t("tile_smart_sub")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+        <Tile href="/petits/monde-reel" emoji="🌍" title={t("tile_world")} subtitle={t("tile_world_sub")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+        <Tile href="/petits/lecture" emoji="📖" title={t("tile_reading")} subtitle={t("tile_reading_sub")} color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />
+        <Tile href="/petits/quran" emoji="📿" title={t("tile_quran")} subtitle={t("tile_quran_sub")} color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
       </section>
     </div>
   );

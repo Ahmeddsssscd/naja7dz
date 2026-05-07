@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 
@@ -14,6 +15,7 @@ function daysUntilBac() {
 }
 
 export default async function BacCountdownPage() {
+  const t = await getTranslations("EleveBacCountdown");
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -26,28 +28,23 @@ export default async function BacCountdownPage() {
   return (
     <StudentShell active="subjects" childName={child?.full_name} childGrade={child?.grade}>
       <div className="accent-block rounded-modal p-8 text-center mb-6 relative overflow-hidden">
-        <div className="text-xs uppercase tracking-widest text-gold mb-2">Compte à rebours</div>
-        <div className="text-7xl font-bold mb-1 leading-none">{days}</div>
-        <div className="text-white/80 mb-4">jours avant le Bac</div>
-        <div className="text-xs text-white/60">
-          Cible : 15 juin · Tu peux le faire.
-        </div>
+        <div className="text-xs uppercase tracking-widest text-gold mb-2">{t("page_title")}</div>
+        <div className="text-7xl font-bold mb-1 leading-none"><bdi>{days}</bdi></div>
+        <div className="text-white/80 mb-4">{t("days_until")}</div>
+        <div className="text-xs text-white/60">{t("target_text")}</div>
       </div>
 
       <div className="bg-surface border-l-4 border-gold rounded-card p-5 mb-6">
-        <div className="text-xs uppercase tracking-wider text-gold mb-2">Pensée du jour</div>
-        <p className="text-fg italic">
-          « La réussite au Bac n&apos;est pas une question de talent — c&apos;est une question
-          de répétition. Cinquante minutes par jour, tous les jours, sans rater. »
-        </p>
-        <p className="text-xs text-fg-faint mt-3">— En attente de la première soumission</p>
+        <div className="text-xs uppercase tracking-wider text-gold mb-2">{t("today_thought")}</div>
+        <p className="text-fg italic">{t("today_thought_text")}</p>
+        <p className="text-xs text-fg-faint mt-3">{t("today_thought_author")}</p>
       </div>
 
-      <h2 className="text-base font-semibold text-fg mb-3">Plan d&apos;aujourd&apos;hui</h2>
+      <h2 className="text-base font-semibold text-fg mb-3">{t("todays_plan")}</h2>
       <div className="space-y-2 mb-6">
-        <Task title="Quiz · Équations" meta="20 min · Mathématiques" />
-        <Task title="Lecture · Fiche révision" meta="15 min · Physique" />
-        <Task title="Examen blanc partiel" meta="40 min · Format Bac" />
+        <Task title={t("task1_title")} meta={t("task1_meta")} />
+        <Task title={t("task2_title")} meta={t("task2_meta")} />
+        <Task title={t("task3_title")} meta={t("task3_meta")} />
       </div>
     </StudentShell>
   );

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -17,6 +18,7 @@ export function StudentShell({
   childGrade?: string | null;
   active?: "home" | "subjects" | "tutor" | "progress" | "profile";
 }) {
+  const t = useTranslations("Student");
   const initials = (childName ?? "?").split(" ").map((s) => s[0]).slice(0, 2).join("");
   return (
     <div className="bg-surface-2 min-h-screen pb-24">
@@ -28,9 +30,9 @@ export function StudentShell({
             </span>
             <div>
               <div className="text-sm font-semibold text-fg leading-tight">
-                {childName ?? "Étudiant"}
+                {childName ?? t("default_name")}
               </div>
-              <div className="text-xs text-fg-soft">{childGrade ?? "—"} · 🔥 0 jours</div>
+              <div className="text-xs text-fg-soft">{childGrade ?? "—"} · {t("streak_days", { days: 0 })}</div>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -44,11 +46,11 @@ export function StudentShell({
 
       <nav className="fixed bottom-0 inset-x-0 bg-surface border-t border-line z-40">
         <div className="max-w-md mx-auto grid grid-cols-5">
-          <BottomLink href="/eleve" active={active === "home"} label="Accueil" icon="home" />
-          <BottomLink href="/eleve/matieres" active={active === "subjects"} label="Matières" icon="book" />
-          <BottomLink href="/eleve/tuteur" active={active === "tutor"} label="Tuteur" icon="chat" />
-          <BottomLink href="/eleve/progres" active={active === "progress"} label="Progrès" icon="chart" />
-          <BottomLink href="/eleve/profil" active={active === "profile"} label="Profil" icon="user" />
+          <BottomLink href="/eleve" active={active === "home"} label={t("nav_home")} icon="home" />
+          <BottomLink href="/eleve/matieres" active={active === "subjects"} label={t("nav_subjects")} icon="book" />
+          <BottomLink href="/eleve/tuteur" active={active === "tutor"} label={t("nav_tutor")} icon="chat" />
+          <BottomLink href="/eleve/progres" active={active === "progress"} label={t("nav_progress")} icon="chart" />
+          <BottomLink href="/eleve/profil" active={active === "profile"} label={t("nav_profile")} icon="user" />
         </div>
       </nav>
     </div>
