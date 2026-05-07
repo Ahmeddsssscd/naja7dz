@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { createCheckout, createCustomer } from "@/lib/chargily";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -39,6 +39,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Email invalide" }, { status: 400 });
   if (!name) return NextResponse.json({ error: "Nom requis" }, { status: 400 });
 
+  // Resolve the authenticated user (if any). We do NOT require login —
+  // visitors can still pay — but if they ARE logged in we link the checkout
+  // to their user_id so the webhook can activate their subscription
+  // immediately. If not logged in, the webhook resolves the link by email.
+  const userClient = await createServerClient();
+  const {
+    data: { user: authUser },
+  } = await userClient.auth.getUser();
+  const linkedUserId = authUser?.id ?? null;
+
   const supabase = createAdminClient();
 
   // ----- Look up the plan from DB (source of truth on price) -----
@@ -65,6 +75,7 @@ export async function POST(req: Request) {
       locale,
       status: "pending",
       source: "web-checkout",
+      user_id: linkedUserId,
     })
     .select("id")
     .single();

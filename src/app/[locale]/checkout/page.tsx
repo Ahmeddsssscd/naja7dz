@@ -1,7 +1,7 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import { PageShell } from "@/components/landing/PageShell";
 import { CheckoutForm } from "@/components/CheckoutForm";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 
 export const metadata = { title: "Finaliser ta commande" };
@@ -37,6 +37,25 @@ export default async function CheckoutPage({
     .eq("id", planId)
     .eq("active", true)
     .maybeSingle();
+
+  // If the user is logged in, prefill the form with their profile so they
+  // don't have to retype name/email — and so the resulting payment links
+  // automatically to their user_id (less reliance on email matching).
+  const userClient = await createServerClient();
+  const { data: { user: authUser } } = await userClient.auth.getUser();
+  let prefill: { name?: string; email?: string; phone?: string } = {};
+  if (authUser) {
+    const { data: prof } = await supabase
+      .from("parent_profiles")
+      .select("full_name, phone")
+      .eq("user_id", authUser.id)
+      .maybeSingle();
+    prefill = {
+      name: prof?.full_name ?? undefined,
+      email: authUser.email ?? undefined,
+      phone: prof?.phone ?? undefined,
+    };
+  }
 
   if (!plan) {
     return (
@@ -97,7 +116,12 @@ export default async function CheckoutPage({
           {/* Checkout form */}
           <div className="bg-surface border border-line rounded-card p-7">
             <h2 className="text-xl font-semibold text-fg mb-5">{t("form_title")}</h2>
-            <CheckoutForm planId={plan.id} />
+            {authUser && (
+              <p className="text-xs text-fg-soft mb-4 bg-pale-blue/40 dark:bg-surface-3 rounded-btn px-3 py-2">
+                ✓ Connecté en tant que <strong className="text-fg">{authUser.email}</strong> — ton abonnement sera lié à ce compte.
+              </p>
+            )}
+            <CheckoutForm planId={plan.id} prefill={prefill} />
           </div>
         </div>
       </section>

@@ -86,15 +86,30 @@ export async function POST(req: Request) {
     updates.chargily_payment_id = evt.data?.invoice_id ?? null;
   }
 
-  const { error: updErr } = await supabase
+  const { data: updatedSession, error: updErr } = await supabase
     .from("checkout_sessions")
     .update(updates)
-    .eq("chargily_checkout_id", checkoutId);
+    .eq("chargily_checkout_id", checkoutId)
+    .select("id")
+    .maybeSingle();
 
   if (updErr) {
     console.error("[webhook] failed to update session", updErr);
     // Don't fail the webhook — Chargily would retry endlessly
     return NextResponse.json({ ok: true, warning: "db update failed" });
+  }
+
+  // Activate the subscription on `paid`. The RPC is idempotent and resolves
+  // user_id from email if the checkout wasn't linked at creation time.
+  if (newStatus === "paid" && updatedSession?.id) {
+    const { error: rpcErr } = await supabase.rpc(
+      "activate_subscription_from_checkout",
+      { p_checkout_id: updatedSession.id },
+    );
+    if (rpcErr) {
+      console.error("[webhook] activate_subscription failed", rpcErr);
+      // Recovery: /checkout/success calls the same RPC if no sub yet.
+    }
   }
 
   // Mark event as processed

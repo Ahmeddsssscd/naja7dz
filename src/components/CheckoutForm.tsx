@@ -4,10 +4,20 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 
-export function CheckoutForm({ planId }: { planId: string }) {
+export function CheckoutForm({
+  planId,
+  prefill,
+}: {
+  planId: string;
+  prefill?: { name?: string; email?: string; phone?: string };
+}) {
   const locale = useLocale();
   const t = useTranslations("Checkout");
-  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [form, setForm] = useState({
+    name: prefill?.name ?? "",
+    email: prefill?.email ?? "",
+    phone: prefill?.phone ?? "",
+  });
   const [status, setStatus] = useState<"idle" | "loading" | "err">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
