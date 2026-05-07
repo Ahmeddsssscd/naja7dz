@@ -1,5 +1,5 @@
-// Delete every auth user whose email starts with "test+freshflow".
-// Cascades to parent_profiles + children via FK on delete cascade.
+// Delete every auth user whose email starts with "test+freshflow"
+// or "test+admin". Cascades to parent_profiles + children via FK on delete.
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
@@ -22,9 +22,10 @@ let page = 1;
 while (true) {
   const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
   if (error) throw error;
-  const targets = (data.users ?? []).filter((u) =>
-    (u.email ?? "").startsWith("test+freshflow"),
-  );
+  const targets = (data.users ?? []).filter((u) => {
+    const e = (u.email ?? "").toLowerCase();
+    return e.startsWith("test+freshflow") || e.startsWith("test+admin");
+  });
   for (const u of targets) {
     const { error: dErr } = await admin.auth.admin.deleteUser(u.id);
     console.log("Deleted", u.email, dErr ? "(err: " + dErr.message + ")" : "");
