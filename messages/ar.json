@@ -201,7 +201,10 @@
     "empty_text": "نضيف اختبارات جديدة كلّ أسبوع. عُد قريباً!",
     "browse_subjects": "عرض المواد",
     "question_count": "{count} أسئلة",
-    "start": "ابدأ"
+    "start": "ابدأ",
+    "stat_chapters": "الفصول الجاهزة",
+    "stat_questions": "الأسئلة",
+    "stat_subjects": "المواد"
   },
   "EleveHome": {
     "today_eyebrow": "اليوم",

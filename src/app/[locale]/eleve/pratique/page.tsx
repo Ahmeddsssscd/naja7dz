@@ -128,15 +128,31 @@ export default async function PracticeHub() {
   const primaryGrouped = groupBySubject(primary);
   const fallbackGrouped = groupBySubject(fallback);
 
+  // Total ready chapters for the dashboard stat
+  const totalReadyForChild = primary.length || fallback.length;
+  const totalQuestions = (primary.length ? primary : fallback).reduce((s, c) => s + c.questionCount, 0);
+
   return (
     <StudentShell active="practice" childName={child?.full_name ?? undefined} childGrade={childGrade}>
-      <div className="mb-1 flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-fg">{t("page_title")}</h1>
-        {childGrade && (
-          <span className="text-xs text-fg-soft font-mono">{childGrade}</span>
+      <div className="max-w-6xl">
+        <div className="mb-2 flex items-baseline justify-between gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-fg">{t("page_title")}</h1>
+          {childGrade && (
+            <span className="text-xs md:text-sm text-fg-soft font-mono px-2 py-1 rounded-btn bg-pale-blue dark:bg-surface-3">
+              {childGrade}
+            </span>
+          )}
+        </div>
+        <p className="text-fg-soft text-sm md:text-base mb-6 md:mb-8">{t("subtitle")}</p>
+
+        {/* Desktop stats bar */}
+        {totalReadyForChild > 0 && (
+          <div className="hidden md:grid md:grid-cols-3 gap-4 mb-8">
+            <Stat label={t("stat_chapters")} value={String(totalReadyForChild)} />
+            <Stat label={t("stat_questions")} value={String(totalQuestions)} />
+            <Stat label={t("stat_subjects")} value={String((primary.length ? primaryGrouped : fallbackGrouped).length)} />
+          </div>
         )}
-      </div>
-      <p className="text-fg-soft text-sm mb-6">{t("subtitle")}</p>
 
       {/* Subscription gate — info only, never blocks the page from rendering */}
       {!sub && (
@@ -197,7 +213,17 @@ export default async function PracticeHub() {
           </Link>
         </div>
       )}
+      </div>
     </StudentShell>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-surface border border-line rounded-card p-5">
+      <div className="text-xs font-semibold text-fg-soft uppercase tracking-wider mb-2">{label}</div>
+      <div className="text-2xl font-bold text-fg leading-none">{value}</div>
+    </div>
   );
 }
 
@@ -211,20 +237,23 @@ function SubjectGroups({
   showGrade?: boolean;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {groups.map((g) => (
         <section key={g.subject_id}>
-          <h2 className="text-sm font-semibold text-fg-soft uppercase tracking-wider mb-2">
-            {g.name}
-          </h2>
-          <div className="space-y-2">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="text-base md:text-lg font-semibold text-fg">{g.name}</h2>
+            <span className="text-xs text-fg-soft">
+              {t("question_count", { count: g.chapters.reduce((s, c) => s + c.questionCount, 0) })}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {g.chapters.map((c) => (
               <Link
                 key={c.id}
                 href={`/eleve/matieres/${c.subject_id}/${c.id}` as never}
-                className="bg-surface border border-line rounded-card p-4 flex items-center gap-3 hover:border-fg/40 hover:shadow-card-hover transition-all"
+                className="bg-surface border border-line rounded-card p-4 flex items-center gap-3 hover:border-fg/40 hover:shadow-card-hover transition-all group"
               >
-                <span className="w-11 h-11 rounded-[12px] bg-gold text-navy flex items-center justify-center flex-shrink-0">
+                <span className="w-11 h-11 rounded-[12px] bg-gold text-navy flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
                   </svg>
@@ -236,7 +265,7 @@ function SubjectGroups({
                     {t("question_count", { count: c.questionCount })}
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-btn bg-pale-blue dark:bg-surface-3 text-navy dark:text-fg font-semibold">
+                <span className="text-xs px-2.5 py-1 rounded-btn bg-pale-blue dark:bg-surface-3 text-navy dark:text-fg font-semibold whitespace-nowrap">
                   {t("start")}
                 </span>
               </Link>

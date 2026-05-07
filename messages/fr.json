@@ -201,7 +201,10 @@
     "empty_text": "On ajoute de nouveaux quiz chaque semaine. Reviens bientôt !",
     "browse_subjects": "Voir les matières",
     "question_count": "{count} questions",
-    "start": "Démarrer"
+    "start": "Démarrer",
+    "stat_chapters": "Chapitres prêts",
+    "stat_questions": "Questions",
+    "stat_subjects": "Matières"
   },
   "EleveHome": {
     "today_eyebrow": "Aujourd'hui",
