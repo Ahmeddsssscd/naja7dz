@@ -1,3 +1,4 @@
+import { getTranslations, getLocale } from "next-intl/server";
 import { AdminShell, requireAdmin } from "@/components/app/AdminShell";
 import { createAdminClient } from "@/lib/supabase/server";
 import { SpeechModerationActions } from "@/components/app/SpeechModerationActions";
@@ -5,6 +6,8 @@ import { SpeechModerationActions } from "@/components/app/SpeechModerationAction
 export const metadata = { title: "Admin · Discours motivants" };
 
 export default async function AdminSpeeches() {
+  const t = await getTranslations("Admin");
+  const locale = await getLocale();
   const { profile } = await requireAdmin();
   const admin = createAdminClient();
 
@@ -16,10 +19,8 @@ export default async function AdminSpeeches() {
 
   return (
     <AdminShell active="speeches" adminName={profile.full_name}>
-      <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">Discours motivants</h1>
-      <p className="text-fg-soft mb-8">
-        File d&apos;attente — chaque discours doit être approuvé avant d&apos;apparaître sous le compte à rebours du Bac.
-      </p>
+      <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">{t("speeches_title")}</h1>
+      <p className="text-fg-soft mb-8">{t("speeches_subtitle")}</p>
 
       <div className="space-y-4">
         {(speeches ?? []).map((s) => (
@@ -27,14 +28,14 @@ export default async function AdminSpeeches() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="text-xs uppercase tracking-wider text-gold font-semibold">
-                  {s.author_name ?? "Anonyme"}{s.author_wilaya ? ` · ${s.author_wilaya}` : ""}
+                  {s.author_name ?? "—"}{s.author_wilaya ? ` · ${s.author_wilaya}` : ""}
                 </div>
                 <div className="text-xs text-fg-faint">
-                  Soumis le {new Date(s.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                  {new Date(s.created_at).toLocaleDateString(locale === "ar" ? "ar-DZ" : "fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                 </div>
               </div>
               <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-900">
-                En attente
+                {t("kpi_speeches_hint")}
               </span>
             </div>
             <p className="text-fg italic mb-5 leading-relaxed">« {s.content} »</p>
@@ -45,10 +46,7 @@ export default async function AdminSpeeches() {
 
       {(!speeches || speeches.length === 0) && (
         <div className="bg-surface border border-line rounded-card p-12 text-center">
-          <p className="text-fg-soft mb-2">Pas de discours en attente.</p>
-          <p className="text-xs text-fg-faint">
-            Quand un élève soumet un discours via le compte à rebours Bac, il apparaîtra ici.
-          </p>
+          <p className="text-fg-soft">{t("speeches_empty")}</p>
         </div>
       )}
     </AdminShell>

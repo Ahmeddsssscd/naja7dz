@@ -1,9 +1,13 @@
+import { getTranslations, getLocale } from "next-intl/server";
 import { AdminShell, requireAdmin } from "@/components/app/AdminShell";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Admin · Revenus" };
 
 export default async function AdminRevenue() {
+  const t = await getTranslations("Admin");
+  const tc = await getTranslations("Checkout");
+  const locale = await getLocale();
   const { profile } = await requireAdmin();
   const admin = createAdminClient();
 
@@ -22,33 +26,36 @@ export default async function AdminRevenue() {
     {} as Record<string, number>,
   );
 
+  const isAr = locale === "ar";
+  const fmt = (n: number) => n.toLocaleString(isAr ? "ar-DZ" : "fr-DZ");
+
   return (
     <AdminShell active="revenue" adminName={profile.full_name}>
-      <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">Revenus</h1>
-      <p className="text-fg-soft mb-8">50 derniers paiements via Chargily.</p>
+      <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">{t("revenue_title")}</h1>
+      <p className="text-fg-soft mb-8">{t("revenue_subtitle")}</p>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Stat label="Total cumulé" value={`${totalRevenue.toLocaleString("fr-DZ")} DA`} />
-        <Stat label="Paiements réussis" value={counts.paid ?? 0} />
-        <Stat label="En attente" value={counts.pending ?? 0} />
-        <Stat label="Échoués" value={(counts.failed ?? 0) + (counts.cancelled ?? 0)} />
+        <Stat label={t("revenue_total")} value={<><bdi>{fmt(totalRevenue)}</bdi> {tc("currency")}</>} />
+        <Stat label={t("revenue_paid_count")} value={counts.paid ?? 0} />
+        <Stat label={t("kpi_speeches_hint")} value={counts.pending ?? 0} />
+        <Stat label={t("revenue_active_subs")} value={(counts.failed ?? 0) + (counts.cancelled ?? 0)} />
       </div>
 
       <div className="bg-surface border border-line rounded-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line">
-              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">Plan</th>
-              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">Montant</th>
-              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">Statut</th>
-              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">Date</th>
+              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">{t("th_plan")}</th>
+              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">{t("th_amount")}</th>
+              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">{t("th_status")}</th>
+              <th className="text-start font-semibold text-fg-soft p-4 text-xs uppercase tracking-wider">{t("th_date")}</th>
             </tr>
           </thead>
           <tbody>
             {(payments ?? []).map((p, i) => (
               <tr key={i} className="border-b last:border-b-0 border-line">
                 <td className="p-4 text-fg">{p.plan_id}</td>
-                <td className="p-4 text-fg font-semibold">{p.amount_dzd?.toLocaleString("fr-DZ")} DA</td>
+                <td className="p-4 text-fg font-semibold"><bdi>{p.amount_dzd ? fmt(p.amount_dzd) : "—"}</bdi> {tc("currency")}</td>
                 <td className="p-4">
                   <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
                     p.status === "paid" ? "bg-green-100 text-green-900"
@@ -59,21 +66,21 @@ export default async function AdminRevenue() {
                   </span>
                 </td>
                 <td className="p-4 text-fg-soft text-xs">
-                  {new Date(p.paid_at ?? p.created_at).toLocaleDateString("fr-FR")}
+                  {new Date(p.paid_at ?? p.created_at).toLocaleDateString(isAr ? "ar-DZ" : "fr-FR")}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
         {(!payments || payments.length === 0) && (
-          <div className="p-12 text-center text-fg-soft">Pas encore de paiements.</div>
+          <div className="p-12 text-center text-fg-soft">{t("revenue_empty")}</div>
         )}
       </div>
     </AdminShell>
   );
 }
 
-function Stat({ label, value }: { label: string; value: number | string }) {
+function Stat({ label, value }: { label: string; value: number | string | React.ReactNode }) {
   return (
     <div className="bg-surface border border-line rounded-card p-5">
       <div className="text-xs font-semibold text-fg-soft uppercase tracking-wider mb-2">{label}</div>

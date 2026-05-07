@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export function SpeechModerationActions({ id }: { id: string }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [pending, setPending] = useState<"approve" | "reject" | null>(null);
 
@@ -17,10 +19,10 @@ export function SpeechModerationActions({ id }: { id: string }) {
         body: JSON.stringify({ id, action }),
       });
       if (!res.ok) throw new Error();
-      toast.success(action === "approve" ? "Discours approuvé" : "Discours rejeté");
+      toast.success(action === "approve" ? t("approve") : t("reject"));
       router.refresh();
     } catch {
-      toast.error("Erreur — réessaie");
+      toast.error(t("kpi_speeches_hint"));
       setPending(null);
     }
   };
@@ -32,14 +34,14 @@ export function SpeechModerationActions({ id }: { id: string }) {
         disabled={pending !== null}
         className="btn btn-primary btn-sm flex-1 disabled:opacity-50"
       >
-        {pending === "approve" ? "Approbation…" : "✓ Approuver"}
+        ✓ {t("approve")}
       </button>
       <button
         onClick={() => act("reject")}
         disabled={pending !== null}
         className="btn btn-outline btn-sm flex-1 disabled:opacity-50"
       >
-        {pending === "reject" ? "Rejet…" : "✗ Rejeter"}
+        ✗ {t("reject")}
       </button>
     </div>
   );

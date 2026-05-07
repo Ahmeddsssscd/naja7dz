@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { Logo } from "@/components/Logo";
 import { LangSwitch } from "@/components/LangSwitch";
@@ -21,7 +22,7 @@ export async function requireAdmin() {
   return { user, profile };
 }
 
-export function AdminShell({
+export async function AdminShell({
   children,
   active,
   adminName,
@@ -30,14 +31,15 @@ export function AdminShell({
   active?: "overview" | "users" | "speeches" | "moderation" | "content" | "support" | "revenue";
   adminName?: string;
 }) {
+  const t = await getTranslations("Admin");
   const NAV = [
-    { id: "overview", href: "/admin", label: "Vue d'ensemble", icon: "📊" },
-    { id: "users", href: "/admin/utilisateurs", label: "Utilisateurs", icon: "👥" },
-    { id: "revenue", href: "/admin/revenus", label: "Revenus", icon: "💳" },
-    { id: "content", href: "/admin/contenu", label: "Contenu", icon: "📚" },
-    { id: "moderation", href: "/admin/moderation", label: "Modération", icon: "🛡" },
-    { id: "speeches", href: "/admin/discours", label: "Discours motivants", icon: "🎤" },
-    { id: "support", href: "/admin/support", label: "Support", icon: "💬" },
+    { id: "overview", href: "/admin", label: t("nav_overview"), icon: "📊" },
+    { id: "users", href: "/admin/utilisateurs", label: t("nav_users"), icon: "👥" },
+    { id: "revenue", href: "/admin/revenus", label: t("nav_revenue"), icon: "💳" },
+    { id: "content", href: "/admin/contenu", label: t("nav_content"), icon: "📚" },
+    { id: "moderation", href: "/admin/moderation", label: t("nav_moderation"), icon: "🛡" },
+    { id: "speeches", href: "/admin/discours", label: t("nav_speeches"), icon: "🎤" },
+    { id: "support", href: "/admin/support", label: t("nav_support"), icon: "💬" },
   ];
 
   return (
@@ -45,7 +47,7 @@ export function AdminShell({
       <header className="bg-surface border-b border-line h-16 flex items-center justify-between px-6 sticky top-0 z-40">
         <div className="flex items-center gap-4">
           <Link href="/admin" className="flex items-center gap-2"><Logo height={28} /></Link>
-          <span className="hidden md:inline-flex text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold uppercase tracking-wider">Admin</span>
+          <span className="hidden md:inline-flex text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold uppercase tracking-wider">{t("badge")}</span>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />

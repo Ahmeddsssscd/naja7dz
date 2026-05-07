@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
 import { AdminShell, requireAdmin } from "@/components/app/AdminShell";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Admin · Vue d'ensemble" };
 
 export default async function AdminOverview() {
+  const t = await getTranslations("Admin");
   const { profile } = await requireAdmin();
   const admin = createAdminClient();
 
@@ -28,36 +30,36 @@ export default async function AdminOverview() {
 
   return (
     <AdminShell active="overview" adminName={profile.full_name}>
-      <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">Vue d&apos;ensemble</h1>
-      <p className="text-fg-soft mb-8">État de la plateforme en temps réel.</p>
+      <h1 className="text-2xl md:text-3xl font-bold text-fg mb-2">{t("overview_title")}</h1>
+      <p className="text-fg-soft mb-8">{t("overview_subtitle")}</p>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        <Kpi label="Parents" value={totalParents ?? 0} hint={`+${signupsThisWeek ?? 0} cette semaine`} />
-        <Kpi label="Enfants" value={totalChildren ?? 0} hint="comptes créés" />
-        <Kpi label="Quiz · 7j" value={activeQuizzes ?? 0} hint="lancés cette semaine" />
-        <Kpi label="Abonnements payés" value={paidSubs ?? 0} hint="cumul" />
-        <Kpi label="Discours en attente" value={pendingSpeeches ?? 0} hint="à modérer" highlight={!!pendingSpeeches && pendingSpeeches > 0} />
-        <Kpi label="MRR estimé" value="—" hint="à calculer" />
+        <Kpi label={t("kpi_parents")} value={totalParents ?? 0} hint={t("kpi_parents_hint", { n: signupsThisWeek ?? 0 })} />
+        <Kpi label={t("kpi_children")} value={totalChildren ?? 0} hint={t("kpi_children_hint")} />
+        <Kpi label={t("kpi_quizzes")} value={activeQuizzes ?? 0} hint={t("kpi_quizzes_hint")} />
+        <Kpi label={t("kpi_subs")} value={paidSubs ?? 0} hint={t("kpi_subs_hint")} />
+        <Kpi label={t("kpi_speeches")} value={pendingSpeeches ?? 0} hint={t("kpi_speeches_hint")} highlight={!!pendingSpeeches && pendingSpeeches > 0} />
+        <Kpi label={t("kpi_mrr")} value="—" hint={t("kpi_mrr_hint")} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
         <div className="bg-surface border border-line rounded-card p-6">
-          <h2 className="font-semibold text-fg mb-4">Files d&apos;attente</h2>
+          <h2 className="font-semibold text-fg mb-4">{t("queues_title")}</h2>
           <ul className="text-sm space-y-2">
-            <Row label="Discours à approuver" value={pendingSpeeches ?? 0} href="/admin/discours" />
-            <Row label="Modération" value={0} href="/admin/moderation" />
-            <Row label="Tickets support" value={0} href="/admin/support" />
-            <Row label="Solutions IA à vérifier" value={0} href="/admin/contenu" />
+            <Row label={t("row_speeches")} value={pendingSpeeches ?? 0} href="/admin/discours" />
+            <Row label={t("row_moderation")} value={0} href="/admin/moderation" />
+            <Row label={t("row_support")} value={0} href="/admin/support" />
+            <Row label={t("row_ai")} value={0} href="/admin/contenu" />
           </ul>
         </div>
 
         <div className="bg-surface border border-line rounded-card p-6">
-          <h2 className="font-semibold text-fg mb-4">À faire aujourd&apos;hui</h2>
+          <h2 className="font-semibold text-fg mb-4">{t("todo_title")}</h2>
           <ul className="text-sm text-fg-soft space-y-2">
-            <li>• Vérifier les revenus du jour</li>
-            <li>• Examiner les drapeaux qualité IA</li>
-            <li>• Approuver / rejeter les discours en attente</li>
-            <li>• Vérifier les tickets support {">"} 24h</li>
+            <li>• {t("todo_revenue")}</li>
+            <li>• {t("todo_ai")}</li>
+            <li>• {t("todo_speeches")}</li>
+            <li>• {t("todo_support")}</li>
           </ul>
         </div>
       </div>
@@ -69,7 +71,7 @@ function Kpi({ label, value, hint, highlight }: { label: string; value: number |
   return (
     <div className={`bg-surface border rounded-card p-5 ${highlight ? "border-gold" : "border-line"}`}>
       <div className="text-xs font-semibold text-fg-soft uppercase tracking-wider mb-2">{label}</div>
-      <div className="text-2xl font-bold text-fg leading-none mb-2">{value}</div>
+      <div className="text-2xl font-bold text-fg leading-none mb-2"><bdi>{value}</bdi></div>
       <div className="text-xs text-fg-faint">{hint}</div>
     </div>
   );
