@@ -1,0 +1,23 @@
+fix(bienvenue): use admin client for read-after-write, capture upsert error
+
+The orphan-recovery defensive insert in /parent/bienvenue was mixing
+clients: the INSERT used service_role admin client, but the refetch
+used the user's authenticated (RLS-bound) client. This is read-after-
+write across two different PostgREST connections / DB roles, which
+is fragile.
+
+Test result: a fresh orphan user signing in saw the wizard with empty
+parentName (default greeting instead of personalized) even though
+created_at on parent_profiles confirmed the insert had happened. The
+/api/children call later flipped the profile fields and /parent rendered
+correctly, but the wizard rendered with stale state.
+
+Fix:
+- Read parent_profiles via admin client throughout this route.
+- Switch INSERT to UPSERT(onConflict=user_id, ignoreDuplicates=true) so
+  a concurrent insert cannot overwrite an existing full_name.
+- Capture and log the upsert error instead of fire-and-forget.
+- Read children via admin too; bienvenue is the recovery page, it must
+  always render.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>

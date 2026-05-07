@@ -12,7 +12,11 @@ export default async function WelcomePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
 
-  let { data: profile, error: profileErr } = await supabase
+  // Use admin client for the initial read too, so that read-after-write
+  // through the defensive recovery path is consistent (no cross-client
+  // timing issues between service_role write and authenticated read).
+  const admin = createAdminClient();
+  let { data: profile, error: profileErr } = await admin
     .from("parent_profiles")
     .select("full_name, onboarded")
     .eq("user_id", user.id)
@@ -24,19 +28,29 @@ export default async function WelcomePage() {
   // to /bienvenue when onboarded=null) and /bienvenue (no exit condition
   // because the wizard's UPDATE on a missing row is a no-op).
   if (!profile && !isSetupIncompleteError(profileErr)) {
-    const admin = createAdminClient();
     const fullNameMeta =
       (typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name) ||
       user.email?.split("@")[0] ||
       "Parent";
-    await admin.from("parent_profiles").insert({
-      user_id: user.id,
-      full_name: fullNameMeta,
-      onboarded: false,
-      language_pref: "fr",
-    });
-    // Re-read so the rest of the page sees the new row
-    const refetch = await supabase
+    // Upsert with ignoreDuplicates so a concurrent insert (rare race) doesn't
+    // overwrite an existing row's full_name.
+    const { error: upsertErr } = await admin
+      .from("parent_profiles")
+      .upsert(
+        {
+          user_id: user.id,
+          full_name: fullNameMeta,
+          onboarded: false,
+          language_pref: "fr",
+        },
+        { onConflict: "user_id", ignoreDuplicates: true },
+      );
+    if (upsertErr) {
+      console.error("[bienvenue] profile upsert failed", upsertErr);
+    }
+    // Re-read via admin (same client we wrote with) so the page sees the
+    // freshly inserted row regardless of pool/connection state.
+    const refetch = await admin
       .from("parent_profiles")
       .select("full_name, onboarded")
       .eq("user_id", user.id)
@@ -45,7 +59,9 @@ export default async function WelcomePage() {
     profileErr = refetch.error;
   }
 
-  const childrenRes = await supabase
+  // Read children via admin too — same reason: keep this orphan-recovery
+  // page resilient to RLS / pool quirks, since it must always render.
+  const childrenRes = await admin
     .from("children")
     .select("id")
     .eq("parent_id", user.id);
