@@ -16,7 +16,7 @@ export function StudentShell({
   children: React.ReactNode;
   childName?: string;
   childGrade?: string | null;
-  active?: "home" | "subjects" | "tutor" | "progress" | "profile";
+  active?: "home" | "subjects" | "practice" | "progress" | "profile";
 }) {
   const t = useTranslations("Student");
   const initials = (childName ?? "?").split(" ").map((s) => s[0]).slice(0, 2).join("");
@@ -48,7 +48,7 @@ export function StudentShell({
         <div className="max-w-md mx-auto grid grid-cols-5">
           <BottomLink href="/eleve" active={active === "home"} label={t("nav_home")} icon="home" />
           <BottomLink href="/eleve/matieres" active={active === "subjects"} label={t("nav_subjects")} icon="book" />
-          <BottomLink href="/eleve/tuteur" active={active === "tutor"} label={t("nav_tutor")} icon="chat" />
+          <BottomLink href="/eleve/pratique" active={active === "practice"} label={t("nav_practice")} icon="target" />
           <BottomLink href="/eleve/progres" active={active === "progress"} label={t("nav_progress")} icon="chart" />
           <BottomLink href="/eleve/profil" active={active === "profile"} label={t("nav_profile")} icon="user" />
         </div>
@@ -79,6 +79,8 @@ function BottomIcon({ name, active }: { name: string; active: boolean }) {
       return <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
     case "chat":
       return <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+    case "target":
+      return <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
     case "chart":
       return <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
     case "user":

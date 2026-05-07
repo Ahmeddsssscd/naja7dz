@@ -89,10 +89,12 @@ export default async function StudentHome() {
     isFeatureEnabled("eleve_bac"),
   ]);
 
-  // Hero CTA target: first ready chapter, or the matieres list if none.
+  // Hero CTA target: first ready chapter for the child's grade if any,
+  // otherwise the practice hub (which has cross-grade fallback). Never a
+  // dead-end — the kid should always have somewhere to go.
   const heroTarget = firstReadyChapters[0]
     ? `/eleve/matieres/${firstReadyChapters[0].subject_id}/${firstReadyChapters[0].id}`
-    : "/eleve/matieres";
+    : "/eleve/pratique";
 
   return (
     <StudentShell active="home" childName={child?.full_name ?? tStudent("default_name")} childGrade={child?.grade}>
@@ -125,22 +127,43 @@ export default async function StudentHome() {
         </div>
       )}
 
-      {/* Hero mission card → real first chapter */}
+      {/* Hero mission card — real first chapter, or "Pratiquer" CTA if empty */}
       <div className="accent-block rounded-modal p-6 mb-6 relative overflow-hidden">
         <span className="text-xs font-semibold text-gold uppercase tracking-wider">{t("today_eyebrow")}</span>
-        <h1 className="text-xl font-bold mt-2 mb-1">{t("title")}</h1>
+        <h1 className="text-xl font-bold mt-2 mb-1">
+          {firstReadyChapters[0] ? t("title") : t("practice_hero_title")}
+        </h1>
         <p className="text-white/70 text-sm mb-4">
           {firstReadyChapters[0]
             ? `${firstReadyChapters[0].subject_name} · ${firstReadyChapters[0].title}`
-            : t("missions_summary", { count: 3, minutes: 25 })}
+            : t("practice_hero_text")}
         </p>
         <Link
           href={heroTarget as never}
           className="bg-gold text-navy font-semibold px-4 py-2 rounded-btn text-sm inline-block"
         >
-          {t("continue")}
+          {firstReadyChapters[0] ? t("continue") : t("practice_hero_cta")}
         </Link>
       </div>
+
+      {/* Always-visible practice shortcut — even when no missions today */}
+      {firstReadyChapters.length === 0 && (
+        <Link
+          href="/eleve/pratique"
+          className="bg-surface border-2 border-gold rounded-card p-4 mb-6 flex items-center gap-3 hover:bg-gold/5 transition-colors"
+        >
+          <span className="w-11 h-11 rounded-[12px] bg-gold text-navy flex items-center justify-center flex-shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-fg">{t("practice_card_title")}</div>
+            <div className="text-xs text-fg-soft">{t("practice_card_text")}</div>
+          </div>
+          <span className="text-fg-faint">›</span>
+        </Link>
+      )}
 
       {/* Today's missions — real chapter quizzes */}
       {firstReadyChapters.length > 0 && (
