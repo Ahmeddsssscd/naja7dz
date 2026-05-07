@@ -10,7 +10,12 @@
     "faq": "FAQ",
     "contact": "Contact",
     "login": "Connexion",
-    "start": "Commencer"
+    "start": "Commencer",
+    "open_dashboard": "Mon tableau de bord",
+    "subscription": "Mon abonnement",
+    "cta_discover_plans": "Découvrir les plans",
+    "cta_practice": "Continuer la pratique",
+    "cta_kids_universe": "Univers des petits"
   },
   "Hero": {
     "headline_pre": "La plateforme qui aide ton enfant à",
@@ -19,7 +24,8 @@
     "lead": "Du primaire au Bac, suivant le programme officiel algérien. En arabe, en français, sur tous les appareils.",
     "cta_primary": "Commencer gratuitement",
     "cta_secondary": "Voir comment ça marche →",
-    "trust": "Sans carte bancaire · Annulation en un clic"
+    "trust": "Sans carte bancaire · Annulation en un clic",
+    "welcome_back": "Bon retour, {name} !"
   },
   "HeroMock": {
     "subject": "Mathématiques · 4AM",
@@ -175,7 +181,9 @@
   "CTA": {
     "title": "Prêt à voir ton enfant najah ?",
     "subtitle": "Rejoins les premières familles algériennes. Inscription gratuite, sans carte bancaire.",
-    "button": "Commencer gratuitement"
+    "button": "Commencer gratuitement",
+    "title_subscriber": "Continue ton parcours",
+    "subtitle_subscriber": "Ton abonnement est actif. Lance un quiz, explore l'univers des petits, ou suis tes progrès."
   },
   "Student": {
     "default_name": "Étudiant",

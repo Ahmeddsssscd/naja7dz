@@ -5,6 +5,8 @@ import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileMenu } from "@/components/MobileMenu";
 import { EmailCapture } from "@/components/EmailCapture";
+import { createServerClient } from "@/lib/supabase/server";
+import { getActiveSubscription } from "@/lib/subscriptions";
 import {
   CheckIcon,
   PlusIcon,
@@ -16,25 +18,72 @@ import {
   ChartIcon,
 } from "@/components/Icon";
 
-export default function LandingPage() {
+/**
+ * Landing page (root, locale-aware).
+ *
+ * Server component. Reads auth state + subscription so the nav/CTAs adapt:
+ *   - signed-out      → "Connexion" link + "Commencer" button
+ *   - signed-in/no sub → profile pill + "Découvrir les plans" CTA
+ *   - signed-in/active → profile pill + "Continuer la pratique" CTA
+ */
+type AuthState = {
+  isAuthed: boolean;
+  name?: string;
+  email?: string;
+  hasSub: boolean;
+  hasChild: boolean;
+  childGrade?: string | null;
+};
+
+async function readAuthState(): Promise<AuthState> {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { isAuthed: false, hasSub: false, hasChild: false };
+
+  const [{ data: profile }, { data: child }, sub] = await Promise.all([
+    supabase.from("parent_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
+    supabase.from("children").select("grade").eq("parent_id", user.id).order("created_at").limit(1).maybeSingle(),
+    getActiveSubscription(user.id),
+  ]);
+
+  return {
+    isAuthed: true,
+    name: profile?.full_name ?? user.email?.split("@")[0],
+    email: user.email ?? undefined,
+    hasSub: !!sub,
+    hasChild: !!child,
+    childGrade: child?.grade ?? null,
+  };
+}
+
+export default async function LandingPage() {
+  const auth = await readAuthState();
   return (
     <>
-      <SiteNav />
-      <Hero />
+      <SiteNav auth={auth} />
+      <Hero auth={auth} />
       <TrustStrip />
       <HowItWorks />
       <Features />
       <Pricing />
       <FAQ />
-      <FinalCTA />
+      <FinalCTA auth={auth} />
       <SiteFooter />
     </>
   );
 }
 
 /* =============== NAV =============== */
-function SiteNav() {
+function SiteNav({ auth }: { auth: AuthState }) {
   const t = useTranslations("Nav");
+  const initials = (auth.name ?? auth.email ?? "?")
+    .split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+
+  // Smart "where do I go" target for the profile pill / CTA. Authenticated
+  // users with a sub jump straight to their dashboard; without a sub we send
+  // them to /tarifs to upgrade.
+  const dashboardHref = auth.hasSub ? "/parent" : "/tarifs";
+
   return (
     <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-nav border-b border-line">
       <div className="container-x flex items-center justify-between h-20 py-3">
@@ -58,22 +107,59 @@ function SiteNav() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <LangSwitch />
-          <Link href="/connexion" className="hidden md:inline text-sm font-medium text-fg ms-2">
-            {t("login")}
-          </Link>
-          <Link href="/inscription" className="btn btn-primary hidden md:inline-flex">
-            {t("start")}
-          </Link>
-          <MobileMenu
-            items={[
-              { href: "/tarifs", label: t("pricing") },
-              { href: "/pour-les-parents", label: t("parents") },
-              { href: "/faq", label: t("faq") },
-              { href: "/contact", label: "Contact" },
-              { href: "/connexion", label: t("login") },
-            ]}
-            ctaLabel={t("start")}
-          />
+          {auth.isAuthed ? (
+            <>
+              {/* Signed-in: profile pill that opens the parent dashboard */}
+              <Link
+                href={dashboardHref}
+                className="hidden md:inline-flex items-center gap-2 ms-2 ps-3 pe-3 py-1.5 rounded-full border border-line hover:border-fg/40 hover:bg-surface-3 transition-colors"
+                aria-label={t("open_dashboard")}
+              >
+                <span className="w-7 h-7 rounded-full bg-navy text-white text-xs font-semibold flex items-center justify-center">
+                  {initials}
+                </span>
+                <span className="text-sm text-fg font-medium max-w-[140px] truncate">
+                  {auth.name ?? auth.email}
+                </span>
+              </Link>
+              {/* Smart primary CTA based on subscription state */}
+              <Link
+                href={auth.hasSub ? "/eleve/pratique" : "/tarifs"}
+                className="btn btn-primary hidden md:inline-flex"
+              >
+                {auth.hasSub ? t("cta_practice") : t("cta_discover_plans")}
+              </Link>
+              <MobileMenu
+                items={[
+                  { href: dashboardHref, label: t("open_dashboard") },
+                  { href: "/eleve/pratique", label: t("cta_practice") },
+                  { href: "/parent/abonnement", label: t("subscription") },
+                  { href: "/faq", label: t("faq") },
+                  { href: "/contact", label: "Contact" },
+                ]}
+                ctaLabel={auth.hasSub ? t("cta_practice") : t("cta_discover_plans")}
+              />
+            </>
+          ) : (
+            <>
+              <Link href="/connexion" className="hidden md:inline text-sm font-medium text-fg ms-2">
+                {t("login")}
+              </Link>
+              <Link href="/inscription" className="btn btn-primary hidden md:inline-flex">
+                {t("start")}
+              </Link>
+              <MobileMenu
+                items={[
+                  { href: "/tarifs", label: t("pricing") },
+                  { href: "/pour-les-parents", label: t("parents") },
+                  { href: "/faq", label: t("faq") },
+                  { href: "/contact", label: "Contact" },
+                  { href: "/connexion", label: t("login") },
+                ]}
+                ctaLabel={t("start")}
+              />
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -81,12 +167,24 @@ function SiteNav() {
 }
 
 /* =============== HERO =============== */
-function Hero() {
+function Hero({ auth }: { auth: AuthState }) {
   const t = useTranslations("Hero");
+  const tNav = useTranslations("Nav");
+
   return (
     <section className="bg-surface-2 py-20 md:py-30">
       <div className="container-x grid md:grid-cols-2 gap-12 md:gap-16 items-center">
         <div>
+          {/* Welcome-back banner for signed-in users */}
+          {auth.isAuthed && (
+            <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-gold/15 dark:bg-gold/10 border border-gold/40 text-sm">
+              <span className="text-gold">👋</span>
+              <span className="text-fg font-medium">
+                {t("welcome_back", { name: auth.name?.split(" ")[0] ?? "" })}
+              </span>
+            </div>
+          )}
+
           <h1 className="text-[clamp(34px,6vw,56px)] font-bold leading-[1.1] tracking-tight text-fg mb-5">
             {t("headline_pre")}{" "}
             <span className="relative inline-block">
@@ -99,7 +197,35 @@ function Hero() {
             {t("headline_post")}
           </h1>
           <p className="text-lg text-fg-soft mb-8 max-w-prose">{t("lead")}</p>
-          <EmailCapture />
+
+          {/* Auth-aware primary action: signed-in users get smart CTAs that
+              jump into the practice space; signed-out users get email capture. */}
+          {auth.isAuthed ? (
+            <div className="flex flex-col sm:flex-row gap-3">
+              {auth.hasSub ? (
+                <>
+                  <Link href="/eleve/pratique" className="btn btn-primary btn-lg">
+                    🎯 {tNav("cta_practice")}
+                  </Link>
+                  <Link href="/petits" className="btn btn-outline btn-lg">
+                    🦊 {tNav("cta_kids_universe")}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/tarifs" className="btn btn-primary btn-lg">
+                    {tNav("cta_discover_plans")}
+                  </Link>
+                  <Link href="/parent" className="btn btn-outline btn-lg">
+                    {tNav("open_dashboard")}
+                  </Link>
+                </>
+              )}
+            </div>
+          ) : (
+            <EmailCapture />
+          )}
+
           <div className="flex items-center gap-2 text-sm text-fg-soft mt-6">
             <CheckIcon size={16} className="text-gold" />
             <span>{t("trust")}</span>
@@ -398,18 +524,40 @@ function FAQ() {
 }
 
 /* =============== FINAL CTA =============== */
-function FinalCTA() {
+function FinalCTA({ auth }: { auth: AuthState }) {
   const t = useTranslations("CTA");
+  const tNav = useTranslations("Nav");
+
+  // Auth-aware messaging. Signed-in subscribers don't need to "start" — they
+  // need a fast path to the practice space.
+  const headline = auth.hasSub ? t("title_subscriber") : t("title");
+  const subtitle = auth.hasSub ? t("subtitle_subscriber") : t("subtitle");
+
   return (
     <section className="accent-block py-24 md:py-26 text-center">
       <div className="container-x">
         <h2 className="text-[clamp(28px,4vw,40px)] font-bold text-white leading-tight mb-4">
-          {t("title")}
+          {headline}
         </h2>
-        <p className="text-white/70 text-lg mb-8 max-w-prose mx-auto">{t("subtitle")}</p>
-        <Link href="/inscription" className="btn btn-secondary btn-lg">
-          {t("button")}
-        </Link>
+        <p className="text-white/70 text-lg mb-8 max-w-prose mx-auto">{subtitle}</p>
+        {auth.hasSub ? (
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/eleve/pratique" className="btn btn-secondary btn-lg">
+              🎯 {tNav("cta_practice")}
+            </Link>
+            <Link href="/petits" className="btn bg-white/10 text-white border-white/30 hover:bg-white/20 btn-lg">
+              🦊 {tNav("cta_kids_universe")}
+            </Link>
+          </div>
+        ) : auth.isAuthed ? (
+          <Link href="/tarifs" className="btn btn-secondary btn-lg">
+            {tNav("cta_discover_plans")}
+          </Link>
+        ) : (
+          <Link href="/inscription" className="btn btn-secondary btn-lg">
+            {t("button")}
+          </Link>
+        )}
       </div>
     </section>
   );

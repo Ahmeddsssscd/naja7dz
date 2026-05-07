@@ -47,7 +47,7 @@ export async function AdminShell({
     <div className="bg-surface-2 min-h-screen flex flex-col">
       <header className="bg-surface border-b border-line h-16 flex items-center justify-between px-6 sticky top-0 z-40">
         <div className="flex items-center gap-4">
-          <Link href="/admin" className="flex items-center gap-2"><Logo height={28} /></Link>
+          <Link href="/" className="flex items-center gap-2" aria-label="Najaح — accueil"><Logo height={28} /></Link>
           <span className="hidden md:inline-flex text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold uppercase tracking-wider">{t("badge")}</span>
         </div>
         <div className="flex items-center gap-2">

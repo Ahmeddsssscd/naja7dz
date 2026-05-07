@@ -34,7 +34,7 @@ export function StudentShell({
         <div className="h-16 flex items-center justify-between px-5 lg:px-6 max-w-md lg:max-w-none mx-auto lg:mx-0">
           {/* Mobile: avatar + name. Desktop: logo + child pill. */}
           <div className="flex items-center gap-3">
-            <Link href="/eleve" className="hidden lg:flex items-center">
+            <Link href="/" className="hidden lg:flex items-center" aria-label="Najaح — accueil">
               <Logo height={32} />
             </Link>
             <span className="lg:hidden w-9 h-9 rounded-full bg-navy text-white text-sm font-semibold flex items-center justify-center">
