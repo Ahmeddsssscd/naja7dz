@@ -28,7 +28,7 @@ export async function AdminShell({
   adminName,
 }: {
   children: React.ReactNode;
-  active?: "overview" | "users" | "speeches" | "moderation" | "content" | "support" | "revenue";
+  active?: "overview" | "users" | "speeches" | "moderation" | "content" | "support" | "revenue" | "features";
   adminName?: string;
 }) {
   const t = await getTranslations("Admin");
@@ -37,6 +37,7 @@ export async function AdminShell({
     { id: "users", href: "/admin/utilisateurs", label: t("nav_users"), icon: "👥" },
     { id: "revenue", href: "/admin/revenus", label: t("nav_revenue"), icon: "💳" },
     { id: "content", href: "/admin/contenu", label: t("nav_content"), icon: "📚" },
+    { id: "features", href: "/admin/fonctionnalites", label: "Fonctionnalités", icon: "🎛" },
     { id: "moderation", href: "/admin/moderation", label: t("nav_moderation"), icon: "🛡" },
     { id: "speeches", href: "/admin/discours", label: t("nav_speeches"), icon: "🎤" },
     { id: "support", href: "/admin/support", label: t("nav_support"), icon: "💬" },

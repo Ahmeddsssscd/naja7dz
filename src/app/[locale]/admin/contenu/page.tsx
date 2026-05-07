@@ -10,18 +10,23 @@ export default async function ContentPage() {
   const { profile } = await requireAdmin();
   const admin = createAdminClient();
 
-  const [
-    { count: subjectsCount },
-    { count: chaptersCount },
-    { count: examsCount },
-    { count: writingCount },
-    { count: adabCount },
-  ] = await Promise.all([
-    admin.from("subjects").select("*", { count: "exact", head: true }),
-    admin.from("chapters").select("*", { count: "exact", head: true }),
-    admin.from("exam_papers").select("*", { count: "exact", head: true }),
-    admin.from("writing_prompts").select("*", { count: "exact", head: true }),
-    admin.from("adab_lessons").select("*", { count: "exact", head: true }),
+  // Some tables may not exist if migration 6 isn't applied yet —
+  // wrap each in a try so the page doesn't 500.
+  const safeCount = async (table: string): Promise<number> => {
+    try {
+      const r = await admin.from(table).select("*", { count: "exact", head: true });
+      return r.count ?? 0;
+    } catch {
+      return 0;
+    }
+  };
+  const [subjectsCount, chaptersCount, examsCount, writingCount, adabCount, quizCount] = await Promise.all([
+    safeCount("subjects"),
+    safeCount("chapters"),
+    safeCount("exam_papers"),
+    safeCount("writing_prompts"),
+    safeCount("adab_lessons"),
+    safeCount("quiz_questions"),
   ]);
 
   return (
@@ -34,35 +39,42 @@ export default async function ContentPage() {
           href="/admin/contenu/matieres"
           title="Matières"
           subtitle="Gère les matières par niveau (1AP → 3AS)"
-          count={subjectsCount ?? 0}
+          count={subjectsCount}
           emoji="📚"
         />
         <ContentCard
           href="/admin/contenu/chapitres"
           title="Chapitres"
           subtitle="Découpe chaque matière en chapitres"
-          count={chaptersCount ?? 0}
+          count={chaptersCount}
           emoji="📖"
+        />
+        <ContentCard
+          href="/admin/contenu/quiz-questions"
+          title="Questions de quiz"
+          subtitle="Banque de questions par chapitre"
+          count={quizCount}
+          emoji="❓"
         />
         <ContentCard
           href="/admin/contenu/examens"
           title="Sujets d'examens"
           subtitle="Archive Bac & BEM avec PDF"
-          count={examsCount ?? 0}
+          count={examsCount}
           emoji="📝"
         />
         <ContentCard
           href="/admin/contenu/writing-prompts"
           title="Sujets de rédaction"
           subtitle="Pour la page « Rédaction du jour »"
-          count={writingCount ?? 0}
+          count={writingCount}
           emoji="✍️"
         />
         <ContentCard
           href="/admin/contenu/adab"
           title="Bonnes manières"
           subtitle="Leçons d'adab pour les petits"
-          count={adabCount ?? 0}
+          count={adabCount}
           emoji="🤲"
         />
       </div>

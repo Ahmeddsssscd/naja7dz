@@ -4,6 +4,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export const metadata = { title: "Mon univers" };
 
@@ -17,6 +18,16 @@ export default async function KidsHome() {
     .from("children").select("*").eq("parent_id", user.id).limit(1).maybeSingle();
 
   const firstName = child?.full_name?.split(" ")[0];
+
+  // Feature flags — admin can hide tiles from the kid universe.
+  const [coloringOn, mathsOn, smartOn, worldOn, readingOn, quranOn] = await Promise.all([
+    isFeatureEnabled("kids_coloring"),
+    isFeatureEnabled("kids_maths"),
+    isFeatureEnabled("kids_smart"),
+    isFeatureEnabled("kids_world"),
+    isFeatureEnabled("kids_reading"),
+    isFeatureEnabled("kids_quran"),
+  ]);
 
   return (
     <div className="min-h-screen bg-cream pb-12">
@@ -48,14 +59,14 @@ export default async function KidsHome() {
         </div>
       </section>
 
-      {/* 2x3 tiles */}
+      {/* 2x3 tiles — gated by feature flags so admin can hide individual ones */}
       <section className="grid grid-cols-2 gap-3 px-5 mb-6">
-        <Tile href="/petits/coloriage" emoji="🎨" title={t("tile_coloring")} subtitle={t("tile_coloring_sub")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
-        <Tile href="/petits/maths" emoji="🧮" title={t("tile_maths")} subtitle={t("tile_maths_sub")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
-        <Tile href="/petits/jeux-malins" emoji="🧩" title={t("tile_smart")} subtitle={t("tile_smart_sub")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
-        <Tile href="/petits/monde-reel" emoji="🌍" title={t("tile_world")} subtitle={t("tile_world_sub")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
-        <Tile href="/petits/lecture" emoji="📖" title={t("tile_reading")} subtitle={t("tile_reading_sub")} color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />
-        <Tile href="/petits/quran" emoji="📿" title={t("tile_quran")} subtitle={t("tile_quran_sub")} color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
+        {coloringOn && <Tile href="/petits/coloriage" emoji="🎨" title={t("tile_coloring")} subtitle={t("tile_coloring_sub")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />}
+        {mathsOn && <Tile href="/petits/maths" emoji="🧮" title={t("tile_maths")} subtitle={t("tile_maths_sub")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />}
+        {smartOn && <Tile href="/petits/jeux-malins" emoji="🧩" title={t("tile_smart")} subtitle={t("tile_smart_sub")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />}
+        {worldOn && <Tile href="/petits/monde-reel" emoji="🌍" title={t("tile_world")} subtitle={t("tile_world_sub")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />}
+        {readingOn && <Tile href="/petits/lecture" emoji="📖" title={t("tile_reading")} subtitle={t("tile_reading_sub")} color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />}
+        {quranOn && <Tile href="/petits/quran" emoji="📿" title={t("tile_quran")} subtitle={t("tile_quran_sub")} color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />}
       </section>
     </div>
   );
