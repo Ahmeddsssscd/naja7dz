@@ -75,11 +75,27 @@ export default async function PracticeHub() {
   const isAr = locale === "ar";
   const admin = createAdminClient();
   const childGrade = child?.grade ?? null;
-  const childAge = child?.age ?? null;
-  // Below 11 = primary kid → games up top; 12+ = older student → quizzes up top.
-  const isYoungKid = (childAge !== null && childAge <= 11) ||
-    (childGrade !== null && childGrade.endsWith("AP"));
-  const isBacStudent = childGrade !== null && BAC_GRADES.has(childGrade);
+
+  // Audience determines BOTH section ordering and which game/activity tiles
+  // are shown. The previous logic was binary (kid vs not-kid) so a 1AP kid
+  // still saw a Bac Examens block at the bottom — we now hide it entirely.
+  type Audience = "primary" | "middle" | "high_school_other" | "bac";
+  let audience: Audience;
+  if (childGrade && childGrade.endsWith("AS") && BAC_GRADES.has(childGrade)) {
+    audience = "bac"; // 3AS only (the actual Bac year)
+  } else if (childGrade && childGrade === "4AM") {
+    audience = "bac"; // BEM final year — also gets exam content
+  } else if (childGrade && childGrade.endsWith("AS")) {
+    audience = "high_school_other"; // 1AS, 2AS — high school but no Bac yet
+  } else if (childGrade && childGrade.endsWith("AM")) {
+    audience = "middle"; // 1AM, 2AM, 3AM
+  } else {
+    audience = "primary"; // 1AP - 5AP and anything we don't recognize
+  }
+
+  // Coarse age buckets (used to filter the games section to age-appropriate
+  // tiles — a 5 yr old shouldn't see "Mots cachés" with 8-letter FR words).
+  const isUnder8 = childGrade === "1AP" || childGrade === "2AP";
 
   // ---- Quiz section data --------------------------------------------------
   const { data: allQs } = await admin
@@ -166,83 +182,93 @@ export default async function PracticeHub() {
     </Section>
   );
 
+  // Activity catalog filtered by audience.
+  // - Rédaction + Calligraphie : middle / high school / Bac
+  // - Lis avec moi : primary + middle (kid-style stories)
+  // - Quran : everyone (universal)
+  // - Adab (bonnes manières) : primary only
+  const allActivities: Array<{
+    href: string; emoji: string; title: string; subtitle: string; color: string;
+    audiences: Audience[];
+  }> = [
+    { href: "/eleve/redaction", emoji: "✍️", title: t("act_redaction_title"), subtitle: t("act_redaction_sub"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", audiences: ["middle", "high_school_other", "bac"] },
+    { href: "/eleve/calligraphie", emoji: "🎨", title: t("act_calligraphie_title"), subtitle: t("act_calligraphie_sub"), color: "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900", audiences: ["primary", "middle", "high_school_other", "bac"] },
+    { href: "/petits/lecture", emoji: "📖", title: t("act_lecture_title"), subtitle: t("act_lecture_sub"), color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900", audiences: ["primary", "middle"] },
+    { href: "/petits/quran", emoji: "📿", title: t("act_quran_title"), subtitle: t("act_quran_sub"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", audiences: ["primary", "middle", "high_school_other", "bac"] },
+    { href: "/petits/monde-reel/adab", emoji: "🤲", title: t("act_adab_title"), subtitle: t("act_adab_sub"), color: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900", audiences: ["primary"] },
+  ];
+  const visibleActivities = allActivities.filter((a) => a.audiences.includes(audience));
+
   const ActivitiesSection = () => (
     <Section icon="📝" title={t("section_activities_title")} subtitle={t("section_activities_subtitle")}>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        <ActivityTile
-          href="/eleve/redaction"
-          emoji="✍️"
-          title={t("act_redaction_title")}
-          subtitle={t("act_redaction_sub")}
-          color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900"
-        />
-        <ActivityTile
-          href="/eleve/calligraphie"
-          emoji="🎨"
-          title={t("act_calligraphie_title")}
-          subtitle={t("act_calligraphie_sub")}
-          color="bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900"
-        />
-        <ActivityTile
-          href="/petits/lecture"
-          emoji="📖"
-          title={t("act_lecture_title")}
-          subtitle={t("act_lecture_sub")}
-          color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900"
-        />
-        <ActivityTile
-          href="/petits/quran"
-          emoji="📿"
-          title={t("act_quran_title")}
-          subtitle={t("act_quran_sub")}
-          color="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900"
-        />
-        <ActivityTile
-          href="/petits/monde-reel/adab"
-          emoji="🤲"
-          title={t("act_adab_title")}
-          subtitle={t("act_adab_sub")}
-          color="bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900"
-        />
+        {visibleActivities.map((a) => (
+          <ActivityTile key={a.href} {...a} />
+        ))}
       </div>
     </Section>
   );
 
+  // ---- Game catalog with audience tags --------------------------------
+  // Each tile knows which audiences it's appropriate for. Letter-based games
+  // need literacy, so under-8 kids don't see them. High school students don't
+  // see Coloriage / clock-reading. The audience enum lives in the closure.
+  const allGames: Array<{
+    href: string; emoji: string; title: string; color: string;
+    group: "math" | "logic" | "words" | "world";
+    audiences: Audience[]; literate?: boolean;
+  }> = [
+    { href: "/petits/maths/number-ninja", emoji: "🥷", title: t("game_ninja"), color: "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900", group: "math", audiences: ["primary", "middle"] },
+    { href: "/petits/maths/souk", emoji: "🛒", title: t("game_souk"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "math", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/course-maths", emoji: "🏁", title: t("game_mathrace"), color: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900", group: "math", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/pieces", emoji: "🪙", title: t("game_coins"), color: "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900", group: "math", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/sudoku", emoji: "🧩", title: t("game_sudoku"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "logic", audiences: ["primary", "middle", "high_school_other", "bac"] },
+    { href: "/petits/jeux-malins/memoire", emoji: "🧠", title: t("game_memory"), color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900", group: "logic", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/motifs", emoji: "🔷", title: t("game_pattern"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", group: "logic", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/enigme", emoji: "🤔", title: t("game_riddle"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "logic", audiences: ["primary", "middle", "high_school_other", "bac"] },
+    { href: "/petits/jeux-malins/morpion", emoji: "❌", title: t("game_tictactoe"), color: "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900", group: "logic", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/mots-caches", emoji: "🔍", title: t("game_wordsearch"), color: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900", group: "words", audiences: ["primary", "middle", "high_school_other"], literate: true },
+    { href: "/petits/jeux-malins/pendu", emoji: "🪢", title: t("game_hangman"), color: "bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700", group: "words", audiences: ["primary", "middle"], literate: true },
+    { href: "/petits/jeux-malins/anagrammes", emoji: "🔤", title: t("game_anagrams"), color: "bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900", group: "words", audiences: ["primary", "middle"], literate: true },
+    { href: "/petits/coloriage", emoji: "🎨", title: t("game_coloriage"), color: "bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900", group: "world", audiences: ["primary"] },
+    { href: "/petits/monde-reel/heure", emoji: "⏰", title: t("game_clock"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "world", audiences: ["primary"] },
+    { href: "/petits/monde-reel/wilayas", emoji: "🇩🇿", title: t("game_wilayas"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "world", audiences: ["primary", "middle"] },
+  ];
+  const visibleGames = allGames.filter((g) => {
+    if (!g.audiences.includes(audience)) return false;
+    if (g.literate && isUnder8) return false;
+    return true;
+  });
+  const gamesByGroup = {
+    math: visibleGames.filter((g) => g.group === "math"),
+    logic: visibleGames.filter((g) => g.group === "logic"),
+    words: visibleGames.filter((g) => g.group === "words"),
+    world: visibleGames.filter((g) => g.group === "world"),
+  };
+
   const GamesSection = () => (
     <Section icon="🎮" title={t("section_games_title")} subtitle={t("section_games_subtitle")}>
-      {/* Organized into 4 themed sub-groups so the ~13 games don't look like
-          a wall of identical tiles. */}
       <div className="space-y-6">
-        {/* Math + numbers */}
-        <SubGroup label={t("games_group_math")}>
-          <ActivityTile href="/petits/maths/number-ninja" emoji="🥷" title={t("game_ninja")} color="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900" compact />
-          <ActivityTile href="/petits/maths/souk" emoji="🛒" title={t("game_souk")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
-          <ActivityTile href="/petits/jeux-malins/course-maths" emoji="🏁" title={t("game_mathrace")} color="bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900" compact />
-          <ActivityTile href="/petits/jeux-malins/pieces" emoji="🪙" title={t("game_coins")} color="bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900" compact />
-        </SubGroup>
-
-        {/* Logic + reasoning */}
-        <SubGroup label={t("games_group_logic")}>
-          <ActivityTile href="/petits/jeux-malins/sudoku" emoji="🧩" title={t("game_sudoku")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
-          <ActivityTile href="/petits/jeux-malins/memoire" emoji="🧠" title={t("game_memory")} color="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900" compact />
-          <ActivityTile href="/petits/jeux-malins/motifs" emoji="🔷" title={t("game_pattern")} color="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900" compact />
-          <ActivityTile href="/petits/jeux-malins/enigme" emoji="🤔" title={t("game_riddle")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
-          <ActivityTile href="/petits/jeux-malins/morpion" emoji="❌" title={t("game_tictactoe")} color="bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900" compact />
-        </SubGroup>
-
-        {/* Letters + words */}
-        <SubGroup label={t("games_group_words")}>
-          <ActivityTile href="/petits/jeux-malins/mots-caches" emoji="🔍" title={t("game_wordsearch")} color="bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900" compact />
-          <ActivityTile href="/petits/jeux-malins/pendu" emoji="🪢" title={t("game_hangman")} color="bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700" compact />
-          <ActivityTile href="/petits/jeux-malins/anagrammes" emoji="🔤" title={t("game_anagrams")} color="bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900" compact />
-        </SubGroup>
-
-        {/* Real-world + creativity */}
-        <SubGroup label={t("games_group_world")}>
-          <ActivityTile href="/petits/coloriage" emoji="🎨" title={t("game_coloriage")} color="bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900" compact />
-          <ActivityTile href="/petits/monde-reel/heure" emoji="⏰" title={t("game_clock")} color="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900" compact />
-          <ActivityTile href="/petits/monde-reel/wilayas" emoji="🇩🇿" title={t("game_wilayas")} color="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900" compact />
-        </SubGroup>
+        {gamesByGroup.math.length > 0 && (
+          <SubGroup label={t("games_group_math")}>
+            {gamesByGroup.math.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+          </SubGroup>
+        )}
+        {gamesByGroup.logic.length > 0 && (
+          <SubGroup label={t("games_group_logic")}>
+            {gamesByGroup.logic.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+          </SubGroup>
+        )}
+        {gamesByGroup.words.length > 0 && (
+          <SubGroup label={t("games_group_words")}>
+            {gamesByGroup.words.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+          </SubGroup>
+        )}
+        {gamesByGroup.world.length > 0 && (
+          <SubGroup label={t("games_group_world")}>
+            {gamesByGroup.world.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+          </SubGroup>
+        )}
       </div>
     </Section>
   );
@@ -308,15 +334,18 @@ export default async function PracticeHub() {
           </div>
         )}
 
-        {/* Section order changes by audience: Bac students see exams first;
-            young kids see games first; everyone else sees quizzes first. */}
+        {/* Section ordering + visibility per audience.
+            - primary (1AP-5AP)        : Quiz, Games, Activities. NO Examens.
+            - middle (1AM-3AM)         : Quiz, Games, Activities. NO Examens.
+            - high_school_other (1-2AS): Quiz, Activities, Games. NO Examens.
+            - bac (3AS / 4AM)          : Examens FIRST, then Quiz, Activities. */}
         <div className="space-y-10">
-          {isBacStudent && <ExamsSection />}
-          {isYoungKid && <GamesSection />}
+          {audience === "bac" && <ExamsSection />}
+          {audience === "primary" && <GamesSection />}
           <QuizSection />
-          {!isYoungKid && <GamesSection />}
           <ActivitiesSection />
-          {!isBacStudent && childGrade && <ExamsSection />}
+          {audience === "middle" && <GamesSection />}
+          {audience === "high_school_other" && <GamesSection />}
         </div>
       </div>
     </StudentShell>
