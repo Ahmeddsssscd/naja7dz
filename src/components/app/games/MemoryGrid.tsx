@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import confetti from "canvas-confetti";
 
 const ICONS = ["🦊", "🌙", "⭐", "🌴", "📚", "🕌", "🌶", "🦁"];
@@ -31,7 +31,7 @@ function newDeck(): Card[] {
 }
 
 export function MemoryGrid() {
-  const router = useRouter();
+  const goBack = useGameBack("/petits");
   const [cards, setCards] = useState<Card[]>(() => newDeck());
   const [flipped, setFlipped] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
@@ -87,7 +87,7 @@ export function MemoryGrid() {
             Tu as trouvé toutes les paires en <strong className="text-navy">{moves}</strong> coups.
           </p>
           <div className="flex gap-3">
-            <button onClick={() => router.push("/petits")} className="btn btn-outline flex-1">Retour</button>
+            <button onClick={goBack} className="btn btn-outline flex-1">Retour</button>
             <button onClick={onRestart} className="btn btn-primary flex-1">Rejouer</button>
           </div>
         </div>
@@ -98,7 +98,7 @@ export function MemoryGrid() {
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={() => router.push("/petits")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="font-bold text-navy">Coups : {moves}</div>

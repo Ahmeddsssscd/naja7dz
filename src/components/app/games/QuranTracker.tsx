@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import { toast } from "sonner";
 
 interface Surah {
@@ -27,7 +27,7 @@ export function QuranTracker({
   progress: Progress[];
   childId: string | null;
 }) {
-  const router = useRouter();
+  const goBack = useGameBack("/petits");
   const [progressMap, setProgressMap] = useState<Map<number, number>>(
     () => new Map(initialProgress.map((p) => [p.surah_number, p.verses_memorized])),
   );
@@ -66,7 +66,7 @@ export function QuranTracker({
   return (
     <div className="min-h-screen bg-cream pb-12">
       <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => router.push("/petits")} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="font-bold text-navy">Mes progrès Coran</h1>

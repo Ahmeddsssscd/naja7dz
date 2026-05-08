@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
@@ -14,7 +14,7 @@ interface Riddle {
 }
 
 export function LogicRiddle({ riddle }: { riddle: Riddle | null }) {
-  const router = useRouter();
+  const goBack = useGameBack("/petits");
   const [guess, setGuess] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -42,7 +42,7 @@ export function LogicRiddle({ riddle }: { riddle: Riddle | null }) {
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={() => router.push("/petits")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="font-bold text-navy">Énigme du jour</h1>
@@ -84,7 +84,7 @@ export function LogicRiddle({ riddle }: { riddle: Riddle | null }) {
             <div className="text-3xl mb-2">🎉</div>
             <p className="font-semibold text-green-900 mb-1">La réponse était : {riddle.answer}</p>
             <p className="text-xs text-green-800">Tu as trouvé en {tries} essai{tries > 1 ? "s" : ""}.</p>
-            <button onClick={() => router.push("/petits")} className="btn btn-primary mt-4 w-full">Retour</button>
+            <button onClick={goBack} className="btn btn-primary mt-4 w-full">Retour</button>
           </div>
         )}
       </main>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import { useLocale, useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 
@@ -117,7 +117,7 @@ function lineCells(a: { r: number; c: number }, b: { r: number; c: number }) {
 }
 
 export function WordSearch() {
-  const router = useRouter();
+  const goBack = useGameBack();
   const t = useTranslations("PetitsGameWordSearch");
   const locale = useLocale();
   const isAR = locale === "ar";
@@ -214,7 +214,7 @@ export function WordSearch() {
     <div className="min-h-screen bg-cream flex flex-col" dir={isAR ? "rtl" : "ltr"}>
       <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
         <button
-          onClick={() => router.push("/petits/jeux-malins")}
+          onClick={goBack}
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
           aria-label={t("back")}
         >

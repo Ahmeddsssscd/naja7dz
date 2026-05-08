@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import confetti from "canvas-confetti";
 
 /**
@@ -70,7 +70,7 @@ function isComplete(board: Board): boolean {
 }
 
 export function KidSudoku() {
-  const router = useRouter();
+  const goBack = useGameBack("/petits");
   const [original] = useState<Board>(() => SIMPLE_PUZZLES[Math.floor(Math.random() * SIMPLE_PUZZLES.length)].map((r) => [...r]));
   const [board, setBoard] = useState<Board>(() => original.map((r) => [...r]));
   const [selected, setSelected] = useState<{ r: number; c: number } | null>(null);
@@ -126,7 +126,7 @@ export function KidSudoku() {
           <h1 className="text-3xl font-bold text-navy mb-2">Excellent !</h1>
           <p className="text-fg-soft mb-6">Tu as résolu le sudoku.</p>
           <div className="flex gap-3">
-            <button onClick={() => router.push("/petits")} className="btn btn-outline flex-1">Retour</button>
+            <button onClick={goBack} className="btn btn-outline flex-1">Retour</button>
             <button onClick={() => window.location.reload()} className="btn btn-primary flex-1">Nouveau</button>
           </div>
         </div>
@@ -137,7 +137,7 @@ export function KidSudoku() {
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={() => router.push("/petits")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="font-bold text-navy">Sudoku 4×4</h1>

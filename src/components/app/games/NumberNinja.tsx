@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
@@ -47,7 +47,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function NumberNinja() {
-  const router = useRouter();
+  const goBack = useGameBack();
   const [score, setScore] = useState(0);
   const [hearts, setHearts] = useState(3);
   const [time, setTime] = useState(45);
@@ -114,7 +114,7 @@ export function NumberNinja() {
           <div className="text-6xl font-bold text-gold mb-2">{score}</div>
           <p className="text-fg-soft mb-8">points en niveau {level}</p>
           <div className="flex gap-3">
-            <button onClick={() => router.push("/petits")} className="btn btn-outline flex-1">Retour</button>
+            <button onClick={goBack} className="btn btn-outline flex-1">Retour</button>
             <button onClick={onRestart} className="btn btn-primary flex-1">Rejouer</button>
           </div>
         </div>
@@ -132,7 +132,7 @@ export function NumberNinja() {
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={() => router.push("/petits")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="flex items-center gap-4 text-sm">

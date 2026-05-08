@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
@@ -36,7 +36,7 @@ function genPuzzle(level: number): Puzzle {
 }
 
 export function PatternPuzzles() {
-  const router = useRouter();
+  const goBack = useGameBack("/petits");
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
   const [puzzle, setPuzzle] = useState<Puzzle>(() => genPuzzle(1));
@@ -72,7 +72,7 @@ export function PatternPuzzles() {
           <h1 className="text-3xl font-bold text-navy mb-2">Très bien !</h1>
           <p className="text-fg-soft mb-6">Score : <strong className="text-navy">{score} / 5</strong></p>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => router.push("/petits")} className="btn btn-outline flex-1">Retour</button>
+            <button onClick={goBack} className="btn btn-outline flex-1">Retour</button>
             <button onClick={() => { setScore(0); setRound(1); setPicked(null); setPuzzle(genPuzzle(1)); }} className="btn btn-primary flex-1">Rejouer</button>
           </div>
         </div>
@@ -83,7 +83,7 @@ export function PatternPuzzles() {
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={() => router.push("/petits")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="text-sm font-bold text-navy">Q {round}/5  ·  ⭐ {score}</div>

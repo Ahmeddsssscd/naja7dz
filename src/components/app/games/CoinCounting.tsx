@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "@/i18n/routing";
+import { useGameBack } from "./useGameBack";
 import { useLocale, useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 
@@ -56,7 +56,7 @@ function coinTone(value: Coin): string {
 }
 
 export function CoinCounting() {
-  const router = useRouter();
+  const goBack = useGameBack();
   const t = useTranslations("PetitsGameCoinCounting");
   const locale = useLocale();
   const isAR = locale === "ar";
@@ -139,7 +139,7 @@ export function CoinCounting() {
           <p className="text-fg-soft mb-6">{passed ? t("well_done") : t("try_again_msg")}</p>
           <div className="flex gap-3">
             <button
-              onClick={() => router.push("/petits/jeux-malins")}
+              onClick={goBack}
               className="flex-1 bg-white border-2 border-navy text-navy rounded-2xl px-4 py-3 font-bold active:scale-95"
             >
               {t("back")}
@@ -167,7 +167,7 @@ export function CoinCounting() {
     <div className="min-h-screen bg-cream flex flex-col" dir={isAR ? "rtl" : "ltr"}>
       <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
         <button
-          onClick={() => router.push("/petits/jeux-malins")}
+          onClick={goBack}
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
           aria-label={t("back")}
         >
