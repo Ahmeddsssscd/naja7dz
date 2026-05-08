@@ -538,6 +538,7 @@
   },
   "PetitsSmart": {
     "page_title": "ألعاب ذكيّة",
+    "back": "رجوع",
     "tile_sudoku": "سودوكو",
     "tile_sudoku_sub": "4×4 للمبتدئين",
     "tile_memory": "الذاكرة",

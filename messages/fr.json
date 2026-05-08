@@ -538,6 +538,7 @@
   },
   "PetitsSmart": {
     "page_title": "Jeux malins",
+    "back": "Retour",
     "tile_sudoku": "Sudoku",
     "tile_sudoku_sub": "4×4 pour débuter",
     "tile_memory": "Mémoire",
