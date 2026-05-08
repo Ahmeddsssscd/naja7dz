@@ -97,6 +97,19 @@ export default async function StudentHome() {
     ? `/eleve/matieres/${firstReadyChapters[0].subject_id}/${firstReadyChapters[0].id}`
     : "/eleve/pratique";
 
+  // Audience determines which big tiles appear under the hero. Same enum
+  // as /eleve/pratique so the experience is consistent.
+  type Audience = "primary" | "middle" | "high_school_other" | "bac";
+  const grade = child?.grade ?? null;
+  let audience: Audience = "primary";
+  if (grade === "3AS" || grade === "4AM") audience = "bac";
+  else if (grade && grade.endsWith("AS")) audience = "high_school_other";
+  else if (grade && grade.endsWith("AM")) audience = "middle";
+  else audience = "primary";
+
+  const childFirstName = child?.full_name?.split(" ")[0] ?? "";
+  const totalReadyForGrade = firstReadyChapters.length;
+
   return (
     <StudentShell active="home" childName={child?.full_name ?? tStudent("default_name")} childGrade={child?.grade}>
       {/* Subscription gating banner */}
@@ -128,49 +141,125 @@ export default async function StudentHome() {
         </div>
       )}
 
-      {/* Hero mission card — real first chapter, or "Pratiquer" CTA if empty */}
-      <div className="accent-block rounded-modal p-6 mb-6 relative overflow-hidden">
-        <span className="text-xs font-semibold text-gold uppercase tracking-wider">{t("today_eyebrow")}</span>
-        <h1 className="text-xl font-bold mt-2 mb-1">
-          {firstReadyChapters[0] ? t("title") : t("practice_hero_title")}
+      {/* Big personal greeting that surfaces the grade prominently */}
+      <div className="accent-block rounded-modal p-6 md:p-8 mb-6 relative overflow-hidden">
+        <span className="text-xs font-semibold text-gold uppercase tracking-wider">
+          {grade ? `Mon espace ${grade}` : t("today_eyebrow")}
+        </span>
+        <h1 className="text-2xl md:text-3xl font-bold mt-2 mb-1">
+          {childFirstName ? `Salut ${childFirstName} ! 👋` : t("title")}
         </h1>
-        <p className="text-white/70 text-sm mb-4">
+        <p className="text-white/70 text-sm md:text-base mb-5 max-w-prose">
           {firstReadyChapters[0]
-            ? `${firstReadyChapters[0].subject_name} · ${firstReadyChapters[0].title}`
+            ? `Aujourd'hui : ${firstReadyChapters[0].subject_name} · ${firstReadyChapters[0].title}`
             : t("practice_hero_text")}
         </p>
         <Link
           href={heroTarget as never}
-          className="bg-gold text-navy font-semibold px-4 py-2 rounded-btn text-sm inline-block"
+          className="bg-gold text-navy font-semibold px-5 py-2.5 rounded-btn text-sm md:text-base inline-block"
         >
           {firstReadyChapters[0] ? t("continue") : t("practice_hero_cta")}
         </Link>
       </div>
 
-      {/* Always-visible practice shortcut — even when no missions today */}
-      {firstReadyChapters.length === 0 && (
-        <Link
+      {/* Big action tiles — adapt per audience */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">
+        {/* 1. Mes matières — visible to everyone, shows count */}
+        <BigTile
+          href="/eleve/matieres"
+          emoji="📚"
+          title={`Mes matières${grade ? ` (${grade})` : ""}`}
+          subtitle={`${subjects.length} ${subjects.length === 1 ? "matière" : "matières"}`}
+          color="bg-pale-blue text-navy"
+        />
+        {/* 2. Pratique — universal */}
+        <BigTile
           href="/eleve/pratique"
-          className="bg-surface border-2 border-gold rounded-card p-4 mb-6 flex items-center gap-3 hover:bg-gold/5 transition-colors"
-        >
-          <span className="w-11 h-11 rounded-[12px] bg-gold text-navy flex items-center justify-center flex-shrink-0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-            </svg>
-          </span>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-fg">{t("practice_card_title")}</div>
-            <div className="text-xs text-fg-soft">{t("practice_card_text")}</div>
-          </div>
-          <span className="text-fg-faint">›</span>
-        </Link>
-      )}
+          emoji="🎯"
+          title="Pratiquer"
+          subtitle={totalReadyForGrade > 0 ? `${totalReadyForGrade} chapitre${totalReadyForGrade > 1 ? "s" : ""} prêt${totalReadyForGrade > 1 ? "s" : ""}` : "Quiz, jeux et activités"}
+          color="bg-gold/15 text-fg border-gold/40"
+        />
+        {/* 3. Audience-specific tiles */}
+        {audience === "primary" && (
+          <>
+            <BigTile
+              href="/petits"
+              emoji="🦊"
+              title="Univers des petits"
+              subtitle="Coloriage, lecture, jeux"
+              color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100"
+            />
+            <BigTile
+              href="/petits/lecture"
+              emoji="📖"
+              title="Lis avec moi"
+              subtitle="Histoires bilingues"
+              color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100"
+            />
+          </>
+        )}
+        {audience === "middle" && (
+          <>
+            <BigTile
+              href="/eleve/redaction"
+              emoji="✍️"
+              title="Rédaction du jour"
+              subtitle="Sujet libre, FR + AR"
+              color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100"
+            />
+            <BigTile
+              href="/eleve/calligraphie"
+              emoji="🎨"
+              title="Calligraphie arabe"
+              subtitle="Trace les lettres"
+              color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100"
+            />
+          </>
+        )}
+        {audience === "high_school_other" && (
+          <>
+            <BigTile
+              href="/eleve/redaction"
+              emoji="✍️"
+              title="Rédaction"
+              subtitle="Pratique l'écriture"
+              color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100"
+            />
+            <BigTile
+              href="/eleve/progres"
+              emoji="📈"
+              title="Mes progrès"
+              subtitle="Suis tes scores"
+              color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100"
+            />
+          </>
+        )}
+        {audience === "bac" && bacOn && (
+          <>
+            <BigTile
+              href="/eleve/bac"
+              emoji="📄"
+              title="Archive Bac & BEM"
+              subtitle="25 sujets officiels"
+              color="bg-navy/10 dark:bg-navy/30 text-fg border-navy/20"
+            />
+            <BigTile
+              href="/eleve/bac/countdown"
+              emoji="📅"
+              title="Compte à rebours"
+              subtitle="Jours avant le grand jour"
+              color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100"
+            />
+          </>
+        )}
+      </div>
 
       {/* Today's missions — real chapter quizzes */}
       {firstReadyChapters.length > 0 && (
         <>
           <div className="flex justify-between items-baseline mb-3">
-            <h2 className="text-base font-semibold text-fg">{t("missions_today")}</h2>
+            <h2 className="text-base md:text-lg font-semibold text-fg">{t("missions_today")}</h2>
           </div>
           <div className="space-y-2 mb-8">
             {firstReadyChapters.map((c, i) => (
@@ -186,13 +275,13 @@ export default async function StudentHome() {
         </>
       )}
 
-      {/* Quick access — gated by feature flags */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        {tutorOn && <Quick href="/eleve/tuteur" title={t("quick_tutor")} subtitle={t("quick_tutor_sub")} />}
-        {homeworkOn && <Quick href="/eleve/devoirs" title={t("quick_homework")} subtitle={t("quick_homework_sub")} />}
-        {bacOn && <Quick href="/eleve/bac" title={t("quick_bac")} subtitle={t("quick_bac_sub")} />}
-        {bacOn && <Quick href="/eleve/bac/examen" title={t("quick_exam")} subtitle={t("quick_exam_sub")} />}
-      </div>
+      {/* Optional secondary quick access — only for older students with feature flags */}
+      {(tutorOn || homeworkOn) && audience !== "primary" && (
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          {tutorOn && <Quick href="/eleve/tuteur" title={t("quick_tutor")} subtitle={t("quick_tutor_sub")} />}
+          {homeworkOn && <Quick href="/eleve/devoirs" title={t("quick_homework")} subtitle={t("quick_homework_sub")} />}
+        </div>
+      )}
 
       {/* Subjects (link to matieres) */}
       <div className="flex justify-between items-baseline mb-3">
@@ -223,6 +312,29 @@ export default async function StudentHome() {
         )}
       </div>
     </StudentShell>
+  );
+}
+
+function BigTile({
+  href, emoji, title, subtitle, color,
+}: {
+  href: string;
+  emoji: string;
+  title: string;
+  subtitle: string;
+  color: string;
+}) {
+  return (
+    <Link
+      href={href as never}
+      className={`${color} border border-line rounded-card p-4 md:p-5 flex flex-col gap-2 hover:shadow-card-hover hover:-translate-y-0.5 transition-all min-h-[120px]`}
+    >
+      <div className="text-3xl md:text-4xl">{emoji}</div>
+      <div>
+        <div className="font-bold text-sm md:text-base leading-tight">{title}</div>
+        <div className="text-xs opacity-75 mt-0.5">{subtitle}</div>
+      </div>
+    </Link>
   );
 }
 
