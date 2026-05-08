@@ -146,6 +146,13 @@ export async function getCheckout(id: string): Promise<ChargilyCheckout> {
  * Verify a Chargily webhook signature.
  * Chargily sends `Signature: <hmac-sha256>` header — HMAC of the raw body
  * with our webhook secret as key.
+ *
+ * Behaviour when CHARGILY_WEBHOOK_SECRET is not configured:
+ *   - production : REJECT (return false). Anything else means an attacker who
+ *                  guesses the webhook URL could mint paid subscriptions for
+ *                  free. Production must always have the secret set.
+ *   - dev/test   : allow with a loud warning so local development against a
+ *                  test Chargily instance keeps working.
  */
 export async function verifyWebhookSignature(
   rawBody: string,
@@ -153,7 +160,11 @@ export async function verifyWebhookSignature(
 ): Promise<boolean> {
   const secret = process.env.CHARGILY_WEBHOOK_SECRET;
   if (!secret) {
-    console.warn("[chargily] No CHARGILY_WEBHOOK_SECRET — accepting webhook unverified");
+    if (process.env.NODE_ENV === "production") {
+      console.error("[chargily] CHARGILY_WEBHOOK_SECRET missing in production — rejecting webhook");
+      return false;
+    }
+    console.warn("[chargily] No CHARGILY_WEBHOOK_SECRET (dev only) — accepting webhook unverified");
     return true;
   }
   if (!signature) return false;

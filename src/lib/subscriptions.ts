@@ -99,3 +99,88 @@ export async function hasAccessForGrade(
   // bac_only: only 3AS and 4AM (BEM final year + Bac final year)
   return grade === "3AS" || grade === "4AM";
 }
+
+/**
+ * Server-page guard: redirects non-subscribers to the abonnement page.
+ * The previous pattern was to render the page with a yellow "no sub" banner
+ * but still link to all gated content — kids could play through everything
+ * without paying. Now we hard-redirect.
+ *
+ * Allows authenticated calls only — pass the user.id you already have.
+ *
+ *   if (!user) redirect("/connexion");
+ *   await requireSubscription(user.id);
+ */
+export async function requireSubscription(userId: string): Promise<ActiveSubscription> {
+  // Lazy import to avoid pulling next/navigation into client-bundleable code.
+  const { redirect } = await import("next/navigation");
+  const sub = await getActiveSubscription(userId);
+  if (!sub) {
+    redirect("/parent/abonnement");
+    // Unreachable — redirect throws — but TS can't infer that across the
+    // dynamic-import boundary, so this satisfies the type checker.
+    throw new Error("redirect");
+  }
+  return sub;
+}
+
+/**
+ * Server-page guard for grade-tied content. Redirects to abonnement if no
+ * subscription, or to abonnement with `?upgrade=1` if the current tier
+ * doesn't cover this grade (e.g. pack_bac trying to use a 1AP page).
+ */
+export async function requireAccessForGrade(
+  userId: string,
+  grade: string | null | undefined,
+): Promise<ActiveSubscription> {
+  const { redirect } = await import("next/navigation");
+  const sub = await getActiveSubscription(userId);
+  if (!sub) {
+    redirect("/parent/abonnement");
+    throw new Error("redirect"); // TS narrowing across dynamic-import boundary
+  }
+  if (!grade) return sub;
+  if (sub.tier === "full") return sub;
+  if (grade === "3AS" || grade === "4AM") return sub;
+  redirect("/parent/abonnement?upgrade=1");
+  throw new Error("redirect");
+}
+
+/**
+ * Server-page guard for the kids universe (/petits/*). Pack Bac users do
+ * not have access — only full-tier (eleve / famille) plans do.
+ */
+export async function requireKidsAccess(userId: string): Promise<ActiveSubscription> {
+  const { redirect } = await import("next/navigation");
+  const sub = await getActiveSubscription(userId);
+  if (!sub) {
+    redirect("/parent/abonnement");
+    throw new Error("redirect");
+  }
+  if (sub.tier !== "full") {
+    redirect("/parent/abonnement?upgrade=1");
+    throw new Error("redirect");
+  }
+  return sub;
+}
+
+/**
+ * API-route guard. Returns null if access is granted (caller continues),
+ * or a NextResponse 402/403 the caller should `return` immediately.
+ *
+ *   const sub = await getActiveSubscription(user.id);
+ *   const block = requireSubscriptionApi(sub);
+ *   if (block) return block;
+ */
+export function requireSubscriptionApi(sub: ActiveSubscription | null) {
+  if (!sub) {
+    // Lazy require to keep this importable from anywhere.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NextResponse } = require("next/server") as typeof import("next/server");
+    return NextResponse.json(
+      { error: "Subscription required", code: "SUBSCRIPTION_REQUIRED" },
+      { status: 402 },
+    );
+  }
+  return null;
+}

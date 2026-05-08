@@ -33,6 +33,10 @@ export function QuizPlayer({
   const [done, setDone] = useState(false);
   const [savedScorePct, setSavedScorePct] = useState<number | null>(null);
   const [startTime] = useState<number>(Date.now());
+  // Track every (questionId, chosenIndex) so the server can recompute the
+  // score authoritatively at /api/quiz/complete time. The client-only `score`
+  // state above is just for UI/animation — we never trust it for stats.
+  const [picks, setPicks] = useState<Array<{ questionId: string; chosenIndex: number }>>([]);
 
   const q = questions[index];
   const total = questions.length;
@@ -41,6 +45,7 @@ export function QuizPlayer({
     if (picked !== null) return;
     setPicked(i);
     if (i === q.correctIndex) setScore((s) => s + 1);
+    setPicks((prev) => [...prev, { questionId: q.id, chosenIndex: i }]);
   };
 
   const onNext = async () => {
@@ -70,13 +75,18 @@ export function QuizPlayer({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               childId,
-              score,
-              total,
+              picks,
               durationSeconds: Math.round((Date.now() - startTime) / 1000),
               language: typeof navigator !== "undefined" && navigator.language?.startsWith("ar") ? "ar" : "fr",
             }),
           });
           if (!res.ok) throw new Error("save failed");
+          // Trust the server's score, not the client's. Display whichever
+          // came back from the API.
+          try {
+            const json = await res.json();
+            if (typeof json?.scorePct === "number") setSavedScorePct(json.scorePct);
+          } catch { /* keep local pct */ }
           toast.success(t("saved_toast"));
         } catch {
           toast.error(t("save_failed"), {

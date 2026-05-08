@@ -12,6 +12,7 @@
  */
 import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
+import { getActiveSubscription, requireSubscriptionApi } from "@/lib/subscriptions";
 
 interface Body {
   chapter_id?: string;
@@ -27,6 +28,12 @@ export async function POST(req: Request) {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+
+  // Subscription required — page-level paywall is also enforced but a direct
+  // API hit by a non-paying user must also be blocked.
+  const sub = await getActiveSubscription(user.id);
+  const block = requireSubscriptionApi(sub);
+  if (block) return block;
 
   let body: Body;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }

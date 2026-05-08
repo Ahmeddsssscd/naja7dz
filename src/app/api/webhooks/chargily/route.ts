@@ -17,8 +17,16 @@ export async function POST(req: Request) {
   const rawBody = await req.text();
   const signature = req.headers.get("signature") ?? req.headers.get("x-signature");
 
+  // SIGNATURE FIRST — before any DB writes. Otherwise an unauthenticated
+  // attacker who guesses the webhook URL could pollute payment_events with
+  // arbitrary JSON forever, and we'd consume DB rows on every spam request.
   const valid = await verifyWebhookSignature(rawBody, signature);
+  if (!valid) {
+    console.warn("[webhook] invalid signature — rejecting");
+    return NextResponse.json({ ok: false, error: "Invalid signature" }, { status: 401 });
+  }
 
+  // Now safe to parse + audit.
   let payload: unknown;
   try {
     payload = JSON.parse(rawBody);
@@ -40,20 +48,17 @@ export async function POST(req: Request) {
 
   const supabase = createAdminClient();
 
-  // Audit log every event regardless of validity
+  // Audit log only signature-valid events. Replays on the same chargily_event_id
+  // won't double-process because `processed` defaults to false and the
+  // activation RPC is idempotent.
   await supabase.from("payment_events").insert({
     event_type: evt.type ?? "unknown",
     chargily_event_id: evt.id ?? null,
     payload: payload as object,
     signature: signature ?? null,
-    signature_valid: valid,
+    signature_valid: true,
     processed: false,
   });
-
-  if (!valid) {
-    console.warn("[webhook] invalid signature — ignoring");
-    return NextResponse.json({ ok: false, error: "Invalid signature" }, { status: 401 });
-  }
 
   const checkoutId = evt.data?.id;
   if (!checkoutId) {

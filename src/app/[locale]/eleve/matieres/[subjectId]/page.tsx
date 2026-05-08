@@ -3,6 +3,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 import { Link } from "@/i18n/routing";
+import { requireAccessForGrade } from "@/lib/subscriptions";
 
 export const metadata = { title: "Matière" };
 
@@ -17,6 +18,9 @@ export default async function SubjectDetailPage({
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
+  // Hard paywall: subscriber required.
+  const _activeSub = await requireAccessForGrade(user.id, null);
+  void _activeSub;
 
   const admin = createAdminClient();
   const [{ data: subject }, { data: chapters }] = await Promise.all([

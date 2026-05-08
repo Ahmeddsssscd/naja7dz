@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
+import { requireAccessForGrade } from "@/lib/subscriptions";
 
 export const metadata = { title: "Bac countdown" };
 
@@ -19,6 +20,9 @@ export default async function BacCountdownPage() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
+  // Hard paywall: subscriber required.
+  const _activeSub = await requireAccessForGrade(user.id, null);
+  void _activeSub;
 
   const { data: child } = await supabase
     .from("children").select("*").eq("parent_id", user.id).limit(1).maybeSingle();

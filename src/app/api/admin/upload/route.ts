@@ -11,6 +11,26 @@ import { requireAdminApi } from "@/lib/admin-auth";
 const ALLOWED_BUCKETS = new Set(["exam-papers", "adab-images", "branding"]);
 const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
+// Per-bucket MIME allow-list. We refuse anything not in this list — without
+// it an admin (or compromised admin account) could upload arbitrary binaries
+// served from our domain (XSS via SVG, malware, etc.).
+const ALLOWED_MIME: Record<string, ReadonlySet<string>> = {
+  "exam-papers": new Set(["application/pdf"]),
+  "adab-images": new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]),
+  "branding": new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]),
+};
+
+// Extension fallback used if the browser sends a bogus / missing MIME.
+const EXT_TO_MIME: Record<string, string> = {
+  pdf: "application/pdf",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+  gif: "image/gif",
+  svg: "image/svg+xml",
+};
+
 export async function POST(req: Request) {
   const gate = await requireAdminApi();
   if ("response" in gate) return gate.response;
@@ -32,6 +52,28 @@ export async function POST(req: Request) {
   }
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: `Fichier trop grand (max ${MAX_BYTES / 1024 / 1024}MB)` }, { status: 413 });
+  }
+
+  // MIME allow-list per bucket. Cross-check the browser-sent MIME with the
+  // file extension — refuse if either is unsupported.
+  const allowed = ALLOWED_MIME[bucket] ?? new Set<string>();
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  const mimeFromExt = EXT_TO_MIME[ext];
+  const declaredMime = (file.type || "").toLowerCase();
+  const effectiveMime = declaredMime || mimeFromExt || "application/octet-stream";
+  if (!allowed.has(effectiveMime)) {
+    return NextResponse.json(
+      { error: `Type de fichier non autorisé pour le bucket "${bucket}". Autorisés: ${[...allowed].join(", ")}` },
+      { status: 415 },
+    );
+  }
+  // Also refuse the rare case where extension and declared MIME disagree
+  // (e.g. .pdf with image/png MIME — likely a confused or malicious upload).
+  if (mimeFromExt && declaredMime && mimeFromExt !== declaredMime) {
+    return NextResponse.json(
+      { error: "Type MIME et extension du fichier ne correspondent pas" },
+      { status: 415 },
+    );
   }
 
   const admin = createAdminClient();
@@ -57,7 +99,7 @@ export async function POST(req: Request) {
   const { error: uploadErr } = await admin.storage
     .from(bucket)
     .upload(path, file, {
-      contentType: file.type || "application/octet-stream",
+      contentType: effectiveMime,
       upsert: false,
     });
 

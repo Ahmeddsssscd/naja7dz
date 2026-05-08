@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { LogicRiddle } from "@/components/app/games/LogicRiddle";
+import { requireKidsAccess } from "@/lib/subscriptions";
 
 export const metadata = { title: "Énigme du jour" };
 
@@ -8,6 +9,8 @@ export default async function RiddlePage() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
+  // Hard paywall: kids universe is full-tier only.
+  await requireKidsAccess(user.id);
 
   const admin = createAdminClient();
   const { data: riddles } = await admin.from("logic_riddles").select("*").eq("active", true);

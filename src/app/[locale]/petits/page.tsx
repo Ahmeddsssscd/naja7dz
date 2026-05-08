@@ -5,6 +5,7 @@ import { Link } from "@/i18n/routing";
 import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { requireKidsAccess } from "@/lib/subscriptions";
 
 export const metadata = { title: "Mon univers" };
 
@@ -13,6 +14,10 @@ export default async function KidsHome() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
+
+  // Hard paywall: kids universe is full-tier only (eleve / famille). Pack Bac
+  // users get redirected to upgrade.
+  await requireKidsAccess(user.id);
 
   const { data: child } = await supabase
     .from("children").select("*").eq("parent_id", user.id).limit(1).maybeSingle();

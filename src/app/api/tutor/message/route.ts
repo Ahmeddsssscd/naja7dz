@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
+import { getActiveSubscription, requireSubscriptionApi } from "@/lib/subscriptions";
 
 const MOCK_REPLIES = [
   "Bonne question ! Décomposons ça étape par étape. D'abord, on isole le terme avec x, puis on divise des deux côtés. Veux-tu un exemple concret ?",
@@ -17,6 +18,11 @@ export async function POST(req: Request) {
   const auth = await createServerClient();
   const { data: { user } } = await auth.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+
+  // Subscription required — tutor is a paid feature.
+  const sub = await getActiveSubscription(user.id);
+  const block = requireSubscriptionApi(sub);
+  if (block) return block;
 
   let body: { conversationId?: string; childId?: string; message?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }

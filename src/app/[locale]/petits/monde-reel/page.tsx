@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
+import { requireKidsAccess } from "@/lib/subscriptions";
 
 export const metadata = { title: "Le monde réel" };
 
@@ -11,6 +12,8 @@ export default async function MondeReelHub() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
+  // Hard paywall: kids universe is full-tier only.
+  await requireKidsAccess(user.id);
 
   const tiles = [
     { href: "/petits/monde-reel/heure", emoji: "⏰", title: t("tile_clock"), subtitle: t("tile_clock_sub"), color: "bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" },

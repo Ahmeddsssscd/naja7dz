@@ -3,7 +3,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 import { Link } from "@/i18n/routing";
-import { getActiveSubscription, hasAccessForGrade } from "@/lib/subscriptions";
+import { requireAccessForGrade } from "@/lib/subscriptions";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export const metadata = { title: "Mon espace" };
@@ -25,8 +25,9 @@ export default async function StudentHome() {
     .limit(1)
     .maybeSingle();
 
-  const sub = await getActiveSubscription(user.id);
-  const canAccess = await hasAccessForGrade(user.id, child?.grade);
+  // Hard paywall — non-subscribers redirected to /parent/abonnement.
+  const sub = await requireAccessForGrade(user.id, child?.grade);
+  const canAccess = true;
 
   // Pull the child's subjects + chapters + quiz counts so the home shows
   // REAL "today's missions" — the next 3 chapters that have a question bank.

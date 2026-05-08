@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
+import { requireKidsAccess } from "@/lib/subscriptions";
 
 export const metadata = { title: "Lis avec moi" };
 
@@ -14,6 +15,8 @@ export default async function LectureHub() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
+  // Hard paywall: kids universe is full-tier only.
+  await requireKidsAccess(user.id);
 
   // Real stories from the DB so kids can pick what to read.
   const admin = createAdminClient();

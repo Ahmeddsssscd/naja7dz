@@ -7,6 +7,7 @@ import { notFound, redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { QuizRunner } from "@/components/app/QuizRunner";
+import { requireAccessForGrade } from "@/lib/subscriptions";
 
 export const metadata = { title: "Quiz" };
 
@@ -28,9 +29,13 @@ export default async function ChapterQuizPage({
       .select("id, title_fr, title_ar, subject_id, subjects(name_fr, name_ar, grade_code)")
       .eq("id", chapterId)
       .maybeSingle(),
-    supabase.from("children").select("id, full_name").eq("parent_id", user.id).limit(1).maybeSingle(),
+    supabase.from("children").select("id, full_name, grade").eq("parent_id", user.id).limit(1).maybeSingle(),
   ]);
   if (!chapter || chapter.subject_id !== subjectId) notFound();
+
+  // Hard paywall — quizzes require an active subscription that covers the
+  // child's grade. This is the most-trafficked gated route.
+  await requireAccessForGrade(user.id, child?.grade);
 
   const isAr = locale === "ar";
   const subj = Array.isArray(chapter.subjects) ? chapter.subjects[0] : chapter.subjects;

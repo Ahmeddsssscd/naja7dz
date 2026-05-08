@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
+import { getActiveSubscription, requireSubscriptionApi } from "@/lib/subscriptions";
 
 export async function POST(req: Request) {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+
+  // Quran tracker lives in /petits — full-tier subscribers only.
+  const sub = await getActiveSubscription(user.id);
+  const block = requireSubscriptionApi(sub);
+  if (block) return block;
+  if (sub && sub.tier !== "full") {
+    return NextResponse.json({ error: "Pack Bac n'inclut pas le suivi Coran" }, { status: 403 });
+  }
 
   let body: { childId?: string; surahNumber?: number; versesMemorized?: number };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }

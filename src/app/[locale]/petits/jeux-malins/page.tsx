@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
+import { requireKidsAccess } from "@/lib/subscriptions";
 
 export const metadata = { title: "Jeux malins" };
 
@@ -22,6 +23,8 @@ export default async function MalinsHub() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
+  // Hard paywall: kids universe is full-tier only.
+  await requireKidsAccess(user.id);
 
   return (
     <div className="min-h-screen bg-cream pb-12">

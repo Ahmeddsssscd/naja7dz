@@ -17,7 +17,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { StudentShell } from "@/components/app/StudentShell";
 import { Link } from "@/i18n/routing";
-import { getActiveSubscription, hasAccessForGrade } from "@/lib/subscriptions";
+import { requireAccessForGrade } from "@/lib/subscriptions";
 
 export const metadata = { title: "Pratique" };
 
@@ -68,8 +68,10 @@ export default async function PracticeHub() {
     .limit(1)
     .maybeSingle();
 
-  const sub = await getActiveSubscription(user.id);
-  const canAccess = await hasAccessForGrade(user.id, child?.grade);
+  // Hard paywall — non-subscribers and tier-mismatch are redirected to the
+  // abonnement page instead of seeing the practice hub with a banner.
+  const sub = await requireAccessForGrade(user.id, child?.grade);
+  const canAccess = true; // requireAccessForGrade redirected if false
   const isAr = locale === "ar";
   const admin = createAdminClient();
   const childGrade = child?.grade ?? null;
