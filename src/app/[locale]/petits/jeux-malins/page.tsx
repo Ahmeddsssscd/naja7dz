@@ -125,6 +125,12 @@ export default async function MalinsHub() {
               title={tHub("game_hangman")}
               color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100"
             />
+            <Tile
+              href="/petits/jeux-malins/anagrammes"
+              emoji="🔤"
+              title={tHub("game_anagrams")}
+              color="bg-fuchsia-100 dark:bg-fuchsia-950/30 text-fuchsia-900 dark:text-fuchsia-100"
+            />
           </SubGroup>
 
           {/* Creativity & real world */}

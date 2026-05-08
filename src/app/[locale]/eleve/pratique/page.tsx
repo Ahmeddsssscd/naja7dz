@@ -234,6 +234,7 @@ export default async function PracticeHub() {
         <SubGroup label={t("games_group_words")}>
           <ActivityTile href="/petits/jeux-malins/mots-caches" emoji="🔍" title={t("game_wordsearch")} color="bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900" compact />
           <ActivityTile href="/petits/jeux-malins/pendu" emoji="🪢" title={t("game_hangman")} color="bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700" compact />
+          <ActivityTile href="/petits/jeux-malins/anagrammes" emoji="🔤" title={t("game_anagrams")} color="bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900" compact />
         </SubGroup>
 
         {/* Real-world + creativity */}
