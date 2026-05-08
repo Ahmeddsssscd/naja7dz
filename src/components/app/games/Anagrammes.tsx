@@ -80,40 +80,50 @@ export function Anagrammes() {
 
   const built = building.map((i) => pool[i]).join("");
   const correct = built === target;
+  const [solving, setSolving] = useState(false);
 
   const onPickLetter = (idx: number) => {
-    if (building.includes(idx) || correct) return;
+    if (building.includes(idx) || correct || solving) return;
     setBuilding((b) => [...b, idx]);
   };
 
   const onUndo = () => {
-    if (correct) return;
+    if (correct || solving) return;
     setBuilding((b) => b.slice(0, -1));
   };
 
-  const onValidate = () => {
-    if (built === target) {
-      toast.success("✓ Bravo !");
-      setScore((s) => s + 1);
-      confetti({ particleCount: 40, spread: 60, colors: ["#D4A72C", "#0F1B33"] });
-      setTimeout(() => {
-        if (round >= ROUNDS) {
-          // Game over — persist best.
-          const final = score + 1;
-          if (final > bestScore) {
-            setBestScore(final);
-            try { window.localStorage.setItem(STORAGE_KEY, String(final)); } catch { /* ignore */ }
-          }
-          setDone(true);
-        } else {
-          setRound((r) => r + 1);
-          startRound();
+  // Auto-advance when the answer is fully built. We watch `correct` becoming
+  // true rather than using a separate Valider button — the player just spells
+  // the word and we celebrate immediately.
+  useEffect(() => {
+    if (!correct || solving || done) return;
+    setSolving(true);
+    toast.success("✓ Bravo !");
+    confetti({ particleCount: 40, spread: 60, colors: ["#D4A72C", "#0F1B33"] });
+    setScore((s) => s + 1);
+    const id = setTimeout(() => {
+      if (round >= ROUNDS) {
+        const final = score + 1;
+        if (final > bestScore) {
+          setBestScore(final);
+          try { window.localStorage.setItem(STORAGE_KEY, String(final)); } catch { /* ignore */ }
         }
-      }, 700);
-    } else {
-      toast.error("✗ Pas tout à fait", { description: target.length === built.length ? "Réessaie" : `Il manque ${target.length - built.length} lettre(s)` });
-      setBuilding([]);
-    }
+        setDone(true);
+      } else {
+        setRound((r) => r + 1);
+        startRound();
+      }
+      setSolving(false);
+    }, 900);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [correct]);
+
+  const onValidate = () => {
+    if (built === target) return; // handled by the effect above
+    // Wrong attempt at full length — flash error and reset the build.
+    toast.error("✗ Pas tout à fait", { description: `Réessaie` });
+    setBuilding([]);
   };
 
   const onSkip = () => {
