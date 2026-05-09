@@ -85,21 +85,24 @@ export default async function TeacherZone() {
             </div>
           </section>
 
-          {/* CTA */}
+          {/* CTA — primary button centered, secondary "déjà inscrit ?" link
+              stacked underneath so the button is unambiguously centered
+              (a side-by-side flex would shift the button left of center). */}
           <section className="accent-block py-20 text-center">
             <div className="container-x">
               <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-4 max-w-2xl mx-auto">
                 {t("cta_text")}
               </h2>
               <p className="text-white/70 text-lg mb-8 max-w-prose mx-auto">{t("hero_sub")}</p>
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                <Link href="/inscription?role=teacher" className="btn btn-secondary btn-lg">
-                  {t("cta_create_account")}
+              <Link href="/inscription?role=teacher" className="btn btn-secondary btn-lg">
+                {t("cta_create_account")}
+              </Link>
+              <p className="text-sm text-white/65 mt-5">
+                {t("cta_already_account")}{" "}
+                <Link href="/connexion" className="text-white underline underline-offset-4 hover:text-gold">
+                  {t("cta_login")}
                 </Link>
-                <Link href="/connexion" className="text-sm font-medium text-white/80 hover:text-white">
-                  {t("cta_already_account")} {t("cta_login")} →
-                </Link>
-              </div>
+              </p>
             </div>
           </section>
         </>
