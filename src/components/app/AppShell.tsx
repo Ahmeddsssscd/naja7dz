@@ -16,7 +16,7 @@ export function AppShell({
   parentName,
 }: {
   children: React.ReactNode;
-  active?: "home" | "children" | "reports" | "subscription" | "settings";
+  active?: "home" | "children" | "reports" | "subscription" | "settings" | "catalogue";
   parentName?: string;
 }) {
   const t = useTranslations("Shell");
@@ -44,6 +44,7 @@ export function AppShell({
       <aside className="dash-side bg-surface border-e border-line p-4 hidden lg:block">
         <SideLink href="/parent" active={active === "home"} icon="home">{t("nav_home")}</SideLink>
         <SideLink href="/parent/enfants" active={active === "children"} icon="children">{t("nav_children")}</SideLink>
+        <SideLink href="/parent/catalogue" active={active === "catalogue"} icon="report">{t("nav_catalogue")}</SideLink>
         <SideLink href="/parent/rapports" active={active === "reports"} icon="report">{t("nav_reports")}</SideLink>
         <SideLink href="/parent/abonnement" active={active === "subscription"} icon="card">{t("nav_subscription")}</SideLink>
         <div className="text-xs font-semibold text-fg-faint uppercase tracking-wider px-3 mt-6 mb-2">{t("nav_tools")}</div>
