@@ -10,7 +10,7 @@
  * "I know" (Leitner-light: unknown cards loop back through the queue once).
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useGameBack } from "../useGameBack";
 import { useSpeak } from "./useSpeak";
 import {

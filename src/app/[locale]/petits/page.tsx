@@ -25,13 +25,14 @@ export default async function KidsHome() {
   const firstName = child?.full_name?.split(" ")[0];
 
   // Feature flags — admin can hide tiles from the kid universe.
-  const [coloringOn, mathsOn, smartOn, worldOn, readingOn, quranOn] = await Promise.all([
+  const [coloringOn, mathsOn, smartOn, worldOn, readingOn, quranOn, englishOn] = await Promise.all([
     isFeatureEnabled("kids_coloring"),
     isFeatureEnabled("kids_maths"),
     isFeatureEnabled("kids_smart"),
     isFeatureEnabled("kids_world"),
     isFeatureEnabled("kids_reading"),
     isFeatureEnabled("kids_quran"),
+    isFeatureEnabled("kids_english"),
   ]);
 
   return (
@@ -72,6 +73,7 @@ export default async function KidsHome() {
         {worldOn && <Tile href="/petits/monde-reel" emoji="🌍" title={t("tile_world")} subtitle={t("tile_world_sub")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />}
         {readingOn && <Tile href="/petits/lecture" emoji="📖" title={t("tile_reading")} subtitle={t("tile_reading_sub")} color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />}
         {quranOn && <Tile href="/petits/quran" emoji="📿" title={t("tile_quran")} subtitle={t("tile_quran_sub")} color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />}
+        {englishOn && <Tile href="/petits/anglais" emoji="🇬🇧" title={t("tile_english")} subtitle={t("tile_english_sub")} color="bg-indigo-100 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-100" />}
       </section>
     </div>
   );

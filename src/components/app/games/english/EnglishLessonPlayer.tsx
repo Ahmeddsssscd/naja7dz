@@ -17,7 +17,7 @@
  * the whole point of the lesson).
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useGameBack } from "../useGameBack";
 import { useSpeak } from "./useSpeak";
 import type { EnglishCard, EnglishLesson } from "./englishData";

@@ -19,6 +19,7 @@ export type FeatureKey =
   | "kids_reading"
   | "kids_world"
   | "kids_quran"
+  | "kids_english"
   | "kids_riddle"
   | "eleve_tutor"
   | "eleve_homework_ai"
