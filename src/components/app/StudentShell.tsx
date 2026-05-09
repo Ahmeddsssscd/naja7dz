@@ -17,11 +17,14 @@ export function StudentShell({
   children,
   childName,
   childGrade,
+  childStreak = 0,
   active = "home",
 }: {
   children: React.ReactNode;
   childName?: string;
   childGrade?: string | null;
+  /** Daily streak count to surface in the top bar. 0 hides the flame. */
+  childStreak?: number;
   active?: "home" | "subjects" | "practice" | "progress" | "profile";
 }) {
   const t = useTranslations("Student");
@@ -45,7 +48,7 @@ export function StudentShell({
                 {childName ?? t("default_name")}
               </div>
               <div className="text-xs text-fg-soft">
-                {childGrade ?? "—"} · {t("streak_days", { days: 0 })}
+                {childGrade ?? "—"} · {t("streak_days", { days: childStreak })}
               </div>
             </div>
             {/* Desktop child pill — sits next to logo */}
@@ -58,7 +61,7 @@ export function StudentShell({
                   {childName ?? t("default_name")}
                 </div>
                 <div className="text-xs text-fg-soft">
-                  {childGrade ?? "—"} · {t("streak_days", { days: 0 })}
+                  {childGrade ?? "—"} · {t("streak_days", { days: childStreak })}
                 </div>
               </div>
             </div>

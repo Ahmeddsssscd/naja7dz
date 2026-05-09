@@ -5,6 +5,7 @@ import { StudentShell } from "@/components/app/StudentShell";
 import { Link } from "@/i18n/routing";
 import { requireAccessForGrade } from "@/lib/subscriptions";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { getStreak } from "@/lib/streak";
 
 export const metadata = { title: "Mon espace" };
 
@@ -109,9 +110,10 @@ export default async function StudentHome() {
 
   const childFirstName = child?.full_name?.split(" ")[0] ?? "";
   const totalReadyForGrade = firstReadyChapters.length;
+  const streak = await getStreak(child?.id);
 
   return (
-    <StudentShell active="home" childName={child?.full_name ?? tStudent("default_name")} childGrade={child?.grade}>
+    <StudentShell active="home" childName={child?.full_name ?? tStudent("default_name")} childGrade={child?.grade} childStreak={streak.current}>
       {/* Subscription gating banner */}
       {!sub && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-5 text-sm">

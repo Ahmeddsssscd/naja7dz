@@ -15,6 +15,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { getActiveSubscription, requireSubscriptionApi } from "@/lib/subscriptions";
+import { bumpStreak } from "@/lib/streak";
 
 interface Pick {
   questionId: string;
@@ -134,6 +135,10 @@ export async function POST(req: Request) {
     console.error("[quiz/complete] quiz insert failed", quizErr);
     return NextResponse.json({ error: "DB error" }, { status: 500 });
   }
+
+  // Bump the daily streak (idempotent — only first call per Algiers day counts).
+  // Safe to call before activity_logs insert: failures are silently caught.
+  await bumpStreak(childId);
 
   // Activity log entry
   await admin.from("activity_logs").insert({
