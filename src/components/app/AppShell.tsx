@@ -16,7 +16,7 @@ export function AppShell({
   parentName,
 }: {
   children: React.ReactNode;
-  active?: "home" | "children" | "reports" | "subscription" | "settings" | "catalogue";
+  active?: "home" | "children" | "reports" | "subscription" | "settings" | "catalogue" | "explain" | "fac";
   parentName?: string;
 }) {
   const t = useTranslations("Shell");
@@ -46,8 +46,10 @@ export function AppShell({
         <SideLink href="/parent/enfants" active={active === "children"} icon="children">{t("nav_children")}</SideLink>
         <SideLink href="/parent/catalogue" active={active === "catalogue"} icon="report">{t("nav_catalogue")}</SideLink>
         <SideLink href="/parent/rapports" active={active === "reports"} icon="report">{t("nav_reports")}</SideLink>
+        <SideLink href="/parent/expliquer" active={active === "explain"} icon="bulb">{t("nav_explain")}</SideLink>
         <SideLink href="/parent/abonnement" active={active === "subscription"} icon="card">{t("nav_subscription")}</SideLink>
         <div className="text-xs font-semibold text-fg-faint uppercase tracking-wider px-3 mt-6 mb-2">{t("nav_tools")}</div>
+        <SideLink href="/fac" active={active === "fac"} icon="cap">{t("nav_fac")}</SideLink>
         <SideLink href="/parent/parametres" active={active === "settings"} icon="settings">{t("nav_settings")}</SideLink>
         <SideLink href="/contact" icon="help">{t("nav_help")}</SideLink>
       </aside>
@@ -128,6 +130,14 @@ function SideIcon({ name, active }: { name: string; active: boolean }) {
     case "settings":
       return (
         <svg className={cls} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      );
+    case "bulb":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.7.6 1 1.5 1 2.3v1h6v-1c0-.8.3-1.7 1-2.3A7 7 0 0 0 12 2z"/></svg>
+      );
+    case "cap":
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2"><path d="M22 10L12 4 2 10l10 6 10-6z"/><path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5"/></svg>
       );
     case "help":
     default:

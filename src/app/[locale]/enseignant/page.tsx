@@ -1,78 +1,100 @@
-import { PageShell } from "@/components/landing/PageShell";
+/**
+ * /enseignant — Mode Enseignant landing.
+ *
+ * If the user is logged in AND has a teacher_profiles row → redirect them
+ * to /enseignant/dashboard. If logged in but no profile → show signup
+ * form. If anonymous → show marketing landing with "Créer mon compte
+ * enseignant" CTA pointing to /inscription.
+ */
+import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
+import { TeacherSignupForm } from "@/components/app/enseignant/TeacherSignupForm";
 
 export const metadata = { title: "Espace enseignant" };
 
-const TOOLS = [
-  {
-    title: "Générateur de feuilles d'exercices",
-    desc: "Crée des feuilles d'exercices alignées au programme officiel en quelques clics.",
-    icon: "📝",
-  },
-  {
-    title: "Banque de questions",
-    desc: "Plus de 5 000 questions classées par niveau, matière et chapitre. À utiliser librement.",
-    icon: "🗂",
-  },
-  {
-    title: "Communauté d'enseignants",
-    desc: "Partage tes meilleures fiches avec des collègues de toute l'Algérie.",
-    icon: "👨‍🏫",
-  },
-  {
-    title: "Modèles de cours",
-    desc: "Fiches de séquence, plans de leçon, outils d'évaluation — clé en main.",
-    icon: "📚",
-  },
-];
+export default async function TeacherZone() {
+  const t = await getTranslations("Enseignant");
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-export default function TeacherZone() {
+  if (user) {
+    const { data: prof } = await supabase
+      .from("teacher_profiles")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (prof) redirect("/enseignant/dashboard");
+  }
+
+  // Logged in but no teacher profile → show signup form right here.
+  // Anonymous → show landing.
   return (
-    <PageShell>
-      <section className="py-20 md:py-26 bg-surface-2 text-center">
-        <div className="container-x max-w-3xl">
-          <span className="eyebrow mb-3 block">Espace enseignant</span>
-          <h1 className="text-[clamp(34px,5vw,48px)] font-bold tracking-tight text-fg mb-4">
-            Des outils gratuits pour les enseignants algériens.
-          </h1>
-          <p className="text-lg text-fg-soft mb-8">
-            Najaح soutient les profs qui font la différence. Outils gratuits, communauté, partage de ressources —
-            sans publicité, sans abonnement.
-          </p>
-          <Link href="/inscription" className="btn btn-primary btn-lg">
-            Créer mon compte enseignant (bientôt)
-          </Link>
-        </div>
-      </section>
+    <div className="min-h-screen bg-cream pb-12">
+      <header className="px-5 lg:px-8 pt-5 pb-4 max-w-5xl mx-auto">
+        <Link href="/" className="text-xs text-fg-soft hover:text-navy">← {t("back_home")}</Link>
+        <h1 className="text-3xl md:text-4xl font-bold text-navy mt-2">
+          👨‍🏫 {t("page_title")}
+        </h1>
+        <p className="text-sm md:text-base text-fg-soft mt-1 max-w-2xl">{t("page_sub")}</p>
+      </header>
 
-      <section className="py-20 bg-surface">
-        <div className="container-x max-w-5xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-fg text-center mb-12">
-            Ce que tu auras à disposition
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-5">
-            {TOOLS.map((tool, i) => (
-              <article key={i} className="bg-surface border border-line rounded-card p-6">
-                <div className="text-4xl mb-4">{tool.icon}</div>
-                <h3 className="font-semibold text-fg mb-2">{tool.title}</h3>
-                <p className="text-sm text-fg-soft">{tool.desc}</p>
-              </article>
-            ))}
+      <main className="max-w-5xl mx-auto px-5 lg:px-8 space-y-6">
+        {/* Hero */}
+        <section className="accent-block rounded-[28px] p-6 md:p-10 relative overflow-hidden">
+          <div className="absolute -bottom-3 -end-3 text-7xl md:text-9xl opacity-90">🍎</div>
+          <div className="relative max-w-[70%]">
+            <div className="text-xs font-bold text-gold uppercase tracking-wider mb-2">{t("hero_eyebrow")}</div>
+            <h2 className="text-xl md:text-2xl font-bold leading-snug">{t("hero_title")}</h2>
+            <p className="text-sm md:text-base mt-2 opacity-90">{t("hero_sub")}</p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="accent-block py-16 text-center">
-        <div className="container-x">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            Pour les écoles : licence B2B
-          </h2>
-          <p className="text-white/70 mb-6 max-w-prose mx-auto">
-            Vous gérez une école et voulez Najaح pour tous vos élèves ? On a une formule dédiée.
-          </p>
-          <Link href="/contact" className="btn btn-secondary">Nous contacter</Link>
-        </div>
-      </section>
-    </PageShell>
+        {user ? (
+          <TeacherSignupForm userEmail={user.email ?? ""} />
+        ) : (
+          <>
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ToolCard emoji="📚" title={t("tool_classes_title")} sub={t("tool_classes_sub")} />
+              <ToolCard emoji="📝" title={t("tool_devoirs_title")} sub={t("tool_devoirs_sub")} />
+              <ToolCard emoji="📊" title={t("tool_results_title")} sub={t("tool_results_sub")} />
+            </section>
+
+            <section className="bg-white rounded-3xl border-2 border-pale-blue p-6 text-center">
+              <p className="text-base md:text-lg text-navy mb-4 max-w-2xl mx-auto">
+                {t("cta_text")}
+              </p>
+              <Link href="/inscription?role=teacher" className="btn btn-primary inline-block">
+                {t("cta_create_account")}
+              </Link>
+              <p className="text-xs text-fg-soft mt-3">{t("cta_already_account")} <Link href="/connexion" className="underline text-navy">{t("cta_login")}</Link></p>
+            </section>
+          </>
+        )}
+
+        {/* What's inside */}
+        <section className="bg-white rounded-3xl border border-pale-blue p-5 md:p-6">
+          <h3 className="font-bold text-navy text-lg mb-3">{t("inside_title")}</h3>
+          <ul className="text-sm md:text-base text-fg-soft space-y-1.5 list-disc list-inside">
+            <li>{t("inside_1")}</li>
+            <li>{t("inside_2")}</li>
+            <li>{t("inside_3")}</li>
+            <li>{t("inside_4")}</li>
+            <li>{t("inside_5")}</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function ToolCard({ emoji, title, sub }: { emoji: string; title: string; sub: string }) {
+  return (
+    <div className="bg-white border-2 border-pale-blue rounded-3xl p-5 hover:border-gold transition">
+      <div className="text-4xl mb-2">{emoji}</div>
+      <h3 className="font-bold text-navy text-base md:text-lg leading-tight">{title}</h3>
+      <p className="text-xs md:text-sm text-fg-soft mt-1.5">{sub}</p>
+    </div>
   );
 }
