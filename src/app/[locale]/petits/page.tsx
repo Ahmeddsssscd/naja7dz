@@ -29,6 +29,7 @@ import { requireKidsAccess } from "@/lib/subscriptions";
 import { resolveActiveChild } from "@/lib/active-child";
 import { ChildSwitcher } from "@/components/app/ChildSwitcher";
 import { DailyStrip } from "@/components/app/DailyStrip";
+import { AnimatedFennec } from "@/components/app/AnimatedFennec";
 import { getLocale } from "next-intl/server";
 
 export const metadata = { title: "Mon univers" };
@@ -102,7 +103,10 @@ export default async function KidsHome({ searchParams }: PageProps) {
       {/* Hero with mascot — constrained on desktop so it doesn't go ridiculous */}
       <section className="max-w-5xl mx-auto mx-5 lg:mx-auto lg:px-8">
         <div className="accent-block rounded-[28px] p-6 md:p-8 relative overflow-hidden mx-5 lg:mx-0">
-          <div className="absolute -bottom-6 -end-3 text-7xl md:text-8xl">🦊</div>
+          <div className="absolute -bottom-2 -end-3 hidden sm:block">
+            <AnimatedFennec size={120} />
+          </div>
+          <div className="absolute -bottom-6 -end-3 text-7xl sm:hidden">🦊</div>
           <div className="relative">
             <div className="text-xs font-bold text-gold uppercase tracking-wider mb-2">{t("fennec_says")}</div>
             <p className="text-lg md:text-xl font-semibold leading-snug max-w-[70%]">{t("welcome")}</p>
@@ -148,6 +152,7 @@ export default async function KidsHome({ searchParams }: PageProps) {
         <div className="space-y-7">
           {/* Maths & nombres */}
           <SubGroup label={tHub("games_group_math")}>
+            <Tile href="/petits/jeux-malins/feuille-maths" emoji="📝" title={tHub("game_worksheet")} color="bg-violet-100 dark:bg-violet-950/30 text-violet-900 dark:text-violet-100" />
             <Tile href="/petits/maths/number-ninja" emoji="🥷" title={tHub("game_ninja")} color="bg-red-100 dark:bg-red-950/30 text-red-900 dark:text-red-100" />
             <Tile href="/petits/maths/souk" emoji="🛒" title={tHub("game_souk")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
             <Tile href="/petits/jeux-malins/course-maths" emoji="🏁" title={tHub("game_mathrace")} color="bg-orange-100 dark:bg-orange-950/30 text-orange-900 dark:text-orange-100" />
@@ -155,6 +160,8 @@ export default async function KidsHome({ searchParams }: PageProps) {
             <Tile href="/petits/jeux-malins/pieces" emoji="🪙" title={tHub("game_coins")} color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100" />
             <Tile href="/petits/jeux-malins/tables" emoji="🟰" title={tHub("game_tables")} color="bg-cyan-100 dark:bg-cyan-950/30 text-cyan-900 dark:text-cyan-100" />
             <Tile href="/petits/jeux-malins/chiffres-arabes" emoji="🔢" title={tHub("game_chiffres_ar")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+            <Tile href="/petits/jeux-malins/patissier" emoji="👨‍🍳" title={tHub("game_patissier")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+            <Tile href="/petits/jeux-malins/horloge-vivante" emoji="⏰" title={tHub("game_horloge")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
           </SubGroup>
 
           {/* Logique & réflexion */}
@@ -176,15 +183,19 @@ export default async function KidsHome({ searchParams }: PageProps) {
             <Tile href="/petits/jeux-malins/vocabulaire" emoji="💬" title={tHub("game_vocab")} color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100" />
             <Tile href="/petits/jeux-malins/conjugaison" emoji="📝" title={tHub("game_conjugaison")} color="bg-violet-100 dark:bg-violet-950/30 text-violet-900 dark:text-violet-100" />
             <Tile href="/petits/jeux-malins/dictee" emoji="🎤" title={tHub("game_dictee")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
+            <Tile href="/petits/jeux-malins/contraires" emoji="↔️" title={tHub("game_opposites")} color="bg-lime-100 dark:bg-lime-950/30 text-lime-900 dark:text-lime-100" />
             {englishOn && <Tile href="/petits/anglais" emoji="🇬🇧" title={t("tile_english")} color="bg-indigo-100 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-100" />}
           </SubGroup>
 
-          {/* Découverte du corps & du monde — visual SVG-based games. NEW. */}
+          {/* Découverte du corps & du monde — visual SVG-based games. */}
           <SubGroup label={t("group_body_world")}>
-            <Tile href="/petits/jeux-malins/mon-corps"    emoji="🧒" title={t("game_body")}     color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
-            <Tile href="/petits/jeux-malins/emotions"     emoji="😊" title={t("game_emotions")} color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100" />
-            <Tile href="/petits/jeux-malins/saisons"      emoji="🌈" title={t("game_seasons")}  color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100" />
-            <Tile href="/petits/jeux-malins/mon-assiette" emoji="🍎" title={t("game_plate")}    color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+            <Tile href="/petits/jeux-malins/mon-corps"          emoji="🧒" title={t("game_body")}     color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
+            <Tile href="/petits/jeux-malins/emotions"           emoji="😊" title={t("game_emotions")} color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100" />
+            <Tile href="/petits/jeux-malins/saisons"            emoji="🌈" title={t("game_seasons")}  color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100" />
+            <Tile href="/petits/jeux-malins/mon-assiette"       emoji="🍎" title={t("game_plate")}    color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+            <Tile href="/petits/jeux-malins/metiers"            emoji="👷" title={tHub("game_jobs")}   color="bg-orange-100 dark:bg-orange-950/30 text-orange-900 dark:text-orange-100" />
+            <Tile href="/petits/jeux-malins/transports"         emoji="🚀" title={tHub("game_transports")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
+            <Tile href="/petits/jeux-malins/arbre-genealogique" emoji="🌳" title={tHub("game_family")} color="bg-green-100 dark:bg-green-950/30 text-green-900 dark:text-green-100" />
           </SubGroup>
 
           {/* Découvertes (sciences, histoire, géo) */}
