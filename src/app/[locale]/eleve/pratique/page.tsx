@@ -222,6 +222,7 @@ export default async function PracticeHub() {
     { href: "/petits/maths/souk", emoji: "🛒", title: t("game_souk"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "math", audiences: ["primary"] },
     { href: "/petits/jeux-malins/course-maths", emoji: "🏁", title: t("game_mathrace"), color: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900", group: "math", audiences: ["primary", "middle"] },
     { href: "/petits/jeux-malins/pieces", emoji: "🪙", title: t("game_coins"), color: "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900", group: "math", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/tables", emoji: "✖️", title: t("game_tables"), color: "bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-900", group: "math", audiences: ["primary", "middle"] },
     { href: "/petits/jeux-malins/sudoku", emoji: "🧩", title: t("game_sudoku"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "logic", audiences: ["primary", "middle", "high_school_other", "bac"] },
     { href: "/petits/jeux-malins/memoire", emoji: "🧠", title: t("game_memory"), color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900", group: "logic", audiences: ["primary"] },
     { href: "/petits/jeux-malins/motifs", emoji: "🔷", title: t("game_pattern"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", group: "logic", audiences: ["primary"] },
@@ -230,6 +231,7 @@ export default async function PracticeHub() {
     { href: "/petits/jeux-malins/mots-caches", emoji: "🔍", title: t("game_wordsearch"), color: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900", group: "words", audiences: ["primary", "middle", "high_school_other"], literate: true },
     { href: "/petits/jeux-malins/pendu", emoji: "🪢", title: t("game_hangman"), color: "bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700", group: "words", audiences: ["primary", "middle"], literate: true },
     { href: "/petits/jeux-malins/anagrammes", emoji: "🔤", title: t("game_anagrams"), color: "bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900", group: "words", audiences: ["primary", "middle"], literate: true },
+    { href: "/petits/jeux-malins/vocabulaire", emoji: "🗂️", title: t("game_vocab"), color: "bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-900", group: "words", audiences: ["primary", "middle"], literate: true },
     { href: "/petits/coloriage", emoji: "🎨", title: t("game_coloriage"), color: "bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900", group: "world", audiences: ["primary"] },
     { href: "/petits/monde-reel/heure", emoji: "⏰", title: t("game_clock"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "world", audiences: ["primary"] },
     { href: "/petits/monde-reel/wilayas", emoji: "🇩🇿", title: t("game_wilayas"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "world", audiences: ["primary", "middle"] },
@@ -429,6 +431,25 @@ function ActivityTile({
   );
 }
 
+// Per-subject visual theme: icon + accent color. Replaces the uniform gold
+// bullseye that was on every chapter card. Match by lowercase substring of
+// the FR subject name so it works across grades.
+function subjectTheme(name: string): {
+  emoji: string; bgClass: string; ringClass: string; iconClass: string;
+} {
+  const n = name.toLowerCase();
+  if (n.includes("math")) return { emoji: "🔢", bgClass: "bg-blue-100 dark:bg-blue-950/40", ringClass: "ring-blue-300 dark:ring-blue-800", iconClass: "text-blue-700 dark:text-blue-300" };
+  if (n.startsWith("arabe") || n.startsWith("اللغة العر")) return { emoji: "✍️", bgClass: "bg-amber-100 dark:bg-amber-950/40", ringClass: "ring-amber-300 dark:ring-amber-800", iconClass: "text-amber-700 dark:text-amber-300" };
+  if (n.startsWith("français") || n.startsWith("francais")) return { emoji: "📖", bgClass: "bg-rose-100 dark:bg-rose-950/40", ringClass: "ring-rose-300 dark:ring-rose-800", iconClass: "text-rose-700 dark:text-rose-300" };
+  if (n.startsWith("anglais") || n.startsWith("english")) return { emoji: "🇬🇧", bgClass: "bg-indigo-100 dark:bg-indigo-950/40", ringClass: "ring-indigo-300 dark:ring-indigo-800", iconClass: "text-indigo-700 dark:text-indigo-300" };
+  if (n.startsWith("éveil") || n.startsWith("eveil")) return { emoji: "🔬", bgClass: "bg-teal-100 dark:bg-teal-950/40", ringClass: "ring-teal-300 dark:ring-teal-800", iconClass: "text-teal-700 dark:text-teal-300" };
+  if (n.startsWith("sciences naturelles") || n.includes("svt")) return { emoji: "🧬", bgClass: "bg-emerald-100 dark:bg-emerald-950/40", ringClass: "ring-emerald-300 dark:ring-emerald-800", iconClass: "text-emerald-700 dark:text-emerald-300" };
+  if (n.startsWith("sciences physiques") || n.startsWith("physique")) return { emoji: "⚛️", bgClass: "bg-orange-100 dark:bg-orange-950/40", ringClass: "ring-orange-300 dark:ring-orange-800", iconClass: "text-orange-700 dark:text-orange-300" };
+  if (n.startsWith("histoire")) return { emoji: "🏛️", bgClass: "bg-stone-100 dark:bg-stone-900/60", ringClass: "ring-stone-300 dark:ring-stone-700", iconClass: "text-stone-700 dark:text-stone-300" };
+  if (n.startsWith("philo")) return { emoji: "💭", bgClass: "bg-purple-100 dark:bg-purple-950/40", ringClass: "ring-purple-300 dark:ring-purple-800", iconClass: "text-purple-700 dark:text-purple-300" };
+  return { emoji: "📚", bgClass: "bg-pale-blue dark:bg-surface-3", ringClass: "ring-line", iconClass: "text-navy dark:text-fg" };
+}
+
 function SubjectGroups({
   groups,
   t,
@@ -439,42 +460,50 @@ function SubjectGroups({
   showGrade?: boolean;
 }) {
   return (
-    <div className="space-y-6">
-      {groups.map((g) => (
-        <section key={g.subject_id}>
-          <div className="flex items-baseline justify-between mb-2">
-            <h3 className="text-sm md:text-base font-semibold text-fg">{g.name}</h3>
-            <span className="text-xs text-fg-soft">
-              {t("question_count", { count: g.chapters.reduce((s, c) => s + c.questionCount, 0) })}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {g.chapters.map((c) => (
-              <Link
-                key={c.id}
-                href={`/eleve/matieres/${c.subject_id}/${c.id}` as never}
-                className="bg-surface border border-line rounded-card p-4 flex items-center gap-3 hover:border-fg/40 hover:shadow-card-hover transition-all group"
-              >
-                <span className="w-11 h-11 rounded-[12px] bg-gold text-navy flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-                  </svg>
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-fg leading-snug line-clamp-2">{c.title}</div>
-                  <div className="text-xs text-fg-soft mt-0.5">
-                    {showGrade && <span className="font-mono mr-1">{c.grade_code}</span>}
-                    {t("question_count", { count: c.questionCount })}
+    <div className="space-y-7">
+      {groups.map((g) => {
+        const theme = subjectTheme(g.name);
+        const totalQ = g.chapters.reduce((s, c) => s + c.questionCount, 0);
+        return (
+          <section key={g.subject_id} className="relative">
+            {/* Subject header — colored card with emoji + chapter count */}
+            <header className={`${theme.bgClass} ring-1 ${theme.ringClass} rounded-card p-3 md:p-4 flex items-center gap-3 mb-3`}>
+              <span className="text-3xl md:text-4xl flex-shrink-0">{theme.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <h3 className={`text-base md:text-lg font-bold ${theme.iconClass}`}>{g.name}</h3>
+                <p className="text-xs text-fg-soft">
+                  {g.chapters.length} {g.chapters.length > 1 ? "chapitres" : "chapitre"} · {totalQ} questions
+                </p>
+              </div>
+            </header>
+            {/* Chapter cards under the subject — clean white cards, no yellow bullseye */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {g.chapters.map((c, i) => (
+                <Link
+                  key={c.id}
+                  href={`/eleve/matieres/${c.subject_id}/${c.id}` as never}
+                  className="bg-surface border border-line rounded-card p-4 flex items-center gap-3 hover:border-fg/40 hover:shadow-card-hover hover:-translate-y-0.5 transition-all group"
+                >
+                  {/* Numbered circle in the subject color, replaces the uniform gold target */}
+                  <span className={`w-11 h-11 rounded-full ${theme.bgClass} flex items-center justify-center flex-shrink-0 ring-1 ${theme.ringClass} group-hover:scale-105 transition-transform`}>
+                    <span className={`text-base font-bold ${theme.iconClass}`}>{i + 1}</span>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-fg leading-snug line-clamp-2">{c.title}</div>
+                    <div className="text-xs text-fg-soft mt-0.5">
+                      {showGrade && <span className="font-mono mr-1">{c.grade_code}</span>}
+                      {t("question_count", { count: c.questionCount })}
+                    </div>
                   </div>
-                </div>
-                <span className="text-xs px-2.5 py-1 rounded-btn bg-pale-blue dark:bg-surface-3 text-navy dark:text-fg font-semibold whitespace-nowrap flex-shrink-0">
-                  {t("start")}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ))}
+                  <span className={`text-xs px-2.5 py-1 rounded-btn ${theme.bgClass} ${theme.iconClass} font-semibold whitespace-nowrap flex-shrink-0 ring-1 ${theme.ringClass}`}>
+                    {t("start")}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }

@@ -75,6 +75,12 @@ export default async function MalinsHub() {
               title={tHub("game_coins")}
               color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100"
             />
+            <Tile
+              href="/petits/jeux-malins/tables"
+              emoji="✖️"
+              title={tHub("game_tables")}
+              color="bg-cyan-100 dark:bg-cyan-950/30 text-cyan-900 dark:text-cyan-100"
+            />
           </SubGroup>
 
           {/* Logic & reasoning */}
@@ -130,6 +136,12 @@ export default async function MalinsHub() {
               emoji="🔤"
               title={tHub("game_anagrams")}
               color="bg-fuchsia-100 dark:bg-fuchsia-950/30 text-fuchsia-900 dark:text-fuchsia-100"
+            />
+            <Tile
+              href="/petits/jeux-malins/vocabulaire"
+              emoji="🗂️"
+              title={tHub("game_vocab")}
+              color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100"
             />
           </SubGroup>
 
