@@ -12,7 +12,7 @@
  * (no asset). Best score per mode in localStorage.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useGameBack } from "./useGameBack";
 import { MascotCelebration } from "@/components/app/MascotCelebration";
 

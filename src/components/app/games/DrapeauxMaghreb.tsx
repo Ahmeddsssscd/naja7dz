@@ -7,7 +7,7 @@
  * MascotCelebration triggers on 9+/10.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useGameBack } from "./useGameBack";
 import { MascotCelebration } from "@/components/app/MascotCelebration";
 

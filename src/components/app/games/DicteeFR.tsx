@@ -12,7 +12,7 @@
  * (memory dictation).
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGameBack } from "./useGameBack";
 import { MascotCelebration } from "@/components/app/MascotCelebration";
 

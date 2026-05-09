@@ -10,7 +10,7 @@
  * the kid can screenshot.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useGameBack } from "./useGameBack";
 import { MascotCelebration } from "@/components/app/MascotCelebration";
 import confetti from "canvas-confetti";

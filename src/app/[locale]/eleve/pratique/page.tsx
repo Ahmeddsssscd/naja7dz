@@ -213,28 +213,49 @@ export default async function PracticeHub() {
   // Each tile knows which audiences it's appropriate for. Letter-based games
   // need literacy, so under-8 kids don't see them. High school students don't
   // see Coloriage / clock-reading. The audience enum lives in the closure.
+  // Groups: maths, logic, langues (FR + AR words), decouvertes (history/geo/science),
+  // creation (drawing).
   const allGames: Array<{
     href: string; emoji: string; title: string; color: string;
-    group: "math" | "logic" | "words" | "world";
+    group: "maths" | "logic" | "langues" | "decouvertes" | "creation";
     audiences: Audience[]; literate?: boolean;
   }> = [
-    { href: "/petits/maths/number-ninja", emoji: "🥷", title: t("game_ninja"), color: "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900", group: "math", audiences: ["primary", "middle"] },
-    { href: "/petits/maths/souk", emoji: "🛒", title: t("game_souk"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "math", audiences: ["primary"] },
-    { href: "/petits/jeux-malins/course-maths", emoji: "🏁", title: t("game_mathrace"), color: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900", group: "math", audiences: ["primary", "middle"] },
-    { href: "/petits/jeux-malins/pieces", emoji: "🪙", title: t("game_coins"), color: "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900", group: "math", audiences: ["primary", "middle"] },
-    { href: "/petits/jeux-malins/tables", emoji: "✖️", title: t("game_tables"), color: "bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-900", group: "math", audiences: ["primary", "middle"] },
-    { href: "/petits/jeux-malins/sudoku", emoji: "🧩", title: t("game_sudoku"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "logic", audiences: ["primary", "middle", "high_school_other", "bac"] },
+    // ── Maths & nombres
+    { href: "/petits/maths/number-ninja", emoji: "🥷", title: t("game_ninja"), color: "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900", group: "maths", audiences: ["primary", "middle"] },
+    { href: "/petits/maths/souk", emoji: "🛒", title: t("game_souk"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "maths", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/course-maths", emoji: "🏁", title: t("game_mathrace"), color: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900", group: "maths", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/calcul-mental", emoji: "🧮", title: t("game_calcul_mental"), color: "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900", group: "maths", audiences: ["primary", "middle", "high_school_other"] },
+    { href: "/petits/jeux-malins/pieces", emoji: "🪙", title: t("game_coins"), color: "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900", group: "maths", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/tables", emoji: "🟰", title: t("game_tables"), color: "bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-900", group: "maths", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/chiffres-arabes", emoji: "🔢", title: t("game_chiffres_ar"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", group: "maths", audiences: ["primary"] },
+
+    // ── Logique & réflexion
+    { href: "/petits/jeux-malins/sudoku", emoji: "🧩", title: t("game_sudoku"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "logic", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/sudoku-9x9", emoji: "9️⃣", title: t("game_sudoku_9"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "logic", audiences: ["middle", "high_school_other", "bac"] },
     { href: "/petits/jeux-malins/memoire", emoji: "🧠", title: t("game_memory"), color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900", group: "logic", audiences: ["primary"] },
     { href: "/petits/jeux-malins/motifs", emoji: "🔷", title: t("game_pattern"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", group: "logic", audiences: ["primary"] },
     { href: "/petits/jeux-malins/enigme", emoji: "🤔", title: t("game_riddle"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "logic", audiences: ["primary", "middle", "high_school_other", "bac"] },
-    { href: "/petits/jeux-malins/morpion", emoji: "❌", title: t("game_tictactoe"), color: "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900", group: "logic", audiences: ["primary", "middle"] },
-    { href: "/petits/jeux-malins/mots-caches", emoji: "🔍", title: t("game_wordsearch"), color: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900", group: "words", audiences: ["primary", "middle", "high_school_other"], literate: true },
-    { href: "/petits/jeux-malins/pendu", emoji: "🪢", title: t("game_hangman"), color: "bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700", group: "words", audiences: ["primary", "middle"], literate: true },
-    { href: "/petits/jeux-malins/anagrammes", emoji: "🔤", title: t("game_anagrams"), color: "bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900", group: "words", audiences: ["primary", "middle"], literate: true },
-    { href: "/petits/jeux-malins/vocabulaire", emoji: "🗂️", title: t("game_vocab"), color: "bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-900", group: "words", audiences: ["primary", "middle"], literate: true },
-    { href: "/petits/coloriage", emoji: "🎨", title: t("game_coloriage"), color: "bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900", group: "world", audiences: ["primary"] },
-    { href: "/petits/monde-reel/heure", emoji: "⏰", title: t("game_clock"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "world", audiences: ["primary"] },
-    { href: "/petits/monde-reel/wilayas", emoji: "🇩🇿", title: t("game_wilayas"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "world", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/morpion", emoji: "⭕", title: t("game_tictactoe"), color: "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900", group: "logic", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/animaux", emoji: "🦊", title: t("game_animals"), color: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900", group: "logic", audiences: ["primary"] },
+
+    // ── Lettres & langues
+    { href: "/petits/jeux-malins/mots-caches", emoji: "🔍", title: t("game_wordsearch"), color: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900", group: "langues", audiences: ["primary", "middle", "high_school_other"], literate: true },
+    { href: "/petits/jeux-malins/pendu", emoji: "🆎", title: t("game_hangman"), color: "bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700", group: "langues", audiences: ["primary", "middle"], literate: true },
+    { href: "/petits/jeux-malins/anagrammes", emoji: "🔤", title: t("game_anagrams"), color: "bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900", group: "langues", audiences: ["primary", "middle"], literate: true },
+    { href: "/petits/jeux-malins/vocabulaire", emoji: "💬", title: t("game_vocab"), color: "bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-900", group: "langues", audiences: ["primary", "middle"], literate: true },
+    { href: "/petits/jeux-malins/conjugaison", emoji: "📝", title: t("game_conjugaison"), color: "bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-900", group: "langues", audiences: ["middle", "high_school_other", "bac"], literate: true },
+    { href: "/petits/jeux-malins/dictee", emoji: "🎤", title: t("game_dictee"), color: "bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900", group: "langues", audiences: ["middle", "high_school_other"], literate: true },
+
+    // ── Découvertes (sciences, histoire, géo, animaux, drapeaux)
+    { href: "/petits/jeux-malins/drapeaux", emoji: "🚩", title: t("game_flags"), color: "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900", group: "decouvertes", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/histoire-algerie", emoji: "🏛️", title: t("game_histoire"), color: "bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700", group: "decouvertes", audiences: ["middle", "high_school_other", "bac"], literate: true },
+    { href: "/petits/jeux-malins/petits-scientifiques", emoji: "🧪", title: t("game_science"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", group: "decouvertes", audiences: ["primary", "middle"] },
+    { href: "/petits/monde-reel/heure", emoji: "⏰", title: t("game_clock"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "decouvertes", audiences: ["primary"] },
+    { href: "/petits/monde-reel/wilayas", emoji: "🇩🇿", title: t("game_wilayas"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "decouvertes", audiences: ["primary", "middle"] },
+
+    // ── Création
+    { href: "/petits/coloriage", emoji: "🎨", title: t("game_coloriage"), color: "bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900", group: "creation", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/coloriage-numeros", emoji: "🖍️", title: t("game_coloriage_num"), color: "bg-fuchsia-50 dark:bg-fuchsia-950/30 border-fuchsia-200 dark:border-fuchsia-900", group: "creation", audiences: ["primary"] },
   ];
   const visibleGames = allGames.filter((g) => {
     if (!g.audiences.includes(audience)) return false;
@@ -242,18 +263,19 @@ export default async function PracticeHub() {
     return true;
   });
   const gamesByGroup = {
-    math: visibleGames.filter((g) => g.group === "math"),
+    maths: visibleGames.filter((g) => g.group === "maths"),
     logic: visibleGames.filter((g) => g.group === "logic"),
-    words: visibleGames.filter((g) => g.group === "words"),
-    world: visibleGames.filter((g) => g.group === "world"),
+    langues: visibleGames.filter((g) => g.group === "langues"),
+    decouvertes: visibleGames.filter((g) => g.group === "decouvertes"),
+    creation: visibleGames.filter((g) => g.group === "creation"),
   };
 
   const GamesSection = () => (
     <Section icon="🎮" title={t("section_games_title")} subtitle={t("section_games_subtitle")}>
       <div className="space-y-6">
-        {gamesByGroup.math.length > 0 && (
+        {gamesByGroup.maths.length > 0 && (
           <SubGroup label={t("games_group_math")}>
-            {gamesByGroup.math.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+            {gamesByGroup.maths.map((g) => <ActivityTile key={g.href} {...g} compact />)}
           </SubGroup>
         )}
         {gamesByGroup.logic.length > 0 && (
@@ -261,14 +283,19 @@ export default async function PracticeHub() {
             {gamesByGroup.logic.map((g) => <ActivityTile key={g.href} {...g} compact />)}
           </SubGroup>
         )}
-        {gamesByGroup.words.length > 0 && (
-          <SubGroup label={t("games_group_words")}>
-            {gamesByGroup.words.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+        {gamesByGroup.langues.length > 0 && (
+          <SubGroup label={t("games_group_langues")}>
+            {gamesByGroup.langues.map((g) => <ActivityTile key={g.href} {...g} compact />)}
           </SubGroup>
         )}
-        {gamesByGroup.world.length > 0 && (
-          <SubGroup label={t("games_group_world")}>
-            {gamesByGroup.world.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+        {gamesByGroup.decouvertes.length > 0 && (
+          <SubGroup label={t("games_group_decouvertes")}>
+            {gamesByGroup.decouvertes.map((g) => <ActivityTile key={g.href} {...g} compact />)}
+          </SubGroup>
+        )}
+        {gamesByGroup.creation.length > 0 && (
+          <SubGroup label={t("games_group_creation")}>
+            {gamesByGroup.creation.map((g) => <ActivityTile key={g.href} {...g} compact />)}
           </SubGroup>
         )}
       </div>

@@ -49,122 +49,51 @@ export default async function MalinsHub() {
         </p>
 
         <div className="space-y-7">
-          {/* Maths & numbers */}
+          {/* Maths & nombres */}
           <SubGroup label={tHub("games_group_math")}>
-            <Tile
-              href="/petits/maths/number-ninja"
-              emoji="🥷"
-              title={tHub("game_ninja")}
-              color="bg-red-100 dark:bg-red-950/30 text-red-900 dark:text-red-100"
-            />
-            <Tile
-              href="/petits/maths/souk"
-              emoji="🛒"
-              title={tHub("game_souk")}
-              color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/course-maths"
-              emoji="🏁"
-              title={tHub("game_mathrace")}
-              color="bg-orange-100 dark:bg-orange-950/30 text-orange-900 dark:text-orange-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/pieces"
-              emoji="🪙"
-              title={tHub("game_coins")}
-              color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/tables"
-              emoji="✖️"
-              title={tHub("game_tables")}
-              color="bg-cyan-100 dark:bg-cyan-950/30 text-cyan-900 dark:text-cyan-100"
-            />
+            <Tile href="/petits/maths/number-ninja" emoji="🥷" title={tHub("game_ninja")} color="bg-red-100 dark:bg-red-950/30 text-red-900 dark:text-red-100" />
+            <Tile href="/petits/maths/souk" emoji="🛒" title={tHub("game_souk")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+            <Tile href="/petits/jeux-malins/course-maths" emoji="🏁" title={tHub("game_mathrace")} color="bg-orange-100 dark:bg-orange-950/30 text-orange-900 dark:text-orange-100" />
+            <Tile href="/petits/jeux-malins/calcul-mental" emoji="🧮" title={tHub("game_calcul_mental")} color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
+            <Tile href="/petits/jeux-malins/pieces" emoji="🪙" title={tHub("game_coins")} color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100" />
+            <Tile href="/petits/jeux-malins/tables" emoji="🟰" title={tHub("game_tables")} color="bg-cyan-100 dark:bg-cyan-950/30 text-cyan-900 dark:text-cyan-100" />
+            <Tile href="/petits/jeux-malins/chiffres-arabes" emoji="🔢" title={tHub("game_chiffres_ar")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
           </SubGroup>
 
-          {/* Logic & reasoning */}
+          {/* Logique & réflexion */}
           <SubGroup label={tHub("games_group_logic")}>
-            <Tile
-              href="/petits/jeux-malins/sudoku"
-              emoji="🧩"
-              title={tHub("game_sudoku")}
-              color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/memoire"
-              emoji="🧠"
-              title={tHub("game_memory")}
-              color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/motifs"
-              emoji="🔷"
-              title={tHub("game_pattern")}
-              color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/enigme"
-              emoji="🤔"
-              title={tHub("game_riddle")}
-              color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/morpion"
-              emoji="❌"
-              title={tHub("game_tictactoe")}
-              color="bg-indigo-100 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-100"
-            />
+            <Tile href="/petits/jeux-malins/sudoku" emoji="🧩" title={tHub("game_sudoku")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
+            <Tile href="/petits/jeux-malins/sudoku-9x9" emoji="9️⃣" title={tHub("game_sudoku_9")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
+            <Tile href="/petits/jeux-malins/memoire" emoji="🧠" title={tHub("game_memory")} color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />
+            <Tile href="/petits/jeux-malins/motifs" emoji="🔷" title={tHub("game_pattern")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+            <Tile href="/petits/jeux-malins/enigme" emoji="🤔" title={tHub("game_riddle")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+            <Tile href="/petits/jeux-malins/morpion" emoji="⭕" title={tHub("game_tictactoe")} color="bg-indigo-100 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-100" />
+            <Tile href="/petits/jeux-malins/animaux" emoji="🦊" title={tHub("game_animals")} color="bg-orange-100 dark:bg-orange-950/30 text-orange-900 dark:text-orange-100" />
           </SubGroup>
 
-          {/* Letters & words */}
-          <SubGroup label={tHub("games_group_words")}>
-            <Tile
-              href="/petits/jeux-malins/mots-caches"
-              emoji="🔍"
-              title={tHub("game_wordsearch")}
-              color="bg-teal-100 dark:bg-teal-950/30 text-teal-900 dark:text-teal-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/pendu"
-              emoji="🪢"
-              title={tHub("game_hangman")}
-              color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/anagrammes"
-              emoji="🔤"
-              title={tHub("game_anagrams")}
-              color="bg-fuchsia-100 dark:bg-fuchsia-950/30 text-fuchsia-900 dark:text-fuchsia-100"
-            />
-            <Tile
-              href="/petits/jeux-malins/vocabulaire"
-              emoji="🗂️"
-              title={tHub("game_vocab")}
-              color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100"
-            />
+          {/* Lettres & langues */}
+          <SubGroup label={tHub("games_group_langues")}>
+            <Tile href="/petits/jeux-malins/mots-caches" emoji="🔍" title={tHub("game_wordsearch")} color="bg-teal-100 dark:bg-teal-950/30 text-teal-900 dark:text-teal-100" />
+            <Tile href="/petits/jeux-malins/pendu" emoji="🆎" title={tHub("game_hangman")} color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
+            <Tile href="/petits/jeux-malins/anagrammes" emoji="🔤" title={tHub("game_anagrams")} color="bg-fuchsia-100 dark:bg-fuchsia-950/30 text-fuchsia-900 dark:text-fuchsia-100" />
+            <Tile href="/petits/jeux-malins/vocabulaire" emoji="💬" title={tHub("game_vocab")} color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100" />
+            <Tile href="/petits/jeux-malins/conjugaison" emoji="📝" title={tHub("game_conjugaison")} color="bg-violet-100 dark:bg-violet-950/30 text-violet-900 dark:text-violet-100" />
+            <Tile href="/petits/jeux-malins/dictee" emoji="🎤" title={tHub("game_dictee")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
           </SubGroup>
 
-          {/* Creativity & real world */}
-          <SubGroup label={tHub("games_group_world")}>
-            <Tile
-              href="/petits/coloriage"
-              emoji="🎨"
-              title={tHub("game_coloriage")}
-              color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100"
-            />
-            <Tile
-              href="/petits/monde-reel/heure"
-              emoji="⏰"
-              title={tHub("game_clock")}
-              color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100"
-            />
-            <Tile
-              href="/petits/monde-reel/wilayas"
-              emoji="🇩🇿"
-              title={tHub("game_wilayas")}
-              color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100"
-            />
+          {/* Découvertes (sciences, histoire, géo) */}
+          <SubGroup label={tHub("games_group_decouvertes")}>
+            <Tile href="/petits/jeux-malins/drapeaux" emoji="🚩" title={tHub("game_flags")} color="bg-red-100 dark:bg-red-950/30 text-red-900 dark:text-red-100" />
+            <Tile href="/petits/jeux-malins/histoire-algerie" emoji="🏛️" title={tHub("game_histoire")} color="bg-stone-100 dark:bg-stone-900/40 text-stone-900 dark:text-stone-100" />
+            <Tile href="/petits/jeux-malins/petits-scientifiques" emoji="🧪" title={tHub("game_science")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+            <Tile href="/petits/monde-reel/heure" emoji="⏰" title={tHub("game_clock")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
+            <Tile href="/petits/monde-reel/wilayas" emoji="🇩🇿" title={tHub("game_wilayas")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+          </SubGroup>
+
+          {/* Création */}
+          <SubGroup label={tHub("games_group_creation")}>
+            <Tile href="/petits/coloriage" emoji="🎨" title={tHub("game_coloriage")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
+            <Tile href="/petits/jeux-malins/coloriage-numeros" emoji="🖍️" title={tHub("game_coloriage_num")} color="bg-fuchsia-100 dark:bg-fuchsia-950/30 text-fuchsia-900 dark:text-fuchsia-100" />
           </SubGroup>
         </div>
       </main>
