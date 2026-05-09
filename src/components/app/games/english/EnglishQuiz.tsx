@@ -14,35 +14,14 @@
 import { useEffect, useState } from "react";
 import { useGameBack } from "../useGameBack";
 import { useSpeak } from "./useSpeak";
-import {
-  ANIMALS_LESSON, COLORS_LESSON, FAMILY_LESSON, SCHOOL_LESSON,
-  FOOD_LESSON, NUMBERS_LESSON,
-  type EnglishCard,
-} from "./englishData";
+import { type EnglishCard } from "./englishData";
+import { QUIZZES } from "./quizMeta";
 import confetti from "canvas-confetti";
 
 type Phase = "intro" | "play" | "done";
 
-const QUIZZES: Record<string, { name_fr: string; name_ar: string; emoji: string; pool: EnglishCard[] }> = {
-  "colors-animals": {
-    name_fr: "Couleurs & Animaux",
-    name_ar: "ألوان وحيوانات",
-    emoji: "🌈🦁",
-    pool: [...COLORS_LESSON.cards, ...ANIMALS_LESSON.cards],
-  },
-  "family-school": {
-    name_fr: "Famille & École",
-    name_ar: "العائلة والمدرسة",
-    emoji: "👨‍👩‍👧‍👦🎒",
-    pool: [...FAMILY_LESSON.cards, ...SCHOOL_LESSON.cards],
-  },
-  "food-numbers": {
-    name_fr: "Nourriture & Nombres",
-    name_ar: "الطعام والأرقام",
-    emoji: "🍞🔢",
-    pool: [...FOOD_LESSON.cards, ...NUMBERS_LESSON.cards],
-  },
-};
+// Re-export server-safe metadata for any other client component that wants it.
+export { QUIZ_IDS, QUIZ_META } from "./quizMeta";
 
 interface Question {
   card: EnglishCard;
@@ -279,6 +258,5 @@ function Header({ title, subtitle, emoji, onBack }: { title: string; subtitle: s
   );
 }
 
-export const QUIZ_IDS = Object.keys(QUIZZES);
-export const QUIZ_META: Record<string, { name_fr: string; name_ar: string; emoji: string }> =
-  Object.fromEntries(Object.entries(QUIZZES).map(([k, v]) => [k, { name_fr: v.name_fr, name_ar: v.name_ar, emoji: v.emoji }]));
+// QUIZ_IDS and QUIZ_META are re-exported from ./quizMeta at the top of the
+// file (server-safe import path).

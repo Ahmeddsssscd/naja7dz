@@ -21,7 +21,7 @@ import { Link } from "@/i18n/routing";
 import { requireKidsAccess } from "@/lib/subscriptions";
 import { ALL_LESSONS } from "@/components/app/games/english/englishData";
 import { STORIES } from "@/components/app/games/english/englishStories";
-import { QUIZ_IDS, QUIZ_META } from "@/components/app/games/english/EnglishQuiz";
+import { QUIZ_IDS, QUIZ_META } from "@/components/app/games/english/quizMeta";
 
 export const metadata = { title: "Apprends l'anglais" };
 
