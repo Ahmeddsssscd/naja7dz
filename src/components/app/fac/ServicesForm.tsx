@@ -3,22 +3,22 @@
 /**
  * Services request form.
  *
- * 5 service types as radio cards + free-text "détails" + contact-method
- * preference. POSTs to /api/fac/services. Server saves to a table and
- * sends an email to the Najah staff inbox.
+ * 5 service types as radio cards (typography-only, no emoji) + free-text
+ * détails + contact-method preference. POSTs to /api/fac/services.
  */
 
 import { useState } from "react";
 import { useLocale } from "next-intl";
+import { CheckIcon } from "@/components/Icon";
 
 type Service = "orientation" | "dossier" | "memoire" | "bourse" | "autre";
 
-const SERVICES: { key: Service; fr: string; ar: string; sub_fr: string; sub_ar: string; emoji: string }[] = [
-  { key: "orientation", fr: "Orientation post-Bac",     ar: "توجيه بعد البكالوريا", sub_fr: "Appel vidéo 30 min avec un conseiller", sub_ar: "مكالمة فيديو ٣٠ دقيقة مع مرشد", emoji: "🎯" },
-  { key: "dossier",     fr: "Relecture de dossier",     ar: "مراجعة ملف",          sub_fr: "CV, lettre de motivation, dossier d'inscription", sub_ar: "السيرة الذاتية، رسالة الدوافع، ملف التسجيل", emoji: "📋" },
-  { key: "memoire",     fr: "Aide PFE / mémoire",       ar: "مساعدة المذكرة",       sub_fr: "Structure, relecture, références",     sub_ar: "البنية، المراجعة، المراجع", emoji: "📚" },
-  { key: "bourse",      fr: "Recherche de bourses",     ar: "بحث عن منح",          sub_fr: "Erasmus, Campus France, bourses nationales", sub_ar: "إيراسموس، كامبوس فرانس، منح وطنية", emoji: "💰" },
-  { key: "autre",       fr: "Autre demande",            ar: "طلب آخر",              sub_fr: "Décris ton besoin librement",          sub_ar: "اشرح حاجتك بحرية", emoji: "💬" },
+const SERVICES: { key: Service; fr: string; ar: string; sub_fr: string; sub_ar: string }[] = [
+  { key: "orientation", fr: "Orientation post-Bac",     ar: "توجيه بعد البكالوريا", sub_fr: "Appel vidéo de 30 min avec un conseiller", sub_ar: "مكالمة فيديو ٣٠ دقيقة مع مرشد" },
+  { key: "dossier",     fr: "Relecture de dossier",     ar: "مراجعة ملف",          sub_fr: "CV, lettre de motivation, dossier d'inscription", sub_ar: "السيرة الذاتية، رسالة الدوافع، ملف التسجيل" },
+  { key: "memoire",     fr: "Aide PFE / mémoire",       ar: "مساعدة المذكرة",       sub_fr: "Structure, relecture, références",     sub_ar: "البنية، المراجعة، المراجع" },
+  { key: "bourse",      fr: "Recherche de bourses",     ar: "بحث عن منح",          sub_fr: "Erasmus, Campus France, bourses nationales", sub_ar: "إيراسموس، كامبوس فرانس، منح وطنية" },
+  { key: "autre",       fr: "Autre demande",            ar: "طلب آخر",              sub_fr: "Décris ton besoin librement",          sub_ar: "اشرح حاجتك بحرية" },
 ];
 
 interface Props { userEmail: string }
@@ -57,10 +57,12 @@ export function ServicesForm({ userEmail }: Props) {
 
   if (done) {
     return (
-      <div className="bg-white rounded-3xl border-2 border-emerald-300 p-6 text-center">
-        <div className="text-6xl mb-3">✅</div>
-        <h2 className="text-xl font-bold text-navy mb-2">{isAr ? "تمّ إرسال طلبك !" : "Demande envoyée !"}</h2>
-        <p className="text-sm text-fg-soft">
+      <div className="bg-surface border border-line rounded-card p-8 text-center">
+        <div className="w-12 h-12 rounded-full bg-surface-3 text-fg inline-flex items-center justify-center mb-5">
+          <CheckIcon size={22} />
+        </div>
+        <h2 className="text-xl font-semibold text-fg mb-2">{isAr ? "تمّ إرسال طلبك" : "Demande reçue"}</h2>
+        <p className="text-base text-fg-soft max-w-prose mx-auto">
           {isAr
             ? `سيتواصل معك فريق Najah خلال ٢٤-٤٨ ساعة على ${userEmail}.`
             : `L'équipe Najah te contactera sous 24-48h sur ${userEmail}.`}
@@ -70,49 +72,48 @@ export function ServicesForm({ userEmail }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-3xl border-2 border-pale-blue p-5 md:p-6">
-      <h2 className="text-lg md:text-xl font-bold text-navy mb-1">{isAr ? "ما الخدمة المطلوبة ؟" : "Quel service souhaites-tu ?"}</h2>
-      <p className="text-xs text-fg-soft mb-4">{isAr ? "اختر واحدة" : "Choisis-en une"}</p>
+    <div className="bg-surface border border-line rounded-card p-6 md:p-8">
+      <h2 className="text-lg md:text-xl font-semibold text-fg mb-1">
+        {isAr ? "ما الخدمة المطلوبة ؟" : "Quel service souhaites-tu ?"}
+      </h2>
+      <p className="text-xs text-fg-soft mb-5">{isAr ? "اختر واحدة" : "Choisis-en une"}</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
         {SERVICES.map((s) => (
-          <button key={s.key} onClick={() => setService(s.key)}
-            className={`text-start rounded-2xl border-2 p-3 transition active:scale-[0.99] ${service === s.key ? "border-gold bg-gold/15" : "border-pale-blue bg-pale-blue/20 hover:border-gold"}`}
+          <button
+            key={s.key}
+            onClick={() => setService(s.key)}
+            className={`text-start rounded-card border p-4 transition-all hover:shadow-card-hover ${
+              service === s.key ? "border-fg bg-surface-3" : "border-line bg-surface hover:border-fg/40"
+            }`}
           >
-            <div className="flex items-start gap-3">
-              <span className="text-3xl flex-shrink-0">{s.emoji}</span>
-              <div className="flex-1 min-w-0">
-                <div className="font-bold text-navy text-sm md:text-base">{isAr ? s.ar : s.fr}</div>
-                <div className="text-xs text-fg-soft mt-0.5">{isAr ? s.sub_ar : s.sub_fr}</div>
-              </div>
-            </div>
+            <div className="font-semibold text-fg text-sm md:text-base mb-0.5">{isAr ? s.ar : s.fr}</div>
+            <div className="text-xs text-fg-soft">{isAr ? s.sub_ar : s.sub_fr}</div>
           </button>
         ))}
       </div>
 
-      <label className="block text-xs font-bold text-navy mb-1">
-        {isAr ? "تفاصيل الطلب" : "Détails de ta demande"} <span className="text-red-600">*</span>
-      </label>
-      <textarea
-        value={details}
-        onChange={(e) => setDetails(e.target.value)}
-        rows={4}
-        placeholder={isAr ? "اشرح بالتفصيل ما تحتاج..." : "Décris ton besoin en détail..."}
-        className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm focus:outline-none focus:border-gold mb-4"
-      />
+      <Field label={isAr ? "تفاصيل الطلب" : "Détails de ta demande"} required>
+        <textarea
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+          rows={4}
+          placeholder={isAr ? "اشرح بالتفصيل ما تحتاج..." : "Décris ton besoin en détail..."}
+          className="input"
+        />
+      </Field>
 
-      <label className="block text-xs font-bold text-navy mb-1">
-        {isAr ? "رقم الهاتف (اختياري)" : "Téléphone (facultatif)"}
-      </label>
-      <input
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        type="tel"
-        placeholder="+213…"
-        className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm focus:outline-none focus:border-gold mb-4"
-      />
+      <Field label={isAr ? "رقم الهاتف (اختياري)" : "Téléphone (facultatif)"}>
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          type="tel"
+          placeholder="+213…"
+          className="input"
+        />
+      </Field>
 
-      {err && <div className="bg-red-50 text-red-700 rounded-lg p-2 text-sm mb-3">{err}</div>}
+      {err && <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 text-red-700 dark:text-red-400 rounded-btn p-3 text-sm mb-4">{err}</div>}
 
       <button
         onClick={submit}
@@ -122,9 +123,37 @@ export function ServicesForm({ userEmail }: Props) {
         {submitting ? (isAr ? "جاري الإرسال..." : "Envoi…") : (isAr ? "إرسال الطلب" : "Envoyer ma demande")}
       </button>
 
-      <p className="text-[11px] text-fg-soft text-center mt-3">
+      <p className="text-[11px] text-fg-faint text-center mt-3">
         {isAr ? `سنتصل بك على ${userEmail}` : `On te contactera sur ${userEmail}`}
       </p>
+
+      <style jsx>{`
+        .input {
+          width: 100%;
+          border-radius: 10px;
+          border: 1px solid var(--color-line);
+          background: var(--color-surface);
+          color: var(--color-fg);
+          padding: 0.6rem 0.85rem;
+          font-size: 0.9rem;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .input:focus {
+          border-color: var(--color-fg);
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="mb-4">
+      <label className="block text-xs font-semibold text-fg mb-1.5">
+        {label} {required && <span className="text-red-600">*</span>}
+      </label>
+      {children}
     </div>
   );
 }

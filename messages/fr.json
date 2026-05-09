@@ -40,7 +40,9 @@
     "services_sub": "On t'aide à passer du Bac à l'université puis à terminer tes études en beauté.",
     "services_login_title": "Connecte-toi pour faire ta demande",
     "services_login_sub": "On a besoin de ton email pour te recontacter.",
-    "services_login_cta": "Se connecter"
+    "services_login_cta": "Se connecter",
+    "cta_title": "Trouve ton orientation post-Bac.",
+    "cta_sub": "Diagnostic gratuit, sans inscription. Cinq questions, une recommandation personnalisée."
   },
   "ParentExplain": {
     "back": "Tableau de bord parent",
@@ -883,7 +885,7 @@
     "nav_explain": "Mode explain",
     "nav_subscription": "Abonnement",
     "nav_tools": "Outils",
-    "nav_fac": "Section Fac 🎓",
+    "nav_fac": "Section Fac",
     "nav_settings": "Paramètres",
     "nav_help": "Aide",
     "logout": "Se déconnecter"

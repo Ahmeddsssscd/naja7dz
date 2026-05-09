@@ -42,10 +42,10 @@ export function PageShell({
               {t("parents")}
             </Link>
             <Link href="/fac" className={navLinkClass("fac")}>
-              🎓 {t("fac")}
+              {t("fac")}
             </Link>
             <Link href="/enseignant" className={navLinkClass("teacher")}>
-              👨‍🏫 {t("teacher")}
+              {t("teacher")}
             </Link>
             <Link href="/faq" className={navLinkClass("faq")}>
               {t("faq")}
@@ -67,8 +67,8 @@ export function PageShell({
               items={[
                 { href: "/tarifs", label: t("pricing") },
                 { href: "/pour-les-parents", label: t("parents") },
-                { href: "/fac", label: `🎓 ${t("fac")}` },
-                { href: "/enseignant", label: `👨‍🏫 ${t("teacher")}` },
+                { href: "/fac", label: t("fac") },
+                { href: "/enseignant", label: t("teacher") },
                 { href: "/faq", label: t("faq") },
                 { href: "/contact", label: t("contact") },
                 { href: "/connexion", label: t("login") },

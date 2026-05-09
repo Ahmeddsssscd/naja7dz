@@ -2,10 +2,7 @@
 
 /**
  * TeacherSignupForm — creates the teacher_profiles row for an already-
- * authenticated user. Asks for full_name, school, wilaya, phone, bio.
- *
- * Once submitted, the page reloads and the server redirects them to the
- * dashboard (since the profile now exists).
+ * authenticated user. Editorial style, no emoji.
  */
 
 import { useState } from "react";
@@ -19,9 +16,7 @@ const WILAYAS = [
   "Mascara", "Saïda", "Tiaret", "Djelfa", "Bouira", "M'Sila", "Bordj Bou Arréridj",
   "Khenchela", "Tébessa", "Souk Ahras", "Aïn Defla", "Aïn Témouchent", "Naâma",
   "Mila", "Tipaza", "Tindouf", "Illizi", "El Bayadh", "El Tarf", "Sidi Bel Abbès",
-  "Chlef", "Médéa", "Laghouat", "Jijel", "Guelma", "Oum El Bouaghi", "Aïn Salah",
-  "Bordj Badji Mokhtar", "Béni Abbès", "El M'Ghair", "El Menia", "Ouled Djellal",
-  "In Guezzam", "Djanet", "Timimoun", "Touggourt",
+  "Chlef", "Médéa", "Laghouat", "Jijel", "Guelma", "Oum El Bouaghi",
 ];
 
 interface Props { userEmail: string }
@@ -52,7 +47,6 @@ export function TeacherSignupForm({ userEmail }: Props) {
         const j = await r.json().catch(() => ({}));
         throw new Error(j.error ?? "Erreur");
       }
-      // Success — the redirect will pick up the new profile
       router.push("/enseignant/dashboard");
       router.refresh();
     } catch (e) {
@@ -62,53 +56,77 @@ export function TeacherSignupForm({ userEmail }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-3xl border-2 border-gold p-5 md:p-6">
-      <div className="mb-4">
-        <h2 className="text-lg md:text-xl font-bold text-navy">
-          🎒 {isAr ? "تفعيل وضع الأستاذ" : "Active ton compte enseignant"}
+    <div className="bg-surface border border-line rounded-card p-6 md:p-8">
+      <div className="mb-6 pb-5 border-b border-line">
+        <span className="eyebrow mb-2 block">{isAr ? "تفعيل" : "Activation"}</span>
+        <h2 className="text-xl md:text-2xl font-bold tracking-tight text-fg">
+          {isAr ? "أنشئ ملفّك التعليمي" : "Active ton compte enseignant"}
         </h2>
-        <p className="text-xs text-fg-soft">{isAr ? `بريدك: ${userEmail}` : `Email: ${userEmail}`}</p>
+        <p className="text-sm text-fg-soft mt-1">
+          {isAr ? `بريدك الإلكتروني: ${userEmail}` : `Email associé : ${userEmail}`}
+        </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <Field label={isAr ? "الاسم الكامل" : "Nom complet"} required>
-          <input value={fullName} onChange={(e) => setFullName(e.target.value)}
+          <input
+            value={fullName} onChange={(e) => setFullName(e.target.value)}
             placeholder={isAr ? "مثال: السيد أحمد بن علي" : "Ex : M. Ahmed Benali"}
-            className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+            className="input"
+          />
         </Field>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label={isAr ? "اسم المدرسة" : "Nom de l'école"}>
-            <input value={school} onChange={(e) => setSchool(e.target.value)}
-              placeholder={isAr ? "مثال: ابتدائية حسيبة بن بوعلي" : "Ex : École Hassiba Ben Bouali"}
-              className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+            <input
+              value={school} onChange={(e) => setSchool(e.target.value)}
+              placeholder={isAr ? "ابتدائية حسيبة بن بوعلي" : "École Hassiba Ben Bouali"}
+              className="input"
+            />
           </Field>
           <Field label={isAr ? "الولاية" : "Wilaya"}>
-            <select value={wilaya} onChange={(e) => setWilaya(e.target.value)}
-              className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm focus:outline-none focus:border-gold">
+            <select value={wilaya} onChange={(e) => setWilaya(e.target.value)} className="input">
               {WILAYAS.map((w) => <option key={w}>{w}</option>)}
             </select>
           </Field>
         </div>
 
         <Field label={isAr ? "رقم الهاتف (اختياري)" : "Téléphone (facultatif)"}>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="+213…"
-            className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="+213…" className="input" />
         </Field>
 
-        <Field label={isAr ? "نبذة عنك (اختياري)" : "Présente-toi en 1 phrase (facultatif)"}>
-          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={2}
-            placeholder={isAr ? "مثال: أُدرّس الرياضيات منذ ١٠ سنوات" : "Ex : J'enseigne les maths depuis 10 ans en 5AP."}
-            className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm focus:outline-none focus:border-gold" />
+        <Field label={isAr ? "نبذة عنك (اختياري)" : "Présente-toi en une phrase (facultatif)"}>
+          <textarea
+            value={bio} onChange={(e) => setBio(e.target.value)} rows={2}
+            placeholder={isAr ? "مثال: أُدرّس الرياضيات منذ ١٠ سنوات في ٥ ابتدائي." : "Ex : J'enseigne les maths depuis 10 ans en 5AP."}
+            className="input"
+          />
         </Field>
 
-        {err && <div className="bg-red-50 text-red-700 rounded-lg p-2 text-sm">{err}</div>}
+        {err && <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 text-red-700 dark:text-red-400 rounded-btn p-3 text-sm">{err}</div>}
 
         <button onClick={submit} disabled={fullName.trim().length < 3 || submitting}
           className={`btn w-full ${fullName.trim().length < 3 ? "btn-outline opacity-50" : "btn-primary"}`}>
-          {submitting ? (isAr ? "جاري التفعيل..." : "Activation…") : (isAr ? "فعّل حسابي" : "Activer mon compte enseignant")}
+          {submitting ? (isAr ? "جاري التفعيل..." : "Activation…") : (isAr ? "تفعيل الحساب" : "Activer mon compte enseignant")}
         </button>
       </div>
+
+      <style jsx>{`
+        .input {
+          width: 100%;
+          border-radius: 10px;
+          border: 1px solid var(--color-line);
+          background: var(--color-surface);
+          color: var(--color-fg);
+          padding: 0.6rem 0.85rem;
+          font-size: 0.9rem;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .input:focus {
+          border-color: var(--color-fg);
+        }
+      `}</style>
     </div>
   );
 }
@@ -116,7 +134,7 @@ export function TeacherSignupForm({ userEmail }: Props) {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-navy mb-1">
+      <label className="block text-xs font-semibold text-fg mb-1.5">
         {label} {required && <span className="text-red-600">*</span>}
       </label>
       {children}

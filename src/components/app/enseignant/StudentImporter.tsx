@@ -3,19 +3,16 @@
 /**
  * StudentImporter — bulk import students into a class.
  *
- * Accepts a paste-area where each line is either:
+ * Editorial style. Paste-area accepts:
  *   "Ahmed Benali"
  *   "Ahmed Benali, 12345"      ← name + numero
  *   "12345, Ahmed Benali"      ← swapped is also fine
- *
- * Empty lines and short lines (< 3 chars) are skipped. Submission posts
- * the parsed list to /api/teacher/classes/[id]/students which inserts
- * them in one round-trip.
  */
 
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
+import { CheckIcon } from "@/components/Icon";
 
 interface Props { classId: string }
 
@@ -30,14 +27,12 @@ function parse(text: string): Parsed[] {
   for (const raw of lines) {
     const line = raw.trim();
     if (line.length < 3) continue;
-    // Try splitting on comma / tab / multiple spaces
     const parts = line.split(/[,\t]|\s{2,}/).map((s) => s.trim()).filter(Boolean);
     if (parts.length === 0) continue;
     if (parts.length === 1) {
       out.push({ full_name: parts[0], numero: null });
       continue;
     }
-    // 2+ parts — figure out which is the numero (digits-mostly) and which is the name
     const [a, b] = parts;
     const aIsNum = /^\d{2,}$/.test(a);
     const bIsNum = /^\d{2,}$/.test(b);
@@ -85,12 +80,16 @@ export function StudentImporter({ classId }: Props) {
   };
 
   return (
-    <section className="bg-white rounded-3xl border-2 border-gold p-5 md:p-6">
+    <section className="bg-surface border border-line rounded-card p-6 md:p-7">
       <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-        <h2 className="text-lg font-bold text-navy">📋 {isAr ? "إضافة تلاميذ" : "Importer la liste d'élèves"}</h2>
-        <span className="text-xs font-mono bg-gold/15 text-navy px-2 py-1 rounded-full">{parsed.length} {isAr ? "صفّ" : "lignes"}</span>
+        <h2 className="text-lg font-semibold text-fg">
+          {isAr ? "إضافة تلاميذ" : "Importer la liste d'élèves"}
+        </h2>
+        <span className="text-xs font-mono text-fg-soft bg-surface-3 px-2 py-1 rounded-full border border-line">
+          {parsed.length} {isAr ? "صفّ" : "lignes"}
+        </span>
       </div>
-      <p className="text-xs text-fg-soft mb-3">
+      <p className="text-sm text-fg-soft mb-4">
         {isAr
           ? "ألصق قائمة التلاميذ هنا — اسم في كلّ سطر. يمكنك إضافة رقم التسجيل بفاصلة."
           : "Colle ici la liste depuis ton tableur — un élève par ligne. Tu peux ajouter le numéro après une virgule."}
@@ -101,33 +100,60 @@ export function StudentImporter({ classId }: Props) {
         onChange={(e) => setText(e.target.value)}
         rows={8}
         placeholder={isAr ? "مثال:\nأحمد بن علي\nفاطمة ذيب، ١٢٣\nمراد قاسم" : "Ex :\nAhmed Benali\nFatima Diab, 12345\nMourad Kacem"}
-        className="w-full rounded-xl border-2 border-pale-blue px-3 py-2 text-sm font-mono focus:outline-none focus:border-gold mb-3"
+        className="input mb-4"
         dir="ltr"
       />
 
-      {/* Preview of parsed rows */}
       {parsed.length > 0 && (
-        <div className="bg-pale-blue/30 rounded-xl p-3 mb-3 max-h-40 overflow-y-auto">
-          <div className="text-xs font-bold text-navy mb-1">{isAr ? "معاينة" : "Aperçu"}:</div>
-          <ol className="text-xs text-navy space-y-0.5 list-decimal list-inside">
+        <div className="bg-surface-3 border border-line rounded-btn p-3 mb-4 max-h-44 overflow-y-auto">
+          <div className="text-xs font-semibold text-fg-soft uppercase tracking-wider mb-2">
+            {isAr ? "معاينة" : "Aperçu"}
+          </div>
+          <ol className="text-xs text-fg space-y-0.5 list-decimal list-inside">
             {parsed.slice(0, 30).map((p, i) => (
               <li key={i}>
                 <span className="font-semibold">{p.full_name}</span>
                 {p.numero && <span className="text-fg-soft"> · N° {p.numero}</span>}
               </li>
             ))}
-            {parsed.length > 30 && <li className="text-fg-soft">… +{parsed.length - 30}</li>}
+            {parsed.length > 30 && <li className="text-fg-faint">… +{parsed.length - 30}</li>}
           </ol>
         </div>
       )}
 
-      {err && <div className="bg-red-50 text-red-700 rounded-lg p-2 text-sm mb-3">{err}</div>}
-      {done && <div className="bg-emerald-50 text-emerald-800 rounded-lg p-2 text-sm mb-3">✅ {isAr ? `تمّت إضافة ${done.inserted} تلميذ` : `${done.inserted} élèves ajoutés`}</div>}
+      {err && <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 text-red-700 dark:text-red-400 rounded-btn p-3 text-sm mb-4">{err}</div>}
+      {done && (
+        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 text-emerald-800 dark:text-emerald-300 rounded-btn p-3 text-sm mb-4 inline-flex items-center gap-2">
+          <CheckIcon size={16} />
+          {isAr ? `تمّت إضافة ${done.inserted} تلميذ` : `${done.inserted} élèves ajoutés`}
+        </div>
+      )}
 
-      <button onClick={submit} disabled={parsed.length === 0 || submitting}
-        className={`btn w-full ${parsed.length === 0 ? "btn-outline opacity-50" : "btn-primary"}`}>
-        {submitting ? (isAr ? "جاري الإضافة..." : "Import…") : (isAr ? `إضافة ${parsed.length} تلميذ` : `Ajouter ${parsed.length} élèves`)}
+      <button
+        onClick={submit}
+        disabled={parsed.length === 0 || submitting}
+        className={`btn w-full ${parsed.length === 0 ? "btn-outline opacity-50" : "btn-primary"}`}
+      >
+        {submitting
+          ? (isAr ? "جاري الإضافة..." : "Import…")
+          : (isAr ? `إضافة ${parsed.length} تلميذ` : `Ajouter ${parsed.length} élèves`)}
       </button>
+
+      <style jsx>{`
+        .input {
+          width: 100%;
+          border-radius: 10px;
+          border: 1px solid var(--color-line);
+          background: var(--color-surface);
+          color: var(--color-fg);
+          padding: 0.6rem 0.85rem;
+          font-size: 0.85rem;
+          font-family: ui-monospace, SFMono-Regular, monospace;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .input:focus { border-color: var(--color-fg); }
+      `}</style>
     </section>
   );
 }

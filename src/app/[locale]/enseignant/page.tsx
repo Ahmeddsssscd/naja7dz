@@ -1,16 +1,23 @@
 /**
  * /enseignant — Mode Enseignant landing.
  *
- * If the user is logged in AND has a teacher_profiles row → redirect them
- * to /enseignant/dashboard. If logged in but no profile → show signup
- * form. If anonymous → show marketing landing with "Créer mon compte
- * enseignant" CTA pointing to /inscription.
+ * Editorial PageShell style. Three states:
+ *   - Anonymous: marketing landing + CTA to /inscription.
+ *   - Logged in, no teacher profile: signup form (TeacherSignupForm).
+ *   - Logged in with profile: redirect to dashboard.
  */
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
+import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 import { TeacherSignupForm } from "@/components/app/enseignant/TeacherSignupForm";
+import {
+  BookIcon,
+  ClipboardIcon,
+  ChartIcon,
+  CheckIcon,
+} from "@/components/Icon";
 
 export const metadata = { title: "Espace enseignant" };
 
@@ -28,73 +35,87 @@ export default async function TeacherZone() {
     if (prof) redirect("/enseignant/dashboard");
   }
 
-  // Logged in but no teacher profile → show signup form right here.
-  // Anonymous → show landing.
   return (
-    <div className="min-h-screen bg-cream pb-12">
-      <header className="px-5 lg:px-8 pt-5 pb-4 max-w-5xl mx-auto">
-        <Link href="/" className="text-xs text-fg-soft hover:text-navy">← {t("back_home")}</Link>
-        <h1 className="text-3xl md:text-4xl font-bold text-navy mt-2">
-          👨‍🏫 {t("page_title")}
-        </h1>
-        <p className="text-sm md:text-base text-fg-soft mt-1 max-w-2xl">{t("page_sub")}</p>
-      </header>
+    <PageShell active="teacher">
+      {/* Hero */}
+      <section className="py-20 md:py-30 bg-surface-2">
+        <div className="container-x max-w-4xl text-center">
+          <span className="eyebrow mb-3 block">{t("hero_eyebrow")}</span>
+          <h1 className="text-[clamp(34px,5vw,52px)] font-bold tracking-tight text-fg mb-4">
+            {t("hero_title")}
+          </h1>
+          <p className="text-lg text-fg-soft max-w-2xl mx-auto">{t("hero_sub")}</p>
+        </div>
+      </section>
 
-      <main className="max-w-5xl mx-auto px-5 lg:px-8 space-y-6">
-        {/* Hero */}
-        <section className="accent-block rounded-[28px] p-6 md:p-10 relative overflow-hidden">
-          <div className="absolute -bottom-3 -end-3 text-7xl md:text-9xl opacity-90">🍎</div>
-          <div className="relative max-w-[70%]">
-            <div className="text-xs font-bold text-gold uppercase tracking-wider mb-2">{t("hero_eyebrow")}</div>
-            <h2 className="text-xl md:text-2xl font-bold leading-snug">{t("hero_title")}</h2>
-            <p className="text-sm md:text-base mt-2 opacity-90">{t("hero_sub")}</p>
+      {user ? (
+        // Logged-in but no profile yet — inline activation form
+        <section className="py-14 bg-surface">
+          <div className="container-x max-w-2xl">
+            <TeacherSignupForm userEmail={user.email ?? ""} />
           </div>
         </section>
+      ) : (
+        <>
+          {/* 3 tool cards — same Parents-page pattern */}
+          <section className="py-20 bg-surface">
+            <div className="container-x">
+              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <ToolCard icon={<BookIcon />} title={t("tool_classes_title")} text={t("tool_classes_sub")} />
+                <ToolCard icon={<ClipboardIcon />} title={t("tool_devoirs_title")} text={t("tool_devoirs_sub")} />
+                <ToolCard icon={<ChartIcon />} title={t("tool_results_title")} text={t("tool_results_sub")} />
+              </div>
+            </div>
+          </section>
 
-        {user ? (
-          <TeacherSignupForm userEmail={user.email ?? ""} />
-        ) : (
-          <>
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ToolCard emoji="📚" title={t("tool_classes_title")} sub={t("tool_classes_sub")} />
-              <ToolCard emoji="📝" title={t("tool_devoirs_title")} sub={t("tool_devoirs_sub")} />
-              <ToolCard emoji="📊" title={t("tool_results_title")} sub={t("tool_results_sub")} />
-            </section>
+          {/* Inside checklist */}
+          <section className="py-16 bg-surface-2">
+            <div className="container-x max-w-3xl">
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-fg mb-6 text-center">
+                {t("inside_title")}
+              </h2>
+              <ul className="space-y-3">
+                {[t("inside_1"), t("inside_2"), t("inside_3"), t("inside_4"), t("inside_5")].map((item, i) => (
+                  <li key={i} className="flex gap-3 items-start bg-surface border border-line rounded-card p-4">
+                    <CheckIcon size={20} className="mt-0.5 flex-shrink-0 text-gold" />
+                    <span className="text-fg">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
 
-            <section className="bg-white rounded-3xl border-2 border-pale-blue p-6 text-center">
-              <p className="text-base md:text-lg text-navy mb-4 max-w-2xl mx-auto">
+          {/* CTA */}
+          <section className="accent-block py-20 text-center">
+            <div className="container-x">
+              <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-4 max-w-2xl mx-auto">
                 {t("cta_text")}
-              </p>
-              <Link href="/inscription?role=teacher" className="btn btn-primary inline-block">
-                {t("cta_create_account")}
-              </Link>
-              <p className="text-xs text-fg-soft mt-3">{t("cta_already_account")} <Link href="/connexion" className="underline text-navy">{t("cta_login")}</Link></p>
-            </section>
-          </>
-        )}
-
-        {/* What's inside */}
-        <section className="bg-white rounded-3xl border border-pale-blue p-5 md:p-6">
-          <h3 className="font-bold text-navy text-lg mb-3">{t("inside_title")}</h3>
-          <ul className="text-sm md:text-base text-fg-soft space-y-1.5 list-disc list-inside">
-            <li>{t("inside_1")}</li>
-            <li>{t("inside_2")}</li>
-            <li>{t("inside_3")}</li>
-            <li>{t("inside_4")}</li>
-            <li>{t("inside_5")}</li>
-          </ul>
-        </section>
-      </main>
-    </div>
+              </h2>
+              <p className="text-white/70 text-lg mb-8 max-w-prose mx-auto">{t("hero_sub")}</p>
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <Link href="/inscription?role=teacher" className="btn btn-secondary btn-lg">
+                  {t("cta_create_account")}
+                </Link>
+                <Link href="/connexion" className="text-sm font-medium text-white/80 hover:text-white">
+                  {t("cta_already_account")} {t("cta_login")} →
+                </Link>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+    </PageShell>
   );
 }
 
-function ToolCard({ emoji, title, sub }: { emoji: string; title: string; sub: string }) {
+function ToolCard({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
-    <div className="bg-white border-2 border-pale-blue rounded-3xl p-5 hover:border-gold transition">
-      <div className="text-4xl mb-2">{emoji}</div>
-      <h3 className="font-bold text-navy text-base md:text-lg leading-tight">{title}</h3>
-      <p className="text-xs md:text-sm text-fg-soft mt-1.5">{sub}</p>
-    </div>
+    <article className="bg-surface border border-line rounded-card p-7 hover:shadow-card-hover hover:border-transparent transition-all duration-200">
+      <div className="w-11 h-11 rounded-[10px] bg-surface-3 text-fg inline-flex items-center justify-center mb-5">
+        {icon}
+      </div>
+      <h3 className="text-lg font-semibold text-fg mb-2">{title}</h3>
+      <p className="text-base text-fg-soft">{text}</p>
+    </article>
   );
 }

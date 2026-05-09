@@ -1,21 +1,15 @@
 /**
  * /fac/services — request a service from Najah staff.
  *
- * Possible services (radio buttons):
- *   - Orientation post-Bac (1-on-1 video call, 30 min)
- *   - Relecture de dossier (CV, lettre de motivation)
- *   - Aide PFE / mémoire (review chapters, structure)
- *   - Recherche de bourses / Erasmus / Campus France
- *   - Autre (free text)
- *
- * Form posts to /api/fac/services and stores a row in `fac_service_requests`.
- * Login required so we can route the response back to the user.
+ * PageShell editorial style. Login required so we have an email to follow
+ * up; anonymous users see a sign-in CTA instead of the form.
  */
-import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
+import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 import { ServicesForm } from "@/components/app/fac/ServicesForm";
+import { ShieldIcon } from "@/components/Icon";
 
 export const metadata = { title: "Services Faculté" };
 
@@ -25,25 +19,39 @@ export default async function ServicesPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-cream pb-12">
-      <header className="px-5 lg:px-8 pt-5 pb-4 max-w-3xl mx-auto">
-        <Link href="/fac" className="text-xs text-fg-soft hover:text-navy">← {t("back_to_fac")}</Link>
-        <h1 className="text-2xl md:text-3xl font-bold text-navy mt-2">🤝 {t("services_title")}</h1>
-        <p className="text-sm text-fg-soft mt-1 max-w-prose">{t("services_sub")}</p>
-      </header>
+    <PageShell active="fac">
+      {/* Hero */}
+      <section className="py-16 md:py-20 bg-surface-2">
+        <div className="container-x max-w-3xl text-center">
+          <span className="eyebrow mb-3 block">{t("eyebrow")}</span>
+          <h1 className="text-[clamp(28px,4.5vw,42px)] font-bold tracking-tight text-fg mb-3">
+            {t("services_title")}
+          </h1>
+          <p className="text-base md:text-lg text-fg-soft">{t("services_sub")}</p>
+        </div>
+      </section>
 
-      <main className="max-w-3xl mx-auto px-5 lg:px-8">
-        {!user ? (
-          <div className="bg-white rounded-3xl border-2 border-pale-blue p-6 text-center">
-            <div className="text-5xl mb-2">🔐</div>
-            <h2 className="text-lg font-bold text-navy mb-1">{t("services_login_title")}</h2>
-            <p className="text-sm text-fg-soft mb-4">{t("services_login_sub")}</p>
-            <Link href="/connexion" className="btn btn-primary inline-block">{t("services_login_cta")}</Link>
-          </div>
-        ) : (
-          <ServicesForm userEmail={user.email ?? ""} />
-        )}
-      </main>
-    </div>
+      {/* Form / login gate */}
+      <section className="py-14 bg-surface">
+        <div className="container-x max-w-2xl">
+          {!user ? (
+            <div className="bg-surface border border-line rounded-card p-8 text-center">
+              <div className="w-12 h-12 rounded-[10px] bg-surface-3 text-fg inline-flex items-center justify-center mb-5">
+                <ShieldIcon size={24} />
+              </div>
+              <h2 className="text-xl font-semibold text-fg mb-2">{t("services_login_title")}</h2>
+              <p className="text-base text-fg-soft mb-6 max-w-prose mx-auto">
+                {t("services_login_sub")}
+              </p>
+              <Link href="/connexion" className="btn btn-primary inline-block">
+                {t("services_login_cta")}
+              </Link>
+            </div>
+          ) : (
+            <ServicesForm userEmail={user.email ?? ""} />
+          )}
+        </div>
+      </section>
+    </PageShell>
   );
 }

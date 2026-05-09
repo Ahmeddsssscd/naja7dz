@@ -40,7 +40,9 @@
     "services_sub": "نساعدك من البكالوريا إلى التخرّج.",
     "services_login_title": "سجّل دخولك لإرسال الطلب",
     "services_login_sub": "نحتاج بريدك للرّد عليك.",
-    "services_login_cta": "تسجيل الدخول"
+    "services_login_cta": "تسجيل الدخول",
+    "cta_title": "اعثر على توجيهك بعد البكالوريا.",
+    "cta_sub": "تشخيص مجّاني، بلا تسجيل. خمسة أسئلة، توصية شخصية."
   },
   "ParentExplain": {
     "back": "لوحة التحكّم",
@@ -883,7 +885,7 @@
     "nav_explain": "وضع الشرح",
     "nav_subscription": "الاشتراك",
     "nav_tools": "أدوات",
-    "nav_fac": "قسم الجامعة 🎓",
+    "nav_fac": "قسم الجامعة",
     "nav_settings": "الإعدادات",
     "nav_help": "المساعدة",
     "logout": "تسجيل الخروج"

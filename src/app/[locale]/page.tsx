@@ -98,10 +98,10 @@ function SiteNav({ auth }: { auth: AuthState }) {
             {t("parents")}
           </Link>
           <Link href="/fac" className="hover:text-fg transition-colors">
-            🎓 {t("fac")}
+            {t("fac")}
           </Link>
           <Link href="/enseignant" className="hover:text-fg transition-colors">
-            👨‍🏫 {t("teacher")}
+            {t("teacher")}
           </Link>
           <Link href="/faq" className="hover:text-fg transition-colors">
             {t("faq")}
@@ -137,8 +137,8 @@ function SiteNav({ auth }: { auth: AuthState }) {
                   { href: dashboardHref, label: t("open_dashboard") },
                   { href: "/eleve/pratique", label: t("cta_practice") },
                   { href: "/parent/abonnement", label: t("subscription") },
-                  { href: "/fac", label: `🎓 ${t("fac")}` },
-                  { href: "/enseignant", label: `👨‍🏫 ${t("teacher")}` },
+                  { href: "/fac", label: t("fac") },
+                  { href: "/enseignant", label: t("teacher") },
                   { href: "/faq", label: t("faq") },
                   { href: "/contact", label: "Contact" },
                 ]}
@@ -157,8 +157,8 @@ function SiteNav({ auth }: { auth: AuthState }) {
                 items={[
                   { href: "/tarifs", label: t("pricing") },
                   { href: "/pour-les-parents", label: t("parents") },
-                  { href: "/fac", label: `🎓 ${t("fac")}` },
-                  { href: "/enseignant", label: `👨‍🏫 ${t("teacher")}` },
+                  { href: "/fac", label: t("fac") },
+                  { href: "/enseignant", label: t("teacher") },
                   { href: "/faq", label: t("faq") },
                   { href: "/contact", label: "Contact" },
                   { href: "/connexion", label: t("login") },
