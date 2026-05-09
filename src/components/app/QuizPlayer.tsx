@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CheckIcon } from "@/components/Icon";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { MascotCelebration } from "@/components/app/MascotCelebration";
 
 export interface DemoQuestion {
   id: string;
@@ -26,6 +27,8 @@ export function QuizPlayer({
   questions: DemoQuestion[];
 }) {
   const t = useTranslations("EleveQuiz");
+  const localeStr = useLocale();
+  const locale = localeStr === "ar" ? "ar" : "fr";
   const router = useRouter();
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
@@ -109,29 +112,33 @@ export function QuizPlayer({
 
   if (done) {
     const pct = Math.round((score / total) * 100);
+    // Mascot celebrates perfect quizzes only — adds the "wow" moment kids love
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-2 px-5">
-        <div className="bg-surface border border-line rounded-modal p-8 max-w-md w-full text-center">
-          <span className="inline-flex w-16 h-16 rounded-full bg-gold text-navy items-center justify-center mb-5">
-            <CheckIcon size={32} />
-          </span>
-          <h2 className="text-2xl font-bold text-fg mb-2">{t("done_title")}</h2>
-          <p className="text-fg-soft mb-6">{t("done_lead")}</p>
-          <div className="text-5xl font-bold text-navy dark:text-cream mb-1"><bdi>{pct}%</bdi></div>
-          <p className="text-sm text-fg-soft mb-8">{t("done_correct", { score, total })}</p>
-          <div className="flex gap-3">
-            <button onClick={() => router.push("/eleve")} className="btn btn-outline flex-1">{t("back_home")}</button>
-            <button
-              onClick={() => {
-                setIndex(0); setPicked(null); setScore(0); setDone(false); setSavedScorePct(null);
-              }}
-              className="btn btn-primary flex-1"
-            >
-              {t("restart")}
-            </button>
+      <>
+        <MascotCelebration trigger={pct === 100} locale={locale} />
+        <div className="min-h-screen flex items-center justify-center bg-surface-2 px-5">
+          <div className="bg-surface border border-line rounded-modal p-8 max-w-md w-full text-center">
+            <span className="inline-flex w-16 h-16 rounded-full bg-gold text-navy items-center justify-center mb-5">
+              <CheckIcon size={32} />
+            </span>
+            <h2 className="text-2xl font-bold text-fg mb-2">{t("done_title")}</h2>
+            <p className="text-fg-soft mb-6">{t("done_lead")}</p>
+            <div className="text-5xl font-bold text-navy dark:text-cream mb-1"><bdi>{pct}%</bdi></div>
+            <p className="text-sm text-fg-soft mb-8">{t("done_correct", { score, total })}</p>
+            <div className="flex gap-3">
+              <button onClick={() => router.push("/eleve")} className="btn btn-outline flex-1">{t("back_home")}</button>
+              <button
+                onClick={() => {
+                  setIndex(0); setPicked(null); setScore(0); setDone(false); setSavedScorePct(null);
+                }}
+                className="btn btn-primary flex-1"
+              >
+                {t("restart")}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 

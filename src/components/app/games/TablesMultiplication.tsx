@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useGameBack } from "./useGameBack";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { MascotCelebration } from "@/components/app/MascotCelebration";
 
 type Phase = "pick-table" | "drill" | "done";
 
@@ -163,7 +164,9 @@ export function TablesMultiplication() {
     const s = stars(score);
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center px-5">
-        <div className="text-center max-w-sm">
+        {/* Fennec celebrates 3-star runs (12/12 correct) */}
+        <MascotCelebration trigger={s === 3} locale="fr" />
+        <div className="text-center max-w-sm">{/* unchanged below */}
           <div className="text-6xl mb-4">{s === 3 ? "🏆" : s === 2 ? "🌟" : s === 1 ? "✨" : "📝"}</div>
           <h1 className="text-3xl font-bold text-navy mb-2">Table de ×{table}</h1>
           <div className="text-5xl font-bold text-gold mb-2">{score}<span className="text-2xl text-fg-soft"> / 12</span></div>
