@@ -415,13 +415,20 @@ function Pricing() {
             badge={t("popular")}
           />
           <PlanCard
-            planId="pack_bac"
-            name={t("bac_name")}
-            price={t("bac_price")}
-            currency={t("bac_currency")}
-            period={t("one_time")}
-            features={[t("bac_f1"), t("bac_f2"), t("bac_f3"), t("bac_f4")]}
-            cta={t("bac_cta")}
+            quoteHref="/ecole"
+            name={t("ecole_name")}
+            price={t("ecole_price")}
+            currency=""
+            period={t("ecole_period")}
+            features={[
+              t("ecole_f1"),
+              t("ecole_f2"),
+              t("ecole_f3"),
+              t("ecole_f4"),
+              t("ecole_f5"),
+              t("ecole_f6"),
+            ]}
+            cta={t("ecole_cta")}
           />
         </div>
       </div>
@@ -431,6 +438,7 @@ function Pricing() {
 
 function PlanCard({
   planId,
+  quoteHref,
   name,
   price,
   currency,
@@ -440,7 +448,10 @@ function PlanCard({
   featured = false,
   badge,
 }: {
-  planId: string;
+  /** Standard plan: /checkout?plan=<id>. */
+  planId?: string;
+  /** Quote-request plan: links to a sales page (e.g. /ecole). */
+  quoteHref?: string;
   name: string;
   price: string;
   currency: string;
@@ -487,7 +498,11 @@ function PlanCard({
         ))}
       </ul>
       <Link
-        href={{ pathname: "/checkout", query: { plan: planId } }}
+        href={
+          quoteHref
+            ? { pathname: quoteHref }
+            : { pathname: "/checkout", query: { plan: planId ?? "eleve_monthly" } }
+        }
         className={`btn w-full ${
           featured
             ? "bg-gold text-navy hover:bg-gold-soft"

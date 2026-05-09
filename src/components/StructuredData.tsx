@@ -78,12 +78,23 @@ const PRODUCT = {
     },
     {
       "@type": "Offer",
-      name: "Pack Bac 90 jours",
-      price: "9000",
-      priceCurrency: "DZD",
-      url: "https://naja7dz.com/tarifs",
+      name: "Pack École — sur devis",
+      // No fixed price; schools get a custom quote based on student count.
+      // Schema.org allows omitting price for "by quote" offers if we set
+      // priceSpecification.priceType to "https://schema.org/SuggestedRetailPrice"
+      // with a minimal value, but the simplest valid pattern is to use
+      // PriceRange via priceSpecification.minPrice; for now we publish a
+      // Quote-style offer.
+      url: "https://naja7dz.com/ecole",
       availability: "https://schema.org/InStock",
-      priceValidUntil: "2026-12-31",
+      priceCurrency: "DZD",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        valueAddedTaxIncluded: true,
+        priceCurrency: "DZD",
+        // minPrice signals "starting from" without a misleading hard number
+        minPrice: "0",
+      },
     },
   ],
 };

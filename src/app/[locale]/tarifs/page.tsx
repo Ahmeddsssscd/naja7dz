@@ -63,14 +63,23 @@ function Plans() {
             featured
             badge={t("popular")}
           />
+          {/* Pack École — B2B "sur devis". No fixed price; CTA goes to a
+              quote-request form rather than the consumer checkout. */}
           <Plan
-            planId="pack_bac"
-            name={t("bac_name")}
-            price={t("bac_price")}
-            currency={t("bac_currency")}
-            period={t("one_time")}
-            features={[t("bac_f1"), t("bac_f2"), t("bac_f3"), t("bac_f4")]}
-            cta={t("bac_cta")}
+            quoteHref="/ecole"
+            name={t("ecole_name")}
+            price={t("ecole_price")}
+            currency=""
+            period={t("ecole_period")}
+            features={[
+              t("ecole_f1"),
+              t("ecole_f2"),
+              t("ecole_f3"),
+              t("ecole_f4"),
+              t("ecole_f5"),
+              t("ecole_f6"),
+            ]}
+            cta={t("ecole_cta")}
           />
         </div>
       </div>
@@ -80,6 +89,7 @@ function Plans() {
 
 function Plan({
   planId,
+  quoteHref,
   name,
   price,
   currency,
@@ -89,7 +99,10 @@ function Plan({
   featured,
   badge,
 }: {
-  planId: string;
+  /** Standard plan: posts to /checkout?plan=<id>. */
+  planId?: string;
+  /** Quote-request plan: links to a sales page instead of checkout. */
+  quoteHref?: string;
   name: string;
   price: string;
   currency: string;
@@ -136,7 +149,11 @@ function Plan({
         ))}
       </ul>
       <Link
-        href={{ pathname: "/checkout", query: { plan: planId } }}
+        href={
+          quoteHref
+            ? { pathname: quoteHref }
+            : { pathname: "/checkout", query: { plan: planId ?? "eleve_monthly" } }
+        }
         className={`btn w-full ${
           featured ? "bg-gold text-navy hover:bg-gold-soft" : "btn-primary"
         }`}
@@ -150,21 +167,21 @@ function Plan({
 function ComparisonTable() {
   const t = useTranslations("Tarifs");
   const tt = useTranslations("TarifsTable");
-  // Build rows as tuples: [labelKey, eleveCell, familleCell, bacCell].
-  // Cells that are non-translated symbols are inlined; the children-row uses
-  // localized values from TarifsTable.
+  // Build rows as tuples: [labelKey, eleveCell, familleCell, ecoleCell].
+  // École column always = ✓ except for the per-family count row.
   const rows: Array<[string, string, string, string]> = [
-    ["row_children", tt("row_children_eleve"), tt("row_children_famille"), tt("row_children_bac")],
+    ["row_children", tt("row_children_eleve"), tt("row_children_famille"), tt("row_children_ecole")],
     ["row_subjects", "✓", "✓", "✓"],
     ["row_quiz", "✓", "✓", "✓"],
     ["row_tutor", "✓", "✓", "✓"],
     ["row_homework", "✓", "✓", "✓"],
     ["row_archive", "✓", "✓", "✓"],
-    ["row_kids", "—", "✓", "—"],
-    ["row_parents", "—", "✓", "—"],
-    ["row_reports", "—", "✓", "—"],
-    ["row_bac90", "—", "—", "✓"],
-    ["row_mockexams", "—", "—", "✓"],
+    ["row_kids", "—", "✓", "✓"],
+    ["row_parents", "—", "✓", "✓"],
+    ["row_reports", "—", "✓", "✓"],
+    ["row_teacher_dashboard", "—", "—", "✓"],
+    ["row_bulk_import", "—", "—", "✓"],
+    ["row_class_results", "—", "—", "✓"],
     ["row_priority", "—", "✓", "✓"],
   ];
 
@@ -183,7 +200,7 @@ function ComparisonTable() {
                 <th className="text-center font-semibold text-fg p-5 bg-surface-3/50">
                   {t("compare_famille")}
                 </th>
-                <th className="text-center font-semibold text-fg p-5">{t("compare_bac")}</th>
+                <th className="text-center font-semibold text-fg p-5">{t("compare_ecole")}</th>
               </tr>
             </thead>
             <tbody>
