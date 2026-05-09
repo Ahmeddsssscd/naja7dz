@@ -144,7 +144,7 @@ export function DrapeauxMaghreb() {
           <h1 className="text-base font-bold text-navy">Drapeaux du monde arabe</h1>
           <div className="w-10" />
         </header>
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full text-center">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full text-center">
           <div className="text-7xl mb-4 leading-none">🇩🇿 🇲🇦 🇪🇬</div>
           <h2 className="text-2xl font-bold text-navy mb-2">Reconnais les drapeaux !</h2>
           <p className="text-fg-soft text-sm mb-6">

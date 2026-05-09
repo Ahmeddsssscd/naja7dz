@@ -119,7 +119,7 @@ export function EnglishQuiz({ quizId }: Props) {
     return (
       <div className="min-h-screen bg-cream flex flex-col">
         <Header title={meta.name_fr} subtitle={meta.name_ar} emoji={meta.emoji} onBack={goBack} />
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full text-center">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full text-center">
           <div className="text-7xl mb-4">📝</div>
           <h2 className="text-2xl font-bold text-navy mb-2">{meta.name_fr}</h2>
           <p className="text-sm text-fg-soft mb-1">5 questions · choix multiples</p>
@@ -162,7 +162,7 @@ export function EnglishQuiz({ quizId }: Props) {
     <div className="min-h-screen bg-cream flex flex-col">
       <Header title={meta.name_fr} subtitle={`${qIdx + 1}/${questions.length} · ⭐ ${score}`} emoji={meta.emoji} onBack={() => setPhase("intro")} />
 
-      <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+      <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
         <div className="bg-white border-4 border-navy rounded-3xl p-5 mb-5 shadow-card text-center">
           {current.type === "listen" ? (
             <>

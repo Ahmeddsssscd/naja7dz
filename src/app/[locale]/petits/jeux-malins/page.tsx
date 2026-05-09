@@ -81,6 +81,14 @@ export default async function MalinsHub() {
             <Tile href="/petits/jeux-malins/dictee" emoji="🎤" title={tHub("game_dictee")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
           </SubGroup>
 
+          {/* Découverte du corps & du monde — visual SVG-based games */}
+          <SubGroup label={tHub("games_group_body_world")}>
+            <Tile href="/petits/jeux-malins/mon-corps"    emoji="🧒" title={tHub("game_body")}     color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
+            <Tile href="/petits/jeux-malins/emotions"     emoji="😊" title={tHub("game_emotions")} color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100" />
+            <Tile href="/petits/jeux-malins/saisons"      emoji="🌈" title={tHub("game_seasons")}  color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100" />
+            <Tile href="/petits/jeux-malins/mon-assiette" emoji="🍎" title={tHub("game_plate")}    color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
+          </SubGroup>
+
           {/* Découvertes (sciences, histoire, géo) */}
           <SubGroup label={tHub("games_group_decouvertes")}>
             <Tile href="/petits/jeux-malins/drapeaux" emoji="🚩" title={tHub("game_flags")} color="bg-red-100 dark:bg-red-950/30 text-red-900 dark:text-red-100" />

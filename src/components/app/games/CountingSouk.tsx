@@ -95,7 +95,7 @@ export function CountingSouk() {
         <div className="w-10" />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-5 gap-5 max-w-md mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center justify-center px-5 gap-5 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
         <h2 className="text-xl font-bold text-navy text-center">Combien doit payer le client ?</h2>
 
         <div className="bg-white border-2 border-navy rounded-3xl p-5 shadow-card w-full">

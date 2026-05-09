@@ -268,6 +268,11 @@
     "games_group_langues": "Lettres & langues",
     "games_group_decouvertes": "Découvertes",
     "games_group_creation": "Création",
+    "games_group_body_world": "Découverte du corps & du monde",
+    "game_body": "Mon corps",
+    "game_emotions": "Les émotions",
+    "game_seasons": "Les saisons",
+    "game_plate": "Mon assiette",
     "exam_archive_title": "Archive officielle",
     "exam_archive_sub": "Bac & BEM 2020–2024",
     "exam_mock_title": "Examen blanc",
@@ -550,7 +555,12 @@
     "section_universes": "Mes univers",
     "section_universes_sub": "Sections complètes avec plein d'activités",
     "section_all_games": "Tous les jeux",
-    "section_all_games_sub": "Choisis un jeu et commence direct"
+    "section_all_games_sub": "Choisis un jeu et commence direct",
+    "group_body_world": "Découverte du corps & du monde",
+    "game_body": "Mon corps",
+    "game_emotions": "Les émotions",
+    "game_seasons": "Les saisons",
+    "game_plate": "Mon assiette"
   },
   "PetitsMaths": {
     "page_title": "Jeux de maths",

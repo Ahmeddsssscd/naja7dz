@@ -240,7 +240,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
       <div className="min-h-screen bg-cream flex flex-col">
         <Header title_fr={labels.quiz_title} title_ar={labels.title_ar} emoji="🏁" onBack={() => setPhase("study")} />
 
-        <main className="flex-1 max-w-md mx-auto w-full px-5 py-6 flex flex-col">
+        <main className="flex-1 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full px-5 py-6 flex flex-col">
           <div className="text-center mb-2">
             <div className="text-xs uppercase tracking-widest text-gold font-bold">
               {labels.quiz_intro}

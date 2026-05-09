@@ -28,6 +28,8 @@ import { isFeatureEnabled } from "@/lib/feature-flags";
 import { requireKidsAccess } from "@/lib/subscriptions";
 import { resolveActiveChild } from "@/lib/active-child";
 import { ChildSwitcher } from "@/components/app/ChildSwitcher";
+import { DailyStrip } from "@/components/app/DailyStrip";
+import { getLocale } from "next-intl/server";
 
 export const metadata = { title: "Mon univers" };
 
@@ -38,6 +40,8 @@ interface PageProps {
 export default async function KidsHome({ searchParams }: PageProps) {
   const t = await getTranslations("Petits");
   const tHub = await getTranslations("ElevePratique");
+  const locale = await getLocale();
+  const isAr = locale === "ar";
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
@@ -106,6 +110,13 @@ export default async function KidsHome({ searchParams }: PageProps) {
         </div>
       </section>
 
+      {/* Daily strip — streak + featured-of-the-day + Fennec tip. Fills the
+          dead space that used to sit between the hero and the catalogue on
+          desktop, and gives kids a reason to come back tomorrow. */}
+      <section className="max-w-5xl mx-auto mt-5 px-5 lg:px-8">
+        <DailyStrip childId={active?.id ?? null} isAr={isAr} />
+      </section>
+
       {/* "Mes univers" — compact horizontal strip with the 7 multi-page hubs.
           Kept smaller than before so they don't dominate the page. */}
       <section className="max-w-5xl mx-auto mt-6 px-5 lg:px-8">
@@ -166,6 +177,14 @@ export default async function KidsHome({ searchParams }: PageProps) {
             <Tile href="/petits/jeux-malins/conjugaison" emoji="📝" title={tHub("game_conjugaison")} color="bg-violet-100 dark:bg-violet-950/30 text-violet-900 dark:text-violet-100" />
             <Tile href="/petits/jeux-malins/dictee" emoji="🎤" title={tHub("game_dictee")} color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100" />
             {englishOn && <Tile href="/petits/anglais" emoji="🇬🇧" title={t("tile_english")} color="bg-indigo-100 dark:bg-indigo-950/30 text-indigo-900 dark:text-indigo-100" />}
+          </SubGroup>
+
+          {/* Découverte du corps & du monde — visual SVG-based games. NEW. */}
+          <SubGroup label={t("group_body_world")}>
+            <Tile href="/petits/jeux-malins/mon-corps"    emoji="🧒" title={t("game_body")}     color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />
+            <Tile href="/petits/jeux-malins/emotions"     emoji="😊" title={t("game_emotions")} color="bg-yellow-100 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100" />
+            <Tile href="/petits/jeux-malins/saisons"      emoji="🌈" title={t("game_seasons")}  color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100" />
+            <Tile href="/petits/jeux-malins/mon-assiette" emoji="🍎" title={t("game_plate")}    color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
           </SubGroup>
 
           {/* Découvertes (sciences, histoire, géo) */}

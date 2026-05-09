@@ -603,7 +603,7 @@ export function HistoireAlgerie() {
             <p className="text-navy text-base md:text-lg mb-2">{ui.awardedTo}</p>
             <div className="text-2xl md:text-3xl font-bold text-gold mb-5 italic">{ui.awardee}</div>
 
-            <p className="text-navy text-sm md:text-base leading-relaxed mb-6 max-w-md mx-auto">
+            <p className="text-navy text-sm md:text-base leading-relaxed mb-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto">
               {ui.diplomaText}
             </p>
 

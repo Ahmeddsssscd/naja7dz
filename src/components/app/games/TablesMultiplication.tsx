@@ -132,7 +132,7 @@ export function TablesMultiplication() {
           <h1 className="text-base font-bold text-navy">Tables de multiplication</h1>
           <div className="w-10" />
         </header>
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <p className="text-fg-soft text-sm text-center mb-6">
             Choisis une table à pratiquer. Tu as 12 questions par table.
           </p>

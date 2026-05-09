@@ -97,7 +97,7 @@ export function EnglishFlashcards() {
     return (
       <div className="min-h-screen bg-cream flex flex-col">
         <Header title="English Flashcards" subtitle="بطاقات الإنجليزية" emoji="🎴" onBack={goBack} />
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <p className="text-fg-soft text-sm text-center mb-1">
             Choisis un thème. Touche la carte pour voir EN → FR → AR.
           </p>

@@ -313,7 +313,7 @@ export function Sudoku9() {
           <div className="w-10" />
         </header>
 
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <div className="text-center mb-6">
             <div className="text-6xl mb-3">🧩</div>
             <p className="text-fg-soft text-sm">

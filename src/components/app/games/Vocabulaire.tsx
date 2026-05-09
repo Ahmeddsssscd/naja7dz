@@ -157,7 +157,7 @@ export function Vocabulaire() {
           <h1 className="text-base font-bold text-navy">Vocabulaire FR ↔ AR</h1>
           <div className="w-10" />
         </header>
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <p className="text-fg-soft text-sm text-center mb-5">
             Choisis un thème. 12 cartes à apprendre.
           </p>

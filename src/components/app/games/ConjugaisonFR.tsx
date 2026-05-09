@@ -302,7 +302,7 @@ export function ConjugaisonFR() {
           <h1 className="text-base font-bold text-navy">Conjugaison</h1>
           <div className="w-10" />
         </header>
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <p className="text-fg-soft text-sm text-center mb-5">
             Choisis un verbe à conjuguer.
           </p>
@@ -332,7 +332,7 @@ export function ConjugaisonFR() {
           <h1 className="text-base font-bold text-navy">Choisis un temps</h1>
           <div className="w-10" />
         </header>
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <div className="text-center mb-6">
             <div className="text-xs uppercase font-semibold text-fg-soft">Verbe</div>
             <div className="text-3xl font-bold text-navy">{verbInf}</div>
@@ -377,7 +377,7 @@ export function ConjugaisonFR() {
           <h1 className="text-base font-bold text-navy">Résultat</h1>
           <div className="w-10" />
         </header>
-        <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+        <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <div className="text-center mb-5">
             <div className="text-5xl mb-3">{score === 6 ? "🏆" : score >= 4 ? "🌟" : "📝"}</div>
             <h2 className="text-2xl font-bold text-navy">{verbInf} <span className="text-fg-soft text-base">· {TENSE_META[tense].label}</span></h2>
@@ -424,7 +424,7 @@ export function ConjugaisonFR() {
         <div className="text-xs text-gold font-bold">{score}/6</div>
       </header>
 
-      <main className="flex-1 px-5 py-6 max-w-md mx-auto w-full">
+      <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
         <p className="text-xs text-fg-soft text-center mb-4">
           Conjugue le verbe pour chaque pronom. Touche « Valider » pour vérifier.
         </p>

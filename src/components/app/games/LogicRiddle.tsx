@@ -49,7 +49,7 @@ export function LogicRiddle({ riddle }: { riddle: Riddle | null }) {
         <div className="w-10" />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-5 max-w-md mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center justify-center px-5 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
         <div className="text-6xl mb-6">🧩</div>
         <div className="bg-white border-2 border-navy rounded-3xl p-7 shadow-card mb-5 text-center">
           <p className="text-lg font-medium text-navy leading-relaxed">{riddle.question_fr}</p>
