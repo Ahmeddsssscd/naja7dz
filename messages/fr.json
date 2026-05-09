@@ -545,7 +545,12 @@
     "tile_quran_sub": "Apprends sourate par sourate",
     "tile_english": "Apprends l'anglais",
     "tile_english_sub": "Leçons, jeux et histoires",
-    "back": "Retour"
+    "back": "Retour",
+    "switcher_label": "Pour qui ?",
+    "section_universes": "Mes univers",
+    "section_universes_sub": "Sections complètes avec plein d'activités",
+    "section_all_games": "Tous les jeux",
+    "section_all_games_sub": "Choisis un jeu et commence direct"
   },
   "PetitsMaths": {
     "page_title": "Jeux de maths",

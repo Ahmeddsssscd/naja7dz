@@ -545,7 +545,12 @@
     "tile_quran_sub": "تعلّم سورة سورة",
     "tile_english": "تعلّم الإنجليزية",
     "tile_english_sub": "دروس وألعاب وقصص",
-    "back": "رجوع"
+    "back": "رجوع",
+    "switcher_label": "لمن؟",
+    "section_universes": "أكواني",
+    "section_universes_sub": "أقسام كاملة فيها كثير من الأنشطة",
+    "section_all_games": "كلّ الألعاب",
+    "section_all_games_sub": "اختر لعبة وابدأ على طول"
   },
   "PetitsMaths": {
     "page_title": "ألعاب الرياضيات",
