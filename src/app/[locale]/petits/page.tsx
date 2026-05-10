@@ -29,7 +29,6 @@ import { requireKidsAccess } from "@/lib/subscriptions";
 import { resolveActiveChild } from "@/lib/active-child";
 import { ChildSwitcher } from "@/components/app/ChildSwitcher";
 import { DailyStrip } from "@/components/app/DailyStrip";
-import { AnimatedFennec } from "@/components/app/AnimatedFennec";
 import { getLocale } from "next-intl/server";
 
 export const metadata = { title: "Mon univers" };
@@ -103,10 +102,11 @@ export default async function KidsHome({ searchParams }: PageProps) {
       {/* Hero with mascot — constrained on desktop so it doesn't go ridiculous */}
       <section className="max-w-5xl mx-auto mx-5 lg:mx-auto lg:px-8">
         <div className="accent-block rounded-[28px] p-6 md:p-8 relative overflow-hidden mx-5 lg:mx-0">
-          <div className="absolute -bottom-2 -end-3 hidden sm:block">
-            <AnimatedFennec size={120} />
-          </div>
-          <div className="absolute -bottom-6 -end-3 text-7xl sm:hidden">🦊</div>
+          {/* Static fennec emoji — the previous AnimatedFennec SVG had wonky
+              proportions (deformed fox / weird tail) and looked worse than the
+              built-in OS-rendered emoji. Reverting until the SVG is properly
+              redrawn. */}
+          <div className="absolute -bottom-6 -end-3 text-7xl md:text-8xl">🦊</div>
           <div className="relative">
             <div className="text-xs font-bold text-gold uppercase tracking-wider mb-2">{t("fennec_says")}</div>
             <p className="text-lg md:text-xl font-semibold leading-snug max-w-[70%]">{t("welcome")}</p>
