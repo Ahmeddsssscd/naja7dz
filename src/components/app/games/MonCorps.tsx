@@ -154,7 +154,7 @@ export function MonCorps() {
     const pct = Math.round((score / prompts.length) * 100);
     const stars = score >= 9 ? 3 : score >= 7 ? 2 : 1;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={score === prompts.length} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{pct === 100 ? "🏆" : pct >= 70 ? "🌟" : "✨"}</div>
@@ -182,10 +182,10 @@ export function MonCorps() {
     : "";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
       {/* Header */}
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base md:text-lg font-bold text-navy">
@@ -205,7 +205,7 @@ export function MonCorps() {
               {isAr ? "اضغط على الجزء لمعرفة اسمه 🔊" : "Touche une partie pour entendre son nom 🔊"}
             </p>
           ) : (
-            <div className="bg-white border-4 border-navy rounded-2xl py-3 px-4 inline-block min-w-[260px]">
+            <div className="bg-surface border-4 border-navy rounded-2xl py-3 px-4 inline-block min-w-[260px]">
               <div className="text-xs text-fg-soft mb-1">{round + 1} / {prompts.length} · ⭐ {score}</div>
               <div className="text-2xl md:text-3xl font-bold text-navy" dir={promptLang === "ar" ? "rtl" : "ltr"}>
                 {isAr && promptLang === "ar" ? "أين" : promptLang === "ar" ? "أين" : "Où est"} {promptText} ?

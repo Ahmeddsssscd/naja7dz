@@ -71,7 +71,7 @@ export function CountingSouk() {
 
   if (finished) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center">
           <div className="text-6xl mb-4">🛒</div>
           <h1 className="text-3xl font-bold text-navy mb-2">Bien joué, marchand !</h1>
@@ -86,9 +86,9 @@ export function CountingSouk() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="text-sm font-bold text-navy">Q {round}/5  ·  ⭐ {score}</div>
@@ -98,7 +98,7 @@ export function CountingSouk() {
       <main className="flex-1 flex flex-col items-center justify-center px-5 gap-5 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
         <h2 className="text-xl font-bold text-navy text-center">Combien doit payer le client ?</h2>
 
-        <div className="bg-white border-2 border-navy rounded-3xl p-5 shadow-card w-full">
+        <div className="bg-surface border-2 border-navy rounded-3xl p-5 shadow-card w-full">
           <div className="text-xs text-gold uppercase tracking-widest font-bold mb-3">Panier</div>
           <ul className="space-y-2">
             {q.basket.map((b, i) => (
@@ -127,7 +127,7 @@ export function CountingSouk() {
                 className={`py-4 text-xl font-bold rounded-2xl border-2 transition-all ${
                   showCorrect ? "bg-green-100 border-green-500 text-green-900" :
                   showWrong ? "bg-red-100 border-red-500 text-red-900" :
-                  "bg-white border-pale-blue text-navy hover:border-gold active:scale-95"
+                  "bg-surface border-pale-blue text-navy hover:border-gold active:scale-95"
                 }`}
               >
                 {n} DA

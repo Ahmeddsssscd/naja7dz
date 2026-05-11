@@ -136,8 +136,8 @@ export function TicTacToe() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col" dir={isAR ? "rtl" : "ltr"}>
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={isAR ? "rtl" : "ltr"}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <button
           onClick={goBack}
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
@@ -164,7 +164,7 @@ export function TicTacToe() {
           </span>
         </div>
 
-        <div className="bg-white rounded-3xl p-3 border-4 border-navy shadow-card">
+        <div className="bg-surface rounded-3xl p-3 border-4 border-navy shadow-card">
           <div className="grid grid-cols-3 gap-2">
             {board.map((cell, i) => {
               const inWin = winLine?.includes(i) ?? false;

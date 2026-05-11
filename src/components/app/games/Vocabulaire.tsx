@@ -149,9 +149,9 @@ export function Vocabulaire() {
 
   if (phase === "pick-deck") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Vocabulaire FR ↔ AR</h1>
@@ -162,7 +162,7 @@ export function Vocabulaire() {
             Choisis un thème. 12 cartes à apprendre.
           </p>
 
-          <div className="bg-white border border-pale-blue rounded-2xl p-3 mb-5">
+          <div className="bg-surface border border-pale-blue rounded-2xl p-3 mb-5">
             <div className="text-xs font-semibold text-navy/70 uppercase mb-2">Direction</div>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -185,7 +185,7 @@ export function Vocabulaire() {
               <button
                 key={id}
                 onClick={() => startDeck(id)}
-                className="bg-white border-2 border-pale-blue rounded-2xl p-5 flex flex-col items-center gap-2 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
+                className="bg-surface border-2 border-pale-blue rounded-2xl p-5 flex flex-col items-center gap-2 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
               >
                 <span className="text-4xl">{d.emoji}</span>
                 <span className="font-bold text-navy text-sm text-center">{d.name_fr}</span>
@@ -205,7 +205,7 @@ export function Vocabulaire() {
     const total = DECKS[deckId].cards.length;
     const pct = Math.round((knownCount / total) * 100);
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{pct >= 80 ? "🏆" : pct >= 60 ? "✨" : "📚"}</div>
           <h1 className="text-3xl font-bold text-navy mb-2">{DECKS[deckId].name_fr}</h1>
@@ -227,9 +227,9 @@ export function Vocabulaire() {
   const cardLang = flipped ? (isAr ? "ar" : "fr") : (isAr ? "fr" : "ar");
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => setPhase("pick-deck")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={() => setPhase("pick-deck")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="text-sm font-bold text-navy">{index + 1}/{queue.length}  ·  ⭐ {knownCount}</div>
@@ -240,7 +240,7 @@ export function Vocabulaire() {
         {/* Flashcard */}
         <button
           onClick={() => setFlipped((f) => !f)}
-          className="bg-white border-4 border-navy rounded-3xl p-8 md:p-12 min-w-[280px] min-h-[200px] flex items-center justify-center shadow-card-hover hover:scale-[1.02] active:scale-95 transition-all"
+          className="bg-surface border-4 border-navy rounded-3xl p-8 md:p-12 min-w-[280px] min-h-[200px] flex items-center justify-center shadow-card-hover hover:scale-[1.02] active:scale-95 transition-all"
           dir={cardLang === "ar" ? "rtl" : "ltr"}
         >
           <div className="text-center">

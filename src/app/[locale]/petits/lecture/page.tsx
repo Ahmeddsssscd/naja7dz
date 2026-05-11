@@ -27,8 +27,8 @@ export default async function LectureHub() {
     .order("sort_order");
 
   return (
-    <div className="min-h-screen bg-cream pb-12">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 pb-12">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <Link
           href="/petits"
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
@@ -61,7 +61,7 @@ export default async function LectureHub() {
           {t("stories_title")}
         </h2>
         {(stories?.length ?? 0) === 0 ? (
-          <div className="bg-white border-2 border-dashed border-pale-blue rounded-3xl p-5 text-center text-fg-soft">
+          <div className="bg-surface border-2 border-dashed border-pale-blue rounded-3xl p-5 text-center text-fg-soft">
             <div className="text-4xl mb-2">📖</div>
             <p className="font-semibold mb-1">{t("empty_title")}</p>
             <p className="text-xs">{t("empty_text")}</p>
@@ -72,7 +72,7 @@ export default async function LectureHub() {
               <Link
                 key={s.id}
                 href={`/petits/lecture/${s.slug}` as never}
-                className="bg-white border border-pale-blue rounded-3xl p-4 flex items-center gap-3 hover:border-gold hover:shadow-card-hover transition-all active:scale-95"
+                className="bg-surface border border-pale-blue rounded-3xl p-4 flex items-center gap-3 hover:border-gold hover:shadow-card-hover transition-all active:scale-95"
               >
                 <span className="text-4xl flex-shrink-0">{s.cover_emoji ?? "📖"}</span>
                 <div className="flex-1 min-w-0">

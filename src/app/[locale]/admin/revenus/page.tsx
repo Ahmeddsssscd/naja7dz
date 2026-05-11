@@ -58,9 +58,9 @@ export default async function AdminRevenue() {
                 <td className="p-4 text-fg font-semibold"><bdi>{p.amount_dzd ? fmt(p.amount_dzd) : "—"}</bdi> {tc("currency")}</td>
                 <td className="p-4">
                   <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
-                    p.status === "paid" ? "bg-green-100 text-green-900"
-                    : p.status === "pending" ? "bg-amber-100 text-amber-900"
-                    : "bg-red-100 text-red-900"
+                    p.status === "paid" ? "bg-green-100 dark:bg-green-950/40 text-green-900 dark:text-green-300"
+                    : p.status === "pending" ? "bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300"
+                    : "bg-red-100 dark:bg-red-950/40 text-red-900 dark:text-red-300"
                   }`}>
                     {p.status}
                   </span>

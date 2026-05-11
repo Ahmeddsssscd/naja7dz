@@ -294,9 +294,9 @@ export function ConjugaisonFR() {
 
   if (phase === "pick-verb") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Conjugaison</h1>
@@ -311,7 +311,7 @@ export function ConjugaisonFR() {
               <button
                 key={v.infinitive}
                 onClick={() => { setVerbInf(v.infinitive); setPhase("pick-tense"); }}
-                className="bg-white border-2 border-pale-blue rounded-xl py-3 px-2 text-sm font-bold text-navy hover:border-gold hover:scale-[1.04] active:scale-95 transition-all"
+                className="bg-surface border-2 border-pale-blue rounded-xl py-3 px-2 text-sm font-bold text-navy hover:border-gold hover:scale-[1.04] active:scale-95 transition-all"
               >
                 {v.infinitive}
               </button>
@@ -324,9 +324,9 @@ export function ConjugaisonFR() {
 
   if (phase === "pick-tense") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={() => setPhase("pick-verb")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={() => setPhase("pick-verb")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Choisis un temps</h1>
@@ -345,7 +345,7 @@ export function ConjugaisonFR() {
                 <button
                   key={t}
                   onClick={() => { setTense(t); startDrill(); }}
-                  className="bg-white border-2 border-pale-blue rounded-2xl p-5 flex items-center gap-4 hover:border-gold hover:scale-[1.02] active:scale-95 transition-all text-left"
+                  className="bg-surface border-2 border-pale-blue rounded-2xl p-5 flex items-center gap-4 hover:border-gold hover:scale-[1.02] active:scale-95 transition-all text-left"
                 >
                   <span className="text-3xl">{meta.emoji}</span>
                   <div className="flex-1">
@@ -368,10 +368,10 @@ export function ConjugaisonFR() {
 
   if (phase === "done") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
         <MascotCelebration trigger={score === 6} locale="fr" />
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={() => setPhase("pick-verb")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={() => setPhase("pick-verb")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Résultat</h1>
@@ -384,7 +384,7 @@ export function ConjugaisonFR() {
             <div className="text-4xl font-bold text-gold mt-2">{score}<span className="text-xl text-fg-soft"> / 6</span></div>
           </div>
 
-          <div className="bg-white border-2 border-pale-blue rounded-2xl divide-y divide-pale-blue">
+          <div className="bg-surface border-2 border-pale-blue rounded-2xl divide-y divide-pale-blue">
             {PRONOUNS.map((p) => {
               const expected = getConjValue(conj, p);
               const yours = inputs[p];
@@ -415,9 +415,9 @@ export function ConjugaisonFR() {
 
   // Drill phase
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => setPhase("pick-tense")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={() => setPhase("pick-tense")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="text-sm font-bold text-navy">{verbInf} · {TENSE_META[tense].label}</div>
@@ -436,7 +436,7 @@ export function ConjugaisonFR() {
             return (
               <div
                 key={p}
-                className={`bg-white border-2 rounded-xl px-3 py-2 flex items-center gap-2 transition-all ${
+                className={`bg-surface border-2 rounded-xl px-3 py-2 flex items-center gap-2 transition-all ${
                   status === "ok" ? "border-green-500 bg-green-50" :
                   status === "ko" ? "border-red-500 bg-red-50 animate-shake" :
                   "border-pale-blue"

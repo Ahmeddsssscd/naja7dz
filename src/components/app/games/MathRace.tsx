@@ -182,8 +182,8 @@ export function MathRace() {
 
   if (phase === "setup") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col" dir={isAR ? "rtl" : "ltr"}>
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={isAR ? "rtl" : "ltr"}>
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
           <button
             onClick={goBack}
             className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
@@ -204,7 +204,7 @@ export function MathRace() {
               <button
                 key={d}
                 onClick={() => start(d)}
-                className="bg-white rounded-2xl border-2 border-pale-blue px-5 py-4 flex items-center justify-between hover:border-gold active:scale-95 transition-all"
+                className="bg-surface rounded-2xl border-2 border-pale-blue px-5 py-4 flex items-center justify-between hover:border-gold active:scale-95 transition-all"
               >
                 <div className="text-start">
                   <div className="font-bold text-navy">{t(`diff_${d}`)}</div>
@@ -224,7 +224,7 @@ export function MathRace() {
   if (phase === "done") {
     const isNewBest = correct >= best[diff] && correct > 0;
     return (
-      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-5" dir={isAR ? "rtl" : "ltr"}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col items-center justify-center px-5" dir={isAR ? "rtl" : "ltr"}>
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-3">{correct > 0 ? "🏁" : "😅"}</div>
           <h1 className="text-3xl font-bold text-navy mb-1">{t("time_up")}</h1>
@@ -248,7 +248,7 @@ export function MathRace() {
           <div className="flex gap-3">
             <button
               onClick={() => setPhase("setup")}
-              className="flex-1 bg-white border-2 border-navy text-navy rounded-2xl px-4 py-3 font-bold active:scale-95"
+              className="flex-1 bg-surface border-2 border-navy text-navy rounded-2xl px-4 py-3 font-bold active:scale-95"
             >
               {t("change_difficulty")}
             </button>
@@ -273,8 +273,8 @@ export function MathRace() {
       : "";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col" dir={isAR ? "rtl" : "ltr"}>
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={isAR ? "rtl" : "ltr"}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <button
           onClick={() => setPhase("setup")}
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
@@ -292,7 +292,7 @@ export function MathRace() {
         <div className="w-10" />
       </header>
       <main className="flex-1 flex flex-col items-center justify-center px-5 gap-6">
-        <div className={`bg-white border-4 border-navy rounded-3xl px-10 py-8 shadow-card text-5xl sm:text-6xl font-bold text-navy ${fbCls}`}>
+        <div className={`bg-surface border-4 border-navy rounded-3xl px-10 py-8 shadow-card text-5xl sm:text-6xl font-bold text-navy ${fbCls}`}>
           {problem.text} = ?
         </div>
         <input
@@ -304,7 +304,7 @@ export function MathRace() {
           onKeyDown={(e) => {
             if (e.key === "Enter") submit();
           }}
-          className="w-44 text-center text-4xl font-bold rounded-2xl bg-white border-4 border-pale-blue focus:border-gold focus:outline-none px-3 py-3 text-navy"
+          className="w-44 text-center text-4xl font-bold rounded-2xl bg-surface border-4 border-pale-blue focus:border-gold focus:outline-none px-3 py-3 text-navy"
           placeholder="?"
         />
         <button

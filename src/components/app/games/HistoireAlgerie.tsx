@@ -365,9 +365,9 @@ export function HistoireAlgerie() {
   // ---------- Timeline ----------
   if (phase === "timeline") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col" dir={dir}>
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-10">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={dir}>
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-10">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {isAr
                 ? <polyline points="9 18 15 12 9 6"/>
@@ -405,7 +405,7 @@ export function HistoireAlgerie() {
                 return (
                   <div key={e.id} className={`relative ${isAr ? "pr-14 md:pr-20" : "pl-14 md:pl-20"}`}>
                     {/* Marker */}
-                    <div className={`absolute ${isAr ? "right-4 md:right-6" : "left-4 md:left-6"} top-4 w-5 h-5 rounded-full border-4 ${isDone ? "bg-gold border-navy" : "bg-white border-pale-blue"}`} aria-hidden />
+                    <div className={`absolute ${isAr ? "right-4 md:right-6" : "left-4 md:left-6"} top-4 w-5 h-5 rounded-full border-4 ${isDone ? "bg-gold border-navy" : "bg-surface border-pale-blue"}`} aria-hidden />
                     <button
                       onClick={() => openEra(i)}
                       className={`w-full text-left bg-gradient-to-br ${e.accent} border-2 ${isDone ? "border-gold" : "border-pale-blue"} rounded-2xl p-4 md:p-5 hover:border-gold hover:scale-[1.01] active:scale-95 transition-all shadow-card`}
@@ -440,9 +440,9 @@ export function HistoireAlgerie() {
   // ---------- Story ----------
   if (phase === "story") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col" dir={dir}>
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-10">
-          <button onClick={() => setPhase("timeline")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={dir}>
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-10">
+          <button onClick={() => setPhase("timeline")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {isAr
                 ? <polyline points="9 18 15 12 9 6"/>
@@ -460,7 +460,7 @@ export function HistoireAlgerie() {
             <h2 className="text-2xl md:text-3xl font-bold text-navy">{eraTitle}</h2>
           </div>
 
-          <article className="bg-white border-2 border-pale-blue rounded-2xl p-5 md:p-7 space-y-4 shadow-card mb-6">
+          <article className="bg-surface border-2 border-pale-blue rounded-2xl p-5 md:p-7 space-y-4 shadow-card mb-6">
             {eraStory.map((p, i) => (
               <p key={i} className="text-navy text-base md:text-lg leading-relaxed">
                 <span className={`font-bold text-gold ${isAr ? "ml-2" : "mr-2"}`}>{i + 1}.</span>{p}
@@ -483,9 +483,9 @@ export function HistoireAlgerie() {
   if (phase === "quiz") {
     const question = eraQuiz[qIdx];
     return (
-      <div className="min-h-screen bg-cream flex flex-col" dir={dir}>
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-10">
-          <button onClick={() => setPhase("story")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backToStory}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={dir}>
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-10">
+          <button onClick={() => setPhase("story")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backToStory}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {isAr
                 ? <polyline points="9 18 15 12 9 6"/>
@@ -502,7 +502,7 @@ export function HistoireAlgerie() {
             <div className="text-xs uppercase font-semibold text-fg-soft tracking-wide mb-3">{eraTitle}</div>
           </div>
 
-          <div className="bg-white border-4 border-navy rounded-3xl p-6 mb-5 shadow-card">
+          <div className="bg-surface border-4 border-navy rounded-3xl p-6 mb-5 shadow-card">
             <div className="text-xl md:text-2xl font-bold text-navy text-center leading-snug">
               {question.q}
             </div>
@@ -518,8 +518,8 @@ export function HistoireAlgerie() {
                   ? "bg-green-100 border-green-500 text-green-900"
                   : isPicked
                     ? "bg-rose-100 border-rose-500 text-rose-900"
-                    : "bg-white border-pale-blue text-navy/50"
-                : "bg-white border-pale-blue text-navy hover:border-gold";
+                    : "bg-surface border-pale-blue text-navy/50"
+                : "bg-surface border-pale-blue text-navy hover:border-gold";
               return (
                 <button
                   key={i}
@@ -545,7 +545,7 @@ export function HistoireAlgerie() {
     const total = eraQuiz.length;
     const passed = score >= 2;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5" dir={dir}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5" dir={dir}>
         <MascotCelebration trigger={score === total} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === total ? "🏆" : passed ? "✨" : "📖"}</div>
@@ -573,9 +573,9 @@ export function HistoireAlgerie() {
   const formattedDate = new Date().toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col" dir={dir}>
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => setPhase("timeline")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={dir}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={() => setPhase("timeline")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             {isAr
               ? <polyline points="9 18 15 12 9 6"/>

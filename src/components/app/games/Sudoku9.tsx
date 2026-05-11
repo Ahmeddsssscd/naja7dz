@@ -304,9 +304,9 @@ export function Sudoku9() {
   // ---------- Pick ----------
   if (phase === "pick") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Sudoku 9×9</h1>
@@ -329,7 +329,7 @@ export function Sudoku9() {
                 <button
                   key={d}
                   onClick={() => startGame(d)}
-                  className="w-full text-left bg-white border-2 border-pale-blue rounded-2xl p-4 hover:border-gold hover:scale-[1.02] active:scale-95 transition-all shadow-card"
+                  className="w-full text-left bg-surface border-2 border-pale-blue rounded-2xl p-4 hover:border-gold hover:scale-[1.02] active:scale-95 transition-all shadow-card"
                 >
                   <div className="flex items-center gap-4">
                     <div className="text-5xl shrink-0">{m.emoji}</div>
@@ -355,7 +355,7 @@ export function Sudoku9() {
   if (phase === "done") {
     const perfect = hintsUsed === 0 && mistakes === 0;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={perfect} locale="fr" />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{perfect ? "🏆" : mistakes <= 3 ? "🌟" : "✨"}</div>
@@ -364,11 +364,11 @@ export function Sudoku9() {
           <div className="text-5xl font-bold text-gold mb-1 tabular-nums">{fmt(elapsed)}</div>
           <p className="text-fg-soft text-sm mb-1">Temps total</p>
           <div className="grid grid-cols-2 gap-3 mb-6 mt-4 max-w-xs mx-auto">
-            <div className="bg-white border-2 border-pale-blue rounded-xl p-3">
+            <div className="bg-surface border-2 border-pale-blue rounded-xl p-3">
               <div className="text-xs text-fg-soft uppercase font-bold">Erreurs</div>
               <div className="text-2xl font-bold text-navy">{mistakes}</div>
             </div>
-            <div className="bg-white border-2 border-pale-blue rounded-xl p-3">
+            <div className="bg-surface border-2 border-pale-blue rounded-xl p-3">
               <div className="text-xs text-fg-soft uppercase font-bold">Indices</div>
               <div className="text-2xl font-bold text-navy">{hintsUsed}</div>
             </div>
@@ -403,9 +403,9 @@ export function Sudoku9() {
   })();
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-3 py-3 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-10">
-        <button onClick={() => setPhase("pick")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-3 py-3 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-10">
+        <button onClick={() => setPhase("pick")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="flex items-center gap-3 text-xs font-bold text-navy">
@@ -474,14 +474,14 @@ export function Sudoku9() {
           <button
             onClick={onErase}
             disabled={!selected || (selected && isFixed(selected.r, selected.c))}
-            className="flex-1 py-2 px-3 rounded-xl bg-white border-2 border-pale-blue text-navy font-bold text-sm active:scale-95 disabled:opacity-40"
+            className="flex-1 py-2 px-3 rounded-xl bg-surface border-2 border-pale-blue text-navy font-bold text-sm active:scale-95 disabled:opacity-40"
           >
             ⌫ Effacer
           </button>
           <button
             onClick={() => setNoteMode((n) => !n)}
             className={`flex-1 py-2 px-3 rounded-xl border-2 font-bold text-sm active:scale-95 ${
-              noteMode ? "bg-navy text-white border-navy" : "bg-white border-pale-blue text-navy"
+              noteMode ? "bg-navy text-white border-navy" : "bg-surface border-pale-blue text-navy"
             }`}
           >
             ✏️ Notes {noteMode ? "ON" : "OFF"}
@@ -506,7 +506,7 @@ export function Sudoku9() {
                 className={`aspect-square rounded-xl border-2 text-2xl md:text-3xl font-bold transition-all active:scale-95 ${
                   exhausted
                     ? "bg-pale-blue/50 border-pale-blue text-navy/30 cursor-not-allowed"
-                    : "bg-white border-pale-blue text-navy hover:border-gold hover:bg-amber-50"
+                    : "bg-surface border-pale-blue text-navy hover:border-gold hover:bg-amber-50"
                 }`}
               >
                 {n}

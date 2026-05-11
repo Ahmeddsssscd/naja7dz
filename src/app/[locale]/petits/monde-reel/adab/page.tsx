@@ -20,8 +20,8 @@ export default async function AdabPage() {
   const isAr = locale === "ar";
 
   return (
-    <div className="min-h-screen bg-cream pb-12">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 pb-12">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <Link href="/petits" className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label={t("back")}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </Link>
@@ -34,7 +34,7 @@ export default async function AdabPage() {
 
         <div className="space-y-3">
           {(lessons ?? []).map((l, i) => (
-            <article key={l.id} className="bg-white border-2 border-pale-blue rounded-2xl p-5">
+            <article key={l.id} className="bg-surface border-2 border-pale-blue rounded-2xl p-5">
               <div className="flex items-start gap-4">
                 <span className="w-10 h-10 rounded-full bg-gold text-navy font-bold text-sm flex items-center justify-center flex-shrink-0">
                   {i + 1}
@@ -53,7 +53,7 @@ export default async function AdabPage() {
           ))}
         </div>
         {(!lessons || lessons.length === 0) && (
-          <div className="bg-white border border-pale-blue rounded-card p-8 text-center text-fg-soft">
+          <div className="bg-surface border border-pale-blue rounded-card p-8 text-center text-fg-soft">
             {t("no_lessons")}
           </div>
         )}

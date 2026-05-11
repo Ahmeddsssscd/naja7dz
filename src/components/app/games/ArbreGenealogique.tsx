@@ -120,7 +120,7 @@ export function ArbreGenealogique() {
   if (done) {
     const stars = misses === 0 ? 3 : misses <= 2 ? 2 : 1;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={misses === 0} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{misses === 0 ? "🏆" : misses <= 2 ? "🌟" : "✨"}</div>
@@ -140,9 +140,9 @@ export function ArbreGenealogique() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base md:text-lg font-bold text-navy">
@@ -157,7 +157,7 @@ export function ArbreGenealogique() {
         </p>
 
         {/* The tree canvas — slots as labelled boxes connected by lines */}
-        <div className="bg-white rounded-2xl border-4 border-pale-blue p-2 md:p-4 shadow-card relative">
+        <div className="bg-surface rounded-2xl border-4 border-pale-blue p-2 md:p-4 shadow-card relative">
           <svg viewBox="0 0 360 320" className="w-full h-auto">
             {/* Connection lines */}
             {/* Papi <-> Mami line */}
@@ -212,7 +212,7 @@ export function ArbreGenealogique() {
               <button key={p.key}
                 onClick={() => onPickPerson(p.key)}
                 className={`rounded-2xl border-4 p-2 text-center transition active:scale-95 ${
-                  selected === p.key ? "bg-yellow-50 border-gold ring-4 ring-gold/30" : "bg-white border-pale-blue hover:border-gold"
+                  selected === p.key ? "bg-yellow-50 border-gold ring-4 ring-gold/30" : "bg-surface border-pale-blue hover:border-gold"
                 }`}
               >
                 <div className="text-3xl">{p.emoji}</div>

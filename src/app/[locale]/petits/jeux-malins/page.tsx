@@ -27,9 +27,9 @@ export default async function MalinsHub() {
   await requireKidsAccess(user.id);
 
   return (
-    <div className="min-h-screen bg-cream pb-12">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 pb-12">
       {/* Header — kept simple + kid-friendly: back arrow, title, spacer */}
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-30">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-30">
         <Link
           href="/petits"
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"

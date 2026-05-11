@@ -106,7 +106,7 @@ export function NumberNinja() {
 
   if (!running) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score >= 10 ? "🥷✨" : "🥷"}</div>
           <h1 className="text-3xl font-bold text-navy mb-2">Partie terminée !</h1>
@@ -130,9 +130,9 @@ export function NumberNinja() {
       : "";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="flex items-center gap-4 text-sm">
@@ -145,7 +145,7 @@ export function NumberNinja() {
 
       <main className="flex-1 flex flex-col items-center justify-center px-5">
         <div className="text-xs uppercase tracking-widest text-gold mb-2 font-bold">Niveau {level}</div>
-        <div className={`bg-white border-4 border-navy rounded-3xl px-12 py-10 shadow-card mb-8 text-5xl md:text-7xl font-bold text-navy ${fbCls}`}>
+        <div className={`bg-surface border-4 border-navy rounded-3xl px-12 py-10 shadow-card mb-8 text-5xl md:text-7xl font-bold text-navy ${fbCls}`}>
           {q.sum} = ?
         </div>
         <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
@@ -153,7 +153,7 @@ export function NumberNinja() {
             <button
               key={n}
               onClick={() => onPick(n)}
-              className="aspect-square bg-white border-2 border-pale-blue rounded-2xl text-3xl font-bold text-navy hover:border-gold hover:bg-gold/10 active:scale-95 transition-all"
+              className="aspect-square bg-surface border-2 border-pale-blue rounded-2xl text-3xl font-bold text-navy hover:border-gold hover:bg-gold/10 active:scale-95 transition-all"
             >
               {n}
             </button>

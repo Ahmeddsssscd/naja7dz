@@ -637,9 +637,9 @@ export function PetitsScientifiques() {
     const catLabel = isAr ? cat.label_ar : cat.label;
     const isTried = tried[exp.id]?.tried;
     return (
-      <div className="min-h-screen bg-cream flex flex-col" dir={dir}>
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-10">
-          <button onClick={() => setPhase("list")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={dir}>
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-10">
+          <button onClick={() => setPhase("list")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
             <Chevron />
           </button>
           <h1 className="text-base font-bold text-navy truncate px-2">{expTitle}</h1>
@@ -659,7 +659,7 @@ export function PetitsScientifiques() {
             </div>
           </div>
 
-          <section className="bg-white border-2 border-pale-blue rounded-2xl p-5 mb-4 shadow-card">
+          <section className="bg-surface border-2 border-pale-blue rounded-2xl p-5 mb-4 shadow-card">
             <h3 className="text-sm uppercase font-bold text-navy/70 tracking-wide mb-3">{ui.materials}</h3>
             <ul className="space-y-2">
               {expMaterials.map((m, i) => (
@@ -671,7 +671,7 @@ export function PetitsScientifiques() {
             </ul>
           </section>
 
-          <section className="bg-white border-2 border-pale-blue rounded-2xl p-5 mb-4 shadow-card">
+          <section className="bg-surface border-2 border-pale-blue rounded-2xl p-5 mb-4 shadow-card">
             <h3 className="text-sm uppercase font-bold text-navy/70 tracking-wide mb-3">{ui.steps}</h3>
             <ol className="space-y-3">
               {expSteps.map((s, i) => (
@@ -694,7 +694,7 @@ export function PetitsScientifiques() {
               className={`flex-1 py-3 px-4 rounded-xl font-bold border-2 transition-all active:scale-95 ${
                 isTried
                   ? "bg-green-100 border-green-400 text-green-900"
-                  : "bg-white border-pale-blue text-navy hover:border-gold"
+                  : "bg-surface border-pale-blue text-navy hover:border-gold"
               }`}
             >
               {isTried ? ui.triedDone : ui.triedTodo}
@@ -712,9 +712,9 @@ export function PetitsScientifiques() {
   if (phase === "quiz") {
     const question = expQuiz[qIdx];
     return (
-      <div className="min-h-screen bg-cream flex flex-col" dir={dir}>
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-10">
-          <button onClick={() => setPhase("detail")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={dir}>
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-10">
+          <button onClick={() => setPhase("detail")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
             <Chevron />
           </button>
           <div className="text-sm font-bold text-navy">{ui.questionLabel(qIdx + 1, expQuiz.length)}</div>
@@ -727,7 +727,7 @@ export function PetitsScientifiques() {
             <div className="text-xs uppercase font-semibold text-fg-soft">{expTitle}</div>
           </div>
 
-          <div className="bg-white border-4 border-navy rounded-3xl p-6 mb-5 shadow-card">
+          <div className="bg-surface border-4 border-navy rounded-3xl p-6 mb-5 shadow-card">
             <div className="text-xl md:text-2xl font-bold text-navy text-center leading-snug">
               {question.q}
             </div>
@@ -743,8 +743,8 @@ export function PetitsScientifiques() {
                   ? "bg-green-100 border-green-500 text-green-900"
                   : isPicked
                     ? "bg-rose-100 border-rose-500 text-rose-900"
-                    : "bg-white border-pale-blue text-navy/50"
-                : "bg-white border-pale-blue text-navy hover:border-gold";
+                    : "bg-surface border-pale-blue text-navy/50"
+                : "bg-surface border-pale-blue text-navy hover:border-gold";
               return (
                 <button
                   key={i}
@@ -769,7 +769,7 @@ export function PetitsScientifiques() {
   if (phase === "result") {
     const total = expQuiz.length;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5" dir={dir}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5" dir={dir}>
         <MascotCelebration trigger={score === total} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === total ? "🏆" : score >= total - 1 ? "✨" : "📚"}</div>
@@ -789,10 +789,10 @@ export function PetitsScientifiques() {
 
   // ---------- List ----------
   return (
-    <div className="min-h-screen bg-cream flex flex-col" dir={dir}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={dir}>
       <MascotCelebration trigger={bigCelebrate} locale={isAr ? "ar" : "fr"} message={ui.bigCelebrateMsg} />
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-10">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-10">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={ui.backLabel}>
           <Chevron />
         </button>
         <h1 className="text-base font-bold text-navy">{ui.headerTitle}</h1>
@@ -805,7 +805,7 @@ export function PetitsScientifiques() {
         </p>
 
         {/* Progress bar */}
-        <div className="bg-white border-2 border-pale-blue rounded-2xl p-4 mb-5">
+        <div className="bg-surface border-2 border-pale-blue rounded-2xl p-4 mb-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-navy">{ui.myExps}</span>
             <span className="text-xs font-bold text-gold tabular-nums">{triedCount}/{EXPERIMENTS.length}</span>
@@ -825,7 +825,7 @@ export function PetitsScientifiques() {
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
           <button
             onClick={() => setFilter("all")}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 ${filter === "all" ? "bg-navy text-white border-navy" : "bg-white border-pale-blue text-navy"}`}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 ${filter === "all" ? "bg-navy text-white border-navy" : "bg-surface border-pale-blue text-navy"}`}
           >
             {ui.all} ({EXPERIMENTS.length})
           </button>
@@ -837,7 +837,7 @@ export function PetitsScientifiques() {
               <button
                 key={c}
                 onClick={() => setFilter(c)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 ${filter === c ? "bg-navy text-white border-navy" : "bg-white border-pale-blue text-navy"}`}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 ${filter === c ? "bg-navy text-white border-navy" : "bg-surface border-pale-blue text-navy"}`}
               >
                 {lbl.emoji} {tLabel} ({count})
               </button>

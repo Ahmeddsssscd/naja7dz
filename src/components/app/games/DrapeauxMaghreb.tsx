@@ -136,9 +136,9 @@ export function DrapeauxMaghreb() {
 
   if (phase === "intro") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Drapeaux du monde arabe</h1>
@@ -151,7 +151,7 @@ export function DrapeauxMaghreb() {
             10 questions à choix multiple. Bouton « Indice » pour révéler le continent.
           </p>
           {best > 0 && (
-            <div className="bg-white border border-pale-blue rounded-xl py-3 mb-6">
+            <div className="bg-surface border border-pale-blue rounded-xl py-3 mb-6">
               <div className="text-xs text-fg-soft uppercase">Ton record</div>
               <div className="text-3xl font-bold text-gold">{best} / {ROUNDS}</div>
             </div>
@@ -166,7 +166,7 @@ export function DrapeauxMaghreb() {
 
   if (phase === "done") {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={score >= 9} locale="fr" />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === 10 ? "🏆" : score >= 7 ? "🌟" : score >= 4 ? "✨" : "📝"}</div>
@@ -191,9 +191,9 @@ export function DrapeauxMaghreb() {
   const correctName = q.country.fr;
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => setPhase("intro")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={() => setPhase("intro")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="text-sm font-bold text-navy">{index + 1}/{ROUNDS} · ⭐ {score}</div>
@@ -201,7 +201,7 @@ export function DrapeauxMaghreb() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-5 py-6 gap-5">
-        <div className="bg-white border-4 border-navy rounded-3xl p-8 shadow-card">
+        <div className="bg-surface border-4 border-navy rounded-3xl p-8 shadow-card">
           <div className="text-[7rem] md:text-[10rem] leading-none text-center" aria-label={`Drapeau ${q.country.fr}`}>{q.country.flag}</div>
         </div>
 
@@ -217,11 +217,11 @@ export function DrapeauxMaghreb() {
           {q.options.map((opt) => {
             const isCorrect = opt.fr === correctName;
             const isPicked = picked === opt.fr;
-            let cls = "bg-white border-2 border-pale-blue text-navy hover:border-gold";
+            let cls = "bg-surface border-2 border-pale-blue text-navy hover:border-gold";
             if (picked) {
               if (isCorrect) cls = "bg-green-100 border-2 border-green-500 text-green-900";
               else if (isPicked) cls = "bg-red-100 border-2 border-red-500 text-red-900";
-              else cls = "bg-white border-2 border-pale-blue text-fg-soft opacity-60";
+              else cls = "bg-surface border-2 border-pale-blue text-fg-soft opacity-60";
             }
             return (
               <button

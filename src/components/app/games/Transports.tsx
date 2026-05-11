@@ -251,7 +251,7 @@ export function Transports() {
   if (done) {
     const stars = score >= 9 ? 3 : score >= 7 ? 2 : 1;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={score === rounds.length} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === rounds.length ? "🏆" : score >= 7 ? "🌟" : "✨"}</div>
@@ -269,9 +269,9 @@ export function Transports() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base md:text-lg font-bold text-navy">
@@ -285,7 +285,7 @@ export function Transports() {
           {isAr ? "أين يسير هذا ؟" : "Où circule-t-il ?"}
         </p>
 
-        <div className="bg-white border-4 border-navy rounded-3xl p-4 md:p-6 mb-6 shadow-card mx-auto" style={{ maxWidth: 360 }}>
+        <div className="bg-surface border-4 border-navy rounded-3xl p-4 md:p-6 mb-6 shadow-card mx-auto" style={{ maxWidth: 360 }}>
           <div className="aspect-square">{current.draw()}</div>
           <div className="mt-3 text-center">
             <div className="text-xl md:text-2xl font-bold text-navy">{isAr ? current.ar : current.fr}</div>

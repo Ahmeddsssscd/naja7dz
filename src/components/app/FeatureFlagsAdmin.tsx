@@ -84,7 +84,7 @@ export function FeatureFlagsAdmin({ initial }: { initial: FlagRow[] }) {
                   } ${pendingKey === f.key ? "opacity-60" : ""}`}
                 >
                   <span
-                    className={`absolute top-0.5 ${f.enabled ? "end-0.5" : "start-0.5"} w-6 h-6 rounded-full bg-white shadow transition-all`}
+                    className={`absolute top-0.5 ${f.enabled ? "end-0.5" : "start-0.5"} w-6 h-6 rounded-full bg-surface shadow transition-all`}
                   />
                 </button>
               </div>

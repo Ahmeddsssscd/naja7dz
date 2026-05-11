@@ -373,9 +373,9 @@ export function ColorageNumeros() {
 
   if (phase === "pick") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Coloriage par numéros</h1>
@@ -390,7 +390,7 @@ export function ColorageNumeros() {
               <button
                 key={t.id}
                 onClick={() => start(t.id)}
-                className="bg-white border-2 border-pale-blue rounded-2xl p-5 flex flex-col items-center gap-2 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
+                className="bg-surface border-2 border-pale-blue rounded-2xl p-5 flex flex-col items-center gap-2 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
               >
                 <span className="text-5xl">{t.emoji}</span>
                 <span className="font-bold text-navy text-sm">{t.label}</span>
@@ -405,13 +405,13 @@ export function ColorageNumeros() {
 
   if (phase === "done") {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">🎨</div>
           <h1 className="text-3xl font-bold text-navy mb-2">Magnifique !</h1>
           <p className="text-fg-soft text-sm mb-6">Tu as fini ton coloriage. Tu peux le sauvegarder !</p>
 
-          <div className="bg-white border-4 border-navy rounded-2xl p-4 mb-6 inline-block">
+          <div className="bg-surface border-4 border-navy rounded-2xl p-4 mb-6 inline-block">
             <svg
               ref={svgRef}
               viewBox={`0 0 ${tpl.width} ${tpl.height}`}
@@ -442,9 +442,9 @@ export function ColorageNumeros() {
 
   // Color phase
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => setPhase("pick")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={() => setPhase("pick")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base font-bold text-navy">{tpl.label}</h1>
@@ -457,7 +457,7 @@ export function ColorageNumeros() {
       </div>
 
       <main className="flex-1 flex flex-col items-center justify-center px-3 py-4 gap-4">
-        <div className="bg-white border-4 border-navy rounded-2xl p-3 max-w-full">
+        <div className="bg-surface border-4 border-navy rounded-2xl p-3 max-w-full">
           <svg
             ref={svgRef}
             viewBox={`0 0 ${tpl.width} ${tpl.height}`}

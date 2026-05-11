@@ -117,7 +117,7 @@ export function EnglishQuiz({ quizId }: Props) {
 
   if (phase === "intro") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
         <Header title={meta.name_fr} subtitle={meta.name_ar} emoji={meta.emoji} onBack={goBack} />
         <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full text-center">
           <div className="text-7xl mb-4">📝</div>
@@ -125,7 +125,7 @@ export function EnglishQuiz({ quizId }: Props) {
           <p className="text-sm text-fg-soft mb-1">5 questions · choix multiples</p>
           <p className="text-xs font-ar text-fg-soft mb-5" dir="rtl">٥ أسئلة · اختيار متعدّد</p>
 
-          <div className="bg-white border-2 border-pale-blue rounded-2xl p-4 mb-5 inline-block">
+          <div className="bg-surface border-2 border-pale-blue rounded-2xl p-4 mb-5 inline-block">
             <div className="text-xs text-fg-soft">Meilleur score</div>
             <div className="text-3xl font-bold text-gold">{best}<span className="text-base text-fg-soft">/5</span></div>
           </div>
@@ -140,7 +140,7 @@ export function EnglishQuiz({ quizId }: Props) {
   if (phase === "done") {
     const pct = Math.round((score / questions.length) * 100);
     return (
-      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-7xl mb-4">{pct === 100 ? "🏆" : pct >= 60 ? "✨" : "💪"}</div>
           <h1 className="text-3xl font-bold text-navy mb-2">
@@ -159,11 +159,11 @@ export function EnglishQuiz({ quizId }: Props) {
   const isCorrect = picked === current.answer;
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
       <Header title={meta.name_fr} subtitle={`${qIdx + 1}/${questions.length} · ⭐ ${score}`} emoji={meta.emoji} onBack={() => setPhase("intro")} />
 
       <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
-        <div className="bg-white border-4 border-navy rounded-3xl p-5 mb-5 shadow-card text-center">
+        <div className="bg-surface border-4 border-navy rounded-3xl p-5 mb-5 shadow-card text-center">
           {current.type === "listen" ? (
             <>
               <div className="text-sm font-bold text-navy/70 mb-3">Écoute et choisis le mot</div>
@@ -212,8 +212,8 @@ export function EnglishQuiz({ quizId }: Props) {
                     : showWrong
                     ? "bg-red-100 border-red-500 text-red-900"
                     : picked
-                    ? "bg-white border-pale-blue text-navy/60"
-                    : "bg-white border-pale-blue text-navy hover:border-gold hover:bg-pale-blue/30"
+                    ? "bg-surface border-pale-blue text-navy/60"
+                    : "bg-surface border-pale-blue text-navy hover:border-gold hover:bg-pale-blue/30"
                 }`}
               >
                 {opt}
@@ -241,7 +241,7 @@ export function EnglishQuiz({ quizId }: Props) {
 
 function Header({ title, subtitle, emoji, onBack }: { title: string; subtitle: string; emoji: string; onBack: () => void }) {
   return (
-    <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
       <button onClick={onBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polyline points="15 18 9 12 15 6"/>

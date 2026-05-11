@@ -3,7 +3,7 @@ import { Logo } from "@/components/Logo";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center p-6">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center p-6">
       <div className="text-center">
         <div className="mb-6 flex justify-center">
           <Logo height={40} />

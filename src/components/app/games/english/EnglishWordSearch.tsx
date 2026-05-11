@@ -185,8 +185,8 @@ export function EnglishWordSearch() {
   const onNextTheme = () => setThemeIdx((i) => (i + 1) % THEMES.length);
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <button onClick={goBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -206,7 +206,7 @@ export function EnglishWordSearch() {
 
         <div
           ref={gridRef}
-          className="bg-white rounded-2xl p-2 border-4 border-navy shadow-card select-none touch-none"
+          className="bg-surface rounded-2xl p-2 border-4 border-navy shadow-card select-none touch-none"
           onTouchMove={onTouchMove}
           onTouchEnd={finishDrag}
           onMouseUp={finishDrag}
@@ -241,7 +241,7 @@ export function EnglishWordSearch() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-3 border border-pale-blue w-full max-w-md">
+        <div className="bg-surface rounded-2xl p-3 border border-pale-blue w-full max-w-md">
           <div className="flex items-baseline justify-between mb-2">
             <span className="text-xs uppercase tracking-widest text-gold font-bold">Words</span>
             <span className="text-xs text-fg-soft">{foundWords.size}/{placements.length}</span>
@@ -264,7 +264,7 @@ export function EnglishWordSearch() {
         </div>
 
         {allFound && (
-          <div className="bg-white rounded-2xl p-5 border-4 border-gold w-full max-w-md text-center shadow-card">
+          <div className="bg-surface rounded-2xl p-5 border-4 border-gold w-full max-w-md text-center shadow-card">
             <div className="text-5xl mb-2">🎉</div>
             <div className="font-bold text-navy text-lg mb-3">Bravo, tous les mots !</div>
             <button onClick={onNextTheme} className="bg-navy text-white px-6 py-3 rounded-2xl font-bold active:scale-95 transition-transform">

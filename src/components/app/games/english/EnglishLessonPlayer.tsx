@@ -180,7 +180,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
   // ----- STUDY PHASE -----
   if (phase === "study") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
         <Header title_fr={labels.title_fr} title_ar={labels.title_ar} emoji={lesson.emoji} onBack={goBack} />
 
         <main className="flex-1 max-w-2xl mx-auto w-full px-5 py-5">
@@ -202,7 +202,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="flex-1 py-3 rounded-2xl bg-white border-2 border-pale-blue text-navy font-bold disabled:opacity-40 active:scale-95 transition-transform"
+              className="flex-1 py-3 rounded-2xl bg-surface border-2 border-pale-blue text-navy font-bold disabled:opacity-40 active:scale-95 transition-transform"
             >
               ← {labels.previous}
             </button>
@@ -237,7 +237,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
   if (phase === "quiz") {
     const isCorrect = picked === currentQ.answer;
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
         <Header title_fr={labels.quiz_title} title_ar={labels.title_ar} emoji="🏁" onBack={() => setPhase("study")} />
 
         <main className="flex-1 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full px-5 py-6 flex flex-col">
@@ -250,7 +250,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
             </div>
           </div>
 
-          <div className="bg-white border-4 border-navy rounded-3xl p-5 mb-5 shadow-card text-center">
+          <div className="bg-surface border-4 border-navy rounded-3xl p-5 mb-5 shadow-card text-center">
             {currentQ.type === "listen-to-text" ? (
               <>
                 <div className="text-sm font-bold text-navy/70 mb-3">{labels.listen_to_text_prompt}</div>
@@ -308,8 +308,8 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
                       : showWrong
                       ? "bg-red-100 border-red-500 text-red-900"
                       : picked
-                      ? "bg-white border-pale-blue text-navy/60"
-                      : "bg-white border-pale-blue text-navy hover:border-gold hover:bg-pale-blue/30"
+                      ? "bg-surface border-pale-blue text-navy/60"
+                      : "bg-surface border-pale-blue text-navy hover:border-gold hover:bg-pale-blue/30"
                   }`}
                 >
                   {opt}
@@ -342,7 +342,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
   const emoji = score === total ? "🏆" : score >= total - 1 ? "✨" : "💪";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-5">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col items-center justify-center px-5">
       <div className="text-center max-w-sm">
         <div className="text-7xl mb-4">{emoji}</div>
         <h1 className="text-3xl font-bold text-navy mb-1">{headline}</h1>
@@ -361,7 +361,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
           </button>
           <button
             onClick={() => { setPhase("study"); setPage(0); }}
-            className="py-3 px-5 rounded-2xl bg-white border-2 border-pale-blue text-navy font-bold active:scale-95"
+            className="py-3 px-5 rounded-2xl bg-surface border-2 border-pale-blue text-navy font-bold active:scale-95"
           >
             {labels.review_lesson}
           </button>
@@ -383,7 +383,7 @@ export function EnglishLessonPlayer({ lesson, labels }: Props) {
 
 function Header({ title_fr, title_ar, emoji, onBack }: { title_fr: string; title_ar: string; emoji: string; onBack: () => void }) {
   return (
-    <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-30">
+    <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-30">
       <button onClick={onBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polyline points="15 18 9 12 15 6"/>
@@ -411,7 +411,7 @@ function CardRow({
   listenLabel: string;
 }) {
   return (
-    <div className="bg-white border-2 border-pale-blue rounded-2xl p-4 flex items-center gap-3 hover:border-gold transition-colors">
+    <div className="bg-surface border-2 border-pale-blue rounded-2xl p-4 flex items-center gap-3 hover:border-gold transition-colors">
       <span className="text-4xl flex-shrink-0" aria-hidden>{card.emoji}</span>
       <div className="flex-1 min-w-0">
         <div className="font-bold text-navy text-lg leading-tight">{card.en}</div>

@@ -36,8 +36,8 @@ export default async function StoryPage({
     (isAr ? story.paragraphs_ar : story.paragraphs_fr) ?? [];
 
   return (
-    <div className="min-h-screen bg-cream pb-12">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-30">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 pb-12">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-30">
         <Link
           href="/petits/lecture"
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"

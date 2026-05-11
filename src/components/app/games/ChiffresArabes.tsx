@@ -187,9 +187,9 @@ export function ChiffresArabes() {
 
   if (phase === "pick") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Chiffres arabes</h1>
@@ -210,7 +210,7 @@ export function ChiffresArabes() {
                 <button
                   key={m}
                   onClick={() => start(m)}
-                  className="bg-white border-2 border-pale-blue rounded-2xl p-5 flex items-center gap-4 hover:border-gold hover:scale-[1.02] active:scale-95 transition-all text-left"
+                  className="bg-surface border-2 border-pale-blue rounded-2xl p-5 flex items-center gap-4 hover:border-gold hover:scale-[1.02] active:scale-95 transition-all text-left"
                 >
                   <span className="text-4xl">{meta.emoji}</span>
                   <div className="flex-1">
@@ -234,7 +234,7 @@ export function ChiffresArabes() {
 
   if (phase === "done") {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={score === ROUNDS} locale="fr" />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === ROUNDS ? "🏆" : score >= 7 ? "🌟" : "✨"}</div>
@@ -261,9 +261,9 @@ export function ChiffresArabes() {
       : "text-3xl md:text-4xl";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => setPhase("pick")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={() => setPhase("pick")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="text-sm font-bold text-navy">{round}/{ROUNDS} · ⭐ {score}</div>
@@ -271,7 +271,7 @@ export function ChiffresArabes() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-5 py-6 gap-6">
-        <div className="bg-white border-4 border-navy rounded-3xl p-6 md:p-10 shadow-card text-center min-w-[260px]">
+        <div className="bg-surface border-4 border-navy rounded-3xl p-6 md:p-10 shadow-card text-center min-w-[260px]">
           <div className="text-xs uppercase font-semibold text-fg-soft mb-3">
             {mode === "compte" ? "Combien y a-t-il ?" : mode === "match" ? "Quel est ce chiffre ?" : "Quel est ce chiffre en arabe ?"}
           </div>
@@ -287,11 +287,11 @@ export function ChiffresArabes() {
           {question.options.map((opt) => {
             const isCorrect = opt === question.correct;
             const isPicked = picked === opt;
-            let cls = "bg-white border-2 border-pale-blue text-navy hover:border-gold";
+            let cls = "bg-surface border-2 border-pale-blue text-navy hover:border-gold";
             if (picked) {
               if (isCorrect) cls = "bg-green-100 border-2 border-green-500 text-green-900";
               else if (isPicked) cls = "bg-red-100 border-2 border-red-500 text-red-900";
-              else cls = "bg-white border-2 border-pale-blue text-fg-soft opacity-60";
+              else cls = "bg-surface border-2 border-pale-blue text-fg-soft opacity-60";
             }
             return (
               <button

@@ -29,8 +29,8 @@ export default async function MathsHub() {
   ];
 
   return (
-    <div className="min-h-screen bg-cream pb-12">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 pb-12">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <Link href="/petits" className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label={tBack("back")}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </Link>

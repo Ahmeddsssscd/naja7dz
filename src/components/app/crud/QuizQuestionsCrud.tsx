@@ -179,9 +179,9 @@ export function QuizQuestionsCrud({
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      r.difficulty === "easy" ? "bg-green-100 text-green-900"
-                      : r.difficulty === "hard" ? "bg-red-100 text-red-900"
-                      : "bg-amber-100 text-amber-900"
+                      r.difficulty === "easy" ? "bg-green-100 dark:bg-green-950/40 text-green-900 dark:text-green-300"
+                      : r.difficulty === "hard" ? "bg-red-100 dark:bg-red-950/40 text-red-900 dark:text-red-300"
+                      : "bg-amber-100 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300"
                     }`}>{r.difficulty}</span>
                     {!r.active && <span className="text-xs px-2 py-0.5 rounded-full bg-fg-faint/20 text-fg-soft">inactive</span>}
                   </div>

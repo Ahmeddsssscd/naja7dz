@@ -199,7 +199,7 @@ function KidsSpinner() {
   // Floating mascot + a soft "Chargement" line + 3 bouncing dots. The cream
   // background and bouncing fox keep it on-brand for the kids universe.
   return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center gap-5 px-6">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col items-center justify-center gap-5 px-6">
       <div className="relative">
         <div className="text-8xl animate-bounce" aria-hidden>🦊</div>
         <div

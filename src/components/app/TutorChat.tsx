@@ -74,7 +74,7 @@ export function TutorChat() {
 
       <footer className="bg-surface border-t border-line p-3 sticky bottom-0">
         <form onSubmit={onSubmit} className="max-w-2xl mx-auto flex items-end gap-2">
-          <button type="button" className="w-11 h-11 rounded-full bg-cream text-fg-soft flex items-center justify-center" aria-label="Photo">
+          <button type="button" className="w-11 h-11 rounded-full bg-cream dark:bg-surface-2 text-fg-soft flex items-center justify-center" aria-label="Photo">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
           </button>
           <textarea
@@ -88,7 +88,7 @@ export function TutorChat() {
               }
             }}
             placeholder="Pose ta question…"
-            className="flex-1 resize-none px-4 py-2.5 rounded-btn bg-cream text-fg placeholder:text-fg-faint border border-transparent focus:border-fg outline-none text-sm"
+            className="flex-1 resize-none px-4 py-2.5 rounded-btn bg-cream dark:bg-surface-2 text-fg placeholder:text-fg-faint border border-transparent focus:border-fg outline-none text-sm"
             style={{ maxHeight: 120 }}
           />
           <button

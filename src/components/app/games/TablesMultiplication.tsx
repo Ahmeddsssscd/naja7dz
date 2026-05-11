@@ -124,9 +124,9 @@ export function TablesMultiplication() {
 
   if (phase === "pick-table") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Tables de multiplication</h1>
@@ -144,7 +144,7 @@ export function TablesMultiplication() {
                 <button
                   key={n}
                   onClick={() => startDrill(n)}
-                  className="bg-white border-2 border-pale-blue rounded-2xl p-4 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
+                  className="bg-surface border-2 border-pale-blue rounded-2xl p-4 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
                 >
                   <div className="text-3xl font-bold text-navy mb-1">×{n}</div>
                   <div className="text-xs text-fg-soft mb-2">12 questions</div>
@@ -163,7 +163,7 @@ export function TablesMultiplication() {
   if (phase === "done") {
     const s = stars(score);
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         {/* Fennec celebrates 3-star runs (12/12 correct) */}
         <MascotCelebration trigger={s === 3} locale="fr" />
         <div className="text-center max-w-sm">{/* unchanged below */}
@@ -186,9 +186,9 @@ export function TablesMultiplication() {
   // Drill phase
   const multiplier = queue[index];
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={() => setPhase("pick-table")} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={() => setPhase("pick-table")} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="text-sm font-bold text-navy">×{table}  ·  {index + 1}/12  ·  ⭐ {score}</div>
@@ -196,7 +196,7 @@ export function TablesMultiplication() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-5 gap-5">
-        <div className={`bg-white border-4 rounded-3xl p-7 text-center shadow-card transition-all ${feedback === "good" ? "border-green-400" : feedback === "bad" ? "border-red-400 animate-shake" : "border-navy"}`}>
+        <div className={`bg-surface border-4 rounded-3xl p-7 text-center shadow-card transition-all ${feedback === "good" ? "border-green-400" : feedback === "bad" ? "border-red-400 animate-shake" : "border-navy"}`}>
           <div className="text-xs uppercase font-semibold text-fg-soft mb-2">Combien font</div>
           <div className="text-5xl md:text-6xl font-bold text-navy">{table} × {multiplier}</div>
           <div className="text-base text-fg-soft mt-2">= ?</div>

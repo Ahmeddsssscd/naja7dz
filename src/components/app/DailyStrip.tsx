@@ -81,12 +81,12 @@ export async function DailyStrip({ childId, isAr }: Props) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
       {/* Streak */}
-      <div className="bg-white border border-pale-blue rounded-2xl p-4 shadow-card">
+      <div className="bg-surface border border-pale-blue rounded-2xl p-4 shadow-card">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🔥</span>
             <div>
-              <div className="text-2xl font-bold text-navy leading-none">{streak.current}</div>
+              <div className="text-2xl font-bold text-navy dark:text-fg leading-none">{streak.current}</div>
               <div className="text-xs text-fg-soft mt-0.5">{isAr ? "أيّام متتالية" : "jours d'affilée"}</div>
             </div>
           </div>
@@ -102,8 +102,8 @@ export async function DailyStrip({ childId, isAr }: Props) {
             <div key={i} className="flex flex-col items-center gap-1 flex-1">
               <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
                 d === "done" ? "bg-gold text-navy"
-                : d === "today" ? "bg-pale-blue/60 text-navy ring-2 ring-navy"
-                : "bg-pale-blue/30 text-navy/40"
+                : d === "today" ? "bg-pale-blue/60 dark:bg-surface-3 text-navy dark:text-fg ring-2 ring-navy dark:ring-gold"
+                : "bg-pale-blue/30 dark:bg-surface-3/40 text-navy/40 dark:text-fg-faint"
               }`}>
                 {d === "done" ? "✓" : d === "today" ? "•" : ""}
               </span>
@@ -116,21 +116,21 @@ export async function DailyStrip({ childId, isAr }: Props) {
       {/* Featured game */}
       <Link
         href={featured.href as never}
-        className={`bg-gradient-to-br ${featured.bg} rounded-2xl p-4 shadow-card flex items-center gap-3 active:scale-[0.98] hover:shadow-card-hover transition`}
+        className={`bg-gradient-to-br ${featured.bg} dark:from-surface-3 dark:to-surface-2 rounded-2xl p-4 shadow-card flex items-center gap-3 active:scale-[0.98] hover:shadow-card-hover transition`}
       >
         <span className="text-5xl">{featured.emoji}</span>
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] uppercase tracking-wider font-bold text-navy/60">
+          <div className="text-[10px] uppercase tracking-wider font-bold text-navy/60 dark:text-fg-soft">
             {isAr ? "نشاط اليوم" : "Activité du jour"}
           </div>
-          <div className="font-bold text-navy text-base md:text-lg leading-tight truncate">
+          <div className="font-bold text-navy dark:text-fg text-base md:text-lg leading-tight truncate">
             {isAr ? featured.name_ar : featured.name_fr}
           </div>
-          <div className="text-xs text-navy/70 mt-0.5 truncate">
+          <div className="text-xs text-navy/70 dark:text-fg-soft mt-0.5 truncate">
             {isAr ? featured.tag_ar : featured.tag_fr}
           </div>
         </div>
-        <span className="text-navy/60 text-xl flex-shrink-0">→</span>
+        <span className="text-navy/60 dark:text-fg-soft text-xl flex-shrink-0">→</span>
       </Link>
 
       {/* Quick parent / progress card */}

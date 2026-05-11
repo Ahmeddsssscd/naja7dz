@@ -119,7 +119,7 @@ export function Metiers() {
   if (done) {
     const stars = score >= 11 ? 3 : score >= 8 ? 2 : 1;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={score === rounds.length} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === rounds.length ? "🏆" : score >= 8 ? "🌟" : "✨"}</div>
@@ -139,9 +139,9 @@ export function Metiers() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base md:text-lg font-bold text-navy">
@@ -152,7 +152,7 @@ export function Metiers() {
 
       <main className="flex-1 px-5 py-6 max-w-md md:max-w-3xl mx-auto w-full">
         {/* Description prompt */}
-        <div className="bg-white border-4 border-navy rounded-3xl p-4 md:p-6 mb-6 text-center shadow-card">
+        <div className="bg-surface border-4 border-navy rounded-3xl p-4 md:p-6 mb-6 text-center shadow-card">
           <div className="text-xs uppercase tracking-wider text-gold font-bold mb-1">{isAr ? "من يفعل هذا ؟" : "Qui fait ça ?"}</div>
           <p className="text-lg md:text-xl font-bold text-navy" dir={isAr ? "rtl" : "ltr"}>
             {isAr ? current.desc_ar : current.desc_fr}
@@ -170,7 +170,7 @@ export function Metiers() {
                 key={c.k}
                 onClick={() => onPick(c.k)}
                 disabled={!!picked}
-                className={`bg-white rounded-2xl border-4 p-4 flex flex-col items-center gap-2 transition active:scale-95 ${
+                className={`bg-surface rounded-2xl border-4 p-4 flex flex-col items-center gap-2 transition active:scale-95 ${
                   showCorrect ? "border-emerald-500 ring-4 ring-emerald-200 bg-emerald-50"
                   : showWrong ? "border-red-500 ring-4 ring-red-200 bg-red-50"
                   : picked ? "border-pale-blue opacity-60"

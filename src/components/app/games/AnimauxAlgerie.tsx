@@ -146,7 +146,7 @@ export function AnimauxAlgerie() {
     const stars = moves <= PERFECT_MOVES + 2 ? 3 : moves <= PERFECT_MOVES + 6 ? 2 : 1;
     const isPerfect = moves === PERFECT_MOVES;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={isPerfect} locale="fr" />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{stars === 3 ? "🏆" : stars === 2 ? "🌟" : "✨"}</div>
@@ -169,16 +169,16 @@ export function AnimauxAlgerie() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base font-bold text-navy">Animaux d'Algérie</h1>
         <button onClick={onRestart} className="text-xs text-navy hover:text-gold font-semibold">↻ Reset</button>
       </header>
 
-      <div className="px-5 py-3 flex items-center justify-between text-sm text-navy bg-white border-b border-pale-blue">
+      <div className="px-5 py-3 flex items-center justify-between text-sm text-navy bg-surface border-b border-line">
         <div>Coups : <span className="font-bold">{moves}</span></div>
         <div className="font-mono tabular-nums">⏱ {seconds}s</div>
         {bestMoves !== null && <div className="text-fg-soft">Record : {bestMoves}</div>}
@@ -201,7 +201,7 @@ export function AnimauxAlgerie() {
                   c.matched
                     ? "bg-green-50 border-green-300 opacity-80"
                     : faceUp
-                      ? "bg-white border-navy shadow-card scale-[1.02]"
+                      ? "bg-surface border-navy shadow-card scale-[1.02]"
                       : "bg-navy border-navy hover:scale-[1.04] active:scale-95"
                 }`}
               >
@@ -219,7 +219,7 @@ export function AnimauxAlgerie() {
         </div>
 
         {tooltip && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border-2 border-gold rounded-2xl px-5 py-3 shadow-card-hover max-w-xs text-center z-40">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-surface border-2 border-gold rounded-2xl px-5 py-3 shadow-card-hover max-w-xs text-center z-40">
             <div className="text-xs uppercase font-bold text-gold mb-1">Le savais-tu ?</div>
             <div className="text-sm text-navy">{tooltip.fact}</div>
           </div>

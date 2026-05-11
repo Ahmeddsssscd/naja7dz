@@ -82,8 +82,8 @@ export function EnglishHangman() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <button onClick={goBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -99,7 +99,7 @@ export function EnglishHangman() {
           Devine le mot avant que le bonhomme ne soit complet.
         </div>
 
-        <div className="bg-white rounded-2xl border-4 border-navy p-4 shadow-card">
+        <div className="bg-surface rounded-2xl border-4 border-navy p-4 shadow-card">
           <HangmanSVG step={wrongCount} />
         </div>
 
@@ -150,7 +150,7 @@ export function EnglishHangman() {
         </div>
 
         {finished && (
-          <div className="bg-white rounded-2xl p-5 border-4 border-gold w-full max-w-md text-center shadow-card">
+          <div className="bg-surface rounded-2xl p-5 border-4 border-gold w-full max-w-md text-center shadow-card">
             <div className="text-5xl mb-2">{won ? "🎉" : "😢"}</div>
             <div className="font-bold text-navy text-lg mb-1">
               {won ? "You won!" : "You lost…"}

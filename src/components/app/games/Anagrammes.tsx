@@ -137,7 +137,7 @@ export function Anagrammes() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score >= 6 ? "🏆" : score >= 3 ? "✨" : "📝"}</div>
           <h1 className="text-3xl font-bold text-navy mb-2">Bravo !</h1>
@@ -158,9 +158,9 @@ export function Anagrammes() {
   const isAr = locale === "ar";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col" dir={isAr ? "rtl" : "ltr"}>
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={isAr ? "rtl" : "ltr"}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points={isAr ? "9 18 15 12 9 6" : "15 18 9 12 15 6"}/>
           </svg>
@@ -175,7 +175,7 @@ export function Anagrammes() {
         </div>
 
         {/* Built word */}
-        <div className="bg-white border-2 border-navy rounded-3xl p-5 min-h-[80px] min-w-[260px] flex items-center justify-center gap-2 shadow-card">
+        <div className="bg-surface border-2 border-navy rounded-3xl p-5 min-h-[80px] min-w-[260px] flex items-center justify-center gap-2 shadow-card">
           {building.length === 0 ? (
             <span className="text-fg-faint text-sm">{isAr ? "ابدأ بالضغط على حرف" : "Touche une lettre"}</span>
           ) : (

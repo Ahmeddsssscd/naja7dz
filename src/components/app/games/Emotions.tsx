@@ -260,7 +260,7 @@ export function Emotions() {
   if (done) {
     const stars = score >= 7 ? 3 : score >= 5 ? 2 : 1;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={score === rounds.length} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === rounds.length ? "🏆" : score >= 5 ? "🌟" : "✨"}</div>
@@ -283,9 +283,9 @@ export function Emotions() {
   const correctKey = current.key;
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base md:text-lg font-bold text-navy">
@@ -300,7 +300,7 @@ export function Emotions() {
         </div>
 
         {/* Big face card */}
-        <div className="bg-white border-4 border-navy rounded-3xl p-4 md:p-6 mb-6 shadow-card mx-auto" style={{ maxWidth: 320 }}>
+        <div className="bg-surface border-4 border-navy rounded-3xl p-4 md:p-6 mb-6 shadow-card mx-auto" style={{ maxWidth: 320 }}>
           <div className="aspect-square">{current.draw()}</div>
         </div>
 
@@ -318,8 +318,8 @@ export function Emotions() {
                 className={`py-4 px-4 rounded-2xl border-2 font-bold text-base md:text-lg transition active:scale-[0.98] ${
                   showCorrect ? "bg-emerald-100 border-emerald-500 text-emerald-900"
                   : showWrong ? "bg-red-100 border-red-500 text-red-900"
-                  : picked ? "bg-white border-pale-blue text-navy/60"
-                  : "bg-white border-pale-blue text-navy hover:border-gold hover:bg-pale-blue/30"
+                  : picked ? "bg-surface border-pale-blue text-navy/60"
+                  : "bg-surface border-pale-blue text-navy hover:border-gold hover:bg-pale-blue/30"
                 }`}
               >
                 {isAr ? c.ar : c.fr}

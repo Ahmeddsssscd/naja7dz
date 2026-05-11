@@ -167,7 +167,7 @@ export function HorlogeVivante() {
   if (done) {
     const stars = score >= 7 ? 3 : score >= 5 ? 2 : 1;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={score === TOTAL} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{score === TOTAL ? "🏆" : score >= 5 ? "🌟" : "✨"}</div>
@@ -185,9 +185,9 @@ export function HorlogeVivante() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base md:text-lg font-bold text-navy">
@@ -211,7 +211,7 @@ export function HorlogeVivante() {
         </div>
 
         {/* Target time card */}
-        <div className="bg-white border-4 border-navy rounded-3xl p-4 mb-4 text-center shadow-card mx-auto" style={{ maxWidth: 320 }}>
+        <div className="bg-surface border-4 border-navy rounded-3xl p-4 mb-4 text-center shadow-card mx-auto" style={{ maxWidth: 320 }}>
           <div className="text-xs uppercase tracking-wider text-gold font-bold">{isAr ? "ضع الإبر على" : "Place les aiguilles sur"}</div>
           <div className="text-5xl font-bold text-navy mt-1 tabular-nums">{timeLabel(target, locale)}</div>
         </div>

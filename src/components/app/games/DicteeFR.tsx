@@ -250,9 +250,9 @@ export function DicteeFR() {
   // ---------- Pick difficulty ----------
   if (phase === "pick") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h1 className="text-base font-bold text-navy">Dictée Française</h1>
@@ -307,9 +307,9 @@ export function DicteeFR() {
   // ---------- Round (typing) ----------
   if (phase === "round") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={() => { setPhase("pick"); window.speechSynthesis?.cancel(); }} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={() => { setPhase("pick"); window.speechSynthesis?.cancel(); }} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div className="text-sm font-bold text-navy">{LEVEL_META[difficulty].label} · {index + 1}/{queue.length}</div>
@@ -317,7 +317,7 @@ export function DicteeFR() {
         </header>
 
         <main className="flex-1 flex flex-col items-center justify-center px-5 py-6 gap-6 max-w-xl w-full mx-auto">
-          <div className="bg-white border-4 border-navy rounded-3xl p-8 w-full text-center shadow-card">
+          <div className="bg-surface border-4 border-navy rounded-3xl p-8 w-full text-center shadow-card">
             <div className="text-7xl mb-4 inline-block animate-pulse">🎧</div>
 
             {fallbackVisible ? (
@@ -379,9 +379,9 @@ export function DicteeFR() {
     const diff = diffWords(last.expected, last.typed);
     const pct = last.pct;
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
-        <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-          <button onClick={() => { setPhase("pick"); }} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+        <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+          <button onClick={() => { setPhase("pick"); }} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Quitter">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div className="text-sm font-bold text-navy">Phrase {index + 1}/{queue.length}</div>
@@ -395,7 +395,7 @@ export function DicteeFR() {
             <div className="text-xs text-fg-soft mt-1">de précision</div>
           </div>
 
-          <div className="bg-white border-2 border-pale-blue rounded-2xl p-5 mb-3 shadow-card">
+          <div className="bg-surface border-2 border-pale-blue rounded-2xl p-5 mb-3 shadow-card">
             <div className="text-xs uppercase font-bold text-navy/70 tracking-wide mb-2">Phrase correcte</div>
             <div className="text-lg text-navy leading-relaxed flex flex-wrap gap-1.5">
               {diff.map((d, i) => (
@@ -416,7 +416,7 @@ export function DicteeFR() {
             </div>
           </div>
 
-          <div className="bg-cream border-2 border-pale-blue rounded-2xl p-5 mb-5">
+          <div className="bg-cream dark:bg-surface-2 border-2 border-pale-blue rounded-2xl p-5 mb-5">
             <div className="text-xs uppercase font-bold text-navy/70 tracking-wide mb-2">Ce que tu as écrit</div>
             <div className="text-lg text-navy/80 leading-relaxed italic">
               {last.typed || "(rien)"}
@@ -440,7 +440,7 @@ export function DicteeFR() {
   // ---------- Final score ----------
   const mean = Math.round(results.reduce((a, r) => a + r.pct, 0) / Math.max(results.length, 1));
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
       <MascotCelebration trigger={mean === 100} locale="fr" />
       <div className="text-center max-w-sm">
         <div className="text-6xl mb-4">{mean === 100 ? "🏆" : mean >= 80 ? "🌟" : mean >= 60 ? "✨" : "📝"}</div>

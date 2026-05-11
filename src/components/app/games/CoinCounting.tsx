@@ -126,7 +126,7 @@ export function CoinCounting() {
   if (phase === "done") {
     const passed = score >= 4;
     return (
-      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-5" dir={isAR ? "rtl" : "ltr"}>
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col items-center justify-center px-5" dir={isAR ? "rtl" : "ltr"}>
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-3">{passed ? "🏆" : "🪙"}</div>
           <h1 className="text-3xl font-bold text-navy mb-1">
@@ -140,7 +140,7 @@ export function CoinCounting() {
           <div className="flex gap-3">
             <button
               onClick={goBack}
-              className="flex-1 bg-white border-2 border-navy text-navy rounded-2xl px-4 py-3 font-bold active:scale-95"
+              className="flex-1 bg-surface border-2 border-navy text-navy rounded-2xl px-4 py-3 font-bold active:scale-95"
             >
               {t("back")}
             </button>
@@ -164,8 +164,8 @@ export function CoinCounting() {
       : "";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col" dir={isAR ? "rtl" : "ltr"}>
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={isAR ? "rtl" : "ltr"}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <button
           onClick={goBack}
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
@@ -188,7 +188,7 @@ export function CoinCounting() {
           <div className="text-lg font-bold text-navy">{t("how_much")}</div>
         </div>
 
-        <div className={`bg-white rounded-3xl border-4 border-navy p-4 shadow-card max-w-md w-full ${fbCls}`}>
+        <div className={`bg-surface rounded-3xl border-4 border-navy p-4 shadow-card max-w-md w-full ${fbCls}`}>
           <div className="flex flex-wrap gap-2 justify-center">
             {pile.map((coin, i) => (
               <span
@@ -204,7 +204,7 @@ export function CoinCounting() {
         </div>
 
         {showHint && (
-          <div className="bg-white rounded-2xl border border-pale-blue p-3 max-w-md w-full">
+          <div className="bg-surface rounded-2xl border border-pale-blue p-3 max-w-md w-full">
             <div className="text-xs text-fg-soft mb-1">{t("hint_label")}</div>
             <div className="flex flex-wrap gap-2 text-sm font-bold text-navy">
               {breakdown.map(({ value, count }) => (
@@ -226,13 +226,13 @@ export function CoinCounting() {
               if (e.key === "Enter") submit();
             }}
             placeholder="?"
-            className="w-44 text-center text-3xl font-bold rounded-2xl bg-white border-4 border-pale-blue focus:border-gold focus:outline-none px-3 py-3 text-navy"
+            className="w-44 text-center text-3xl font-bold rounded-2xl bg-surface border-4 border-pale-blue focus:border-gold focus:outline-none px-3 py-3 text-navy"
           />
           <div className="text-xs text-fg-soft">DZD (دج)</div>
           <div className="flex gap-3 w-full">
             <button
               onClick={() => setShowHint((s) => !s)}
-              className="flex-1 bg-white border-2 border-pale-blue text-navy rounded-2xl px-4 py-3 font-bold active:scale-95"
+              className="flex-1 bg-surface border-2 border-pale-blue text-navy rounded-2xl px-4 py-3 font-bold active:scale-95"
             >
               {showHint ? t("hide_hint") : t("show_hint")}
             </button>

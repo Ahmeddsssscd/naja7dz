@@ -45,7 +45,7 @@ export function ChildSwitcher({
   if (kids.length < 2) return null;
 
   return (
-    <div className="bg-white/70 dark:bg-surface-3/60 border border-pale-blue rounded-2xl p-3 mb-5 flex items-center gap-2 flex-wrap">
+    <div className="bg-white/70 dark:bg-surface-3/60 border border-pale-blue dark:border-line rounded-2xl p-3 mb-5 flex items-center gap-2 flex-wrap">
       <span className="text-xs font-semibold text-navy/70 uppercase tracking-wider me-2">
         {label}
       </span>
@@ -59,10 +59,10 @@ export function ChildSwitcher({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
               active
                 ? "bg-navy text-white shadow-card"
-                : "bg-pale-blue text-navy hover:bg-gold/30 active:scale-95"
+                : "bg-pale-blue dark:bg-surface-3 text-navy dark:text-fg hover:bg-gold/30 dark:hover:bg-surface-2 active:scale-95"
             }`}
           >
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${active ? "bg-gold text-navy" : "bg-white text-navy"}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${active ? "bg-gold text-navy" : "bg-white dark:bg-surface-2 text-navy dark:text-fg"}`}>
               {initials}
             </span>
             <span>{c.full_name}</span>

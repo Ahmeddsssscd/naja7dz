@@ -79,7 +79,7 @@ export function MemoryGrid() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">🎉</div>
           <h1 className="text-3xl font-bold text-navy mb-2">Bravo !</h1>
@@ -96,9 +96,9 @@ export function MemoryGrid() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div className="font-bold text-navy">Coups : {moves}</div>
@@ -114,7 +114,7 @@ export function MemoryGrid() {
                 key={c.id}
                 onClick={() => onTap(i)}
                 className={`aspect-square rounded-2xl text-4xl flex items-center justify-center transition-all ${
-                  isShowing ? "bg-white border-2 border-gold shadow-card" : "bg-navy text-navy border-2 border-navy active:scale-95"
+                  isShowing ? "bg-surface border-2 border-gold shadow-card" : "bg-navy text-navy border-2 border-navy active:scale-95"
                 } ${c.matched ? "opacity-60" : ""}`}
               >
                 {isShowing ? c.icon : "?"}

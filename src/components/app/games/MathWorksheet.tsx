@@ -145,7 +145,7 @@ export function MathWorksheet() {
   // ===== After-submit summary =====
   if (submitted) {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
         <Header isAr={isAr} onBack={goBack} title={isAr ? "ورقة الرياضيات" : "Feuille de maths"} />
         <main className="flex-1 px-5 py-6 max-w-md md:max-w-3xl mx-auto w-full">
           <MascotCelebration trigger={score === 20} locale={isAr ? "ar" : "fr"} />
@@ -187,7 +187,7 @@ export function MathWorksheet() {
 
   // ===== Active worksheet =====
   return (
-    <div className="min-h-screen bg-cream flex flex-col" onClick={() => setPadOpen(null)}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" onClick={() => setPadOpen(null)}>
       <Header isAr={isAr} onBack={goBack} title={isAr ? "ورقة الرياضيات" : "Feuille de maths"} />
 
       <main className="flex-1 px-5 py-5 max-w-md md:max-w-3xl mx-auto w-full">
@@ -228,7 +228,7 @@ export function MathWorksheet() {
                   padOpen?.id === p.id ? "ring-4 ring-gold/50 border-gold bg-yellow-50"
                   : isCorrect ? "bg-emerald-50 border-emerald-400 text-emerald-900"
                   : isFilled ? "bg-red-50 border-red-400 text-red-900"
-                  : "bg-white border-pale-blue text-navy hover:border-gold"
+                  : "bg-surface border-pale-blue text-navy hover:border-gold"
                 }`}
               >
                 <div className="flex items-center justify-center gap-1.5">
@@ -259,7 +259,7 @@ export function MathWorksheet() {
         const setVal = (v: string) => setAnswers((a) => ({ ...a, [p.id]: v }));
         return (
           <div
-            className="fixed z-40 bg-white border-2 border-navy rounded-2xl p-2 shadow-xl"
+            className="fixed z-40 bg-surface border-2 border-navy rounded-2xl p-2 shadow-xl"
             style={{ left: Math.max(8, Math.min(padOpen.x - 110, (typeof window !== "undefined" ? window.innerWidth : 800) - 230)), top: padOpen.y }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -271,13 +271,13 @@ export function MathWorksheet() {
                 <button
                   key={n}
                   onClick={() => setVal((current + String(n)).slice(0, 3))}
-                  className="bg-cream hover:bg-gold/20 active:scale-95 rounded-lg w-12 h-12 text-xl font-bold text-navy"
+                  className="bg-cream dark:bg-surface-2 hover:bg-gold/20 active:scale-95 rounded-lg w-12 h-12 text-xl font-bold text-navy"
                 >
                   {n}
                 </button>
               ))}
               <button onClick={() => setVal("")} className="bg-red-50 hover:bg-red-100 active:scale-95 rounded-lg w-12 h-12 text-sm font-bold text-red-700">⌫</button>
-              <button onClick={() => setVal((current + "0").slice(0, 3))} className="bg-cream hover:bg-gold/20 active:scale-95 rounded-lg w-12 h-12 text-xl font-bold text-navy">0</button>
+              <button onClick={() => setVal((current + "0").slice(0, 3))} className="bg-cream dark:bg-surface-2 hover:bg-gold/20 active:scale-95 rounded-lg w-12 h-12 text-xl font-bold text-navy">0</button>
               <button onClick={() => setPadOpen(null)} className="bg-emerald-100 hover:bg-emerald-200 active:scale-95 rounded-lg w-12 h-12 text-sm font-bold text-emerald-800">✓</button>
             </div>
           </div>
@@ -310,8 +310,8 @@ function renderProblemDisplay(p: Problem, value: string, isCorrect: boolean) {
 
 function Header({ isAr, onBack, title }: { isAr: boolean; onBack: () => void; title: string }) {
   return (
-    <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-      <button onClick={onBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+    <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+      <button onClick={onBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <h1 className="text-base md:text-lg font-bold text-navy">{title} <span className="text-xl">📝</span></h1>

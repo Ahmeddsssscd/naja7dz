@@ -66,8 +66,8 @@ export function EnglishStoryReader({ story }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue sticky top-0 z-30">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line sticky top-0 z-30">
         <button onClick={goBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -104,7 +104,7 @@ export function EnglishStoryReader({ story }: Props) {
         {/* Paragraphs */}
         <div className="space-y-4 mb-6">
           {story.paragraphs.map((p, i) => (
-            <div key={i} className="bg-white border-2 border-pale-blue rounded-2xl p-4 shadow-card">
+            <div key={i} className="bg-surface border-2 border-pale-blue rounded-2xl p-4 shadow-card">
               <div className="flex items-start gap-3">
                 <span className="bg-gold text-navy w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">{i + 1}</span>
                 <p className="flex-1 text-navy text-lg leading-relaxed">{p.en}</p>

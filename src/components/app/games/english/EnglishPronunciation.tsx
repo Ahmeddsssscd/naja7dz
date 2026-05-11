@@ -94,8 +94,8 @@ export function EnglishPronunciation() {
   if (!card) return null;
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <button onClick={goBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -112,7 +112,7 @@ export function EnglishPronunciation() {
       <main className="flex-1 flex flex-col items-center justify-center px-5 gap-6">
         <div className="text-xs text-fg-soft">Mot {index + 1} / {queue.length} · Aujourd'hui : {knownToday}</div>
 
-        <div className="bg-white border-4 border-navy rounded-3xl p-8 min-w-[260px] text-center shadow-card-hover">
+        <div className="bg-surface border-4 border-navy rounded-3xl p-8 min-w-[260px] text-center shadow-card-hover">
           <div className="text-7xl mb-3">{card.emoji}</div>
           <div className="text-4xl font-bold text-navy mb-2">{card.en}</div>
           <div className="text-base text-fg-soft mb-1">{card.fr}</div>
@@ -139,7 +139,7 @@ export function EnglishPronunciation() {
         <div className="flex gap-3 w-full max-w-xs">
           <button
             onClick={onSkip}
-            className="flex-1 py-3 rounded-2xl bg-white border-2 border-pale-blue text-navy font-bold active:scale-95"
+            className="flex-1 py-3 rounded-2xl bg-surface border-2 border-pale-blue text-navy font-bold active:scale-95"
           >
             Passer
           </button>

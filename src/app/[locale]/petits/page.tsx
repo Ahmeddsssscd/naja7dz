@@ -68,7 +68,7 @@ export default async function KidsHome({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="min-h-screen bg-cream pb-12">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 pb-12">
       {/* Top bar — wider on desktop, child pill + locale/theme toggles */}
       <header className="px-5 lg:px-8 pt-5 pb-3 flex items-center justify-between max-w-5xl mx-auto">
         <div className="flex items-center gap-3">

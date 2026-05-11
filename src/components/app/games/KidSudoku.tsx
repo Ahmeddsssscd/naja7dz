@@ -120,7 +120,7 @@ export function KidSudoku() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">🧩✨</div>
           <h1 className="text-3xl font-bold text-navy mb-2">Excellent !</h1>
@@ -135,9 +135,9 @@ export function KidSudoku() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
       <header className="px-5 py-4 flex items-center justify-between">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label="Retour">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="font-bold text-navy">Sudoku 4×4</h1>
@@ -145,7 +145,7 @@ export function KidSudoku() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-5 gap-6">
-        <div className="bg-white rounded-3xl p-3 border-4 border-navy shadow-card">
+        <div className="bg-surface rounded-3xl p-3 border-4 border-navy shadow-card">
           <div className="grid grid-cols-4 gap-1">
             {board.map((row, r) =>
               row.map((cell, c) => {
@@ -189,7 +189,7 @@ export function KidSudoku() {
           ))}
           <button
             onClick={onErase}
-            className="w-14 h-14 sm:w-16 sm:h-16 bg-white border-2 border-pale-blue text-navy rounded-2xl flex items-center justify-center active:scale-95"
+            className="w-14 h-14 sm:w-16 sm:h-16 bg-surface border-2 border-pale-blue text-navy rounded-2xl flex items-center justify-center active:scale-95"
             aria-label="Effacer"
           >
             ⌫

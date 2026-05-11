@@ -67,7 +67,7 @@ export function ExplainerForm() {
 
   return (
     <div className="space-y-5">
-      <div className="bg-white rounded-3xl border-2 border-pale-blue p-5 md:p-6">
+      <div className="bg-surface rounded-3xl border-2 border-pale-blue p-5 md:p-6">
         <label className="block text-xs font-bold text-navy mb-1">
           {isAr ? "ما هو سؤالك ؟" : "Quelle est ta question ?"} <span className="text-red-600">*</span>
         </label>
@@ -107,7 +107,7 @@ export function ExplainerForm() {
       {reply && (
         <div className="space-y-3">
           {/* FR card */}
-          <div className="bg-white rounded-3xl border-2 border-gold p-5">
+          <div className="bg-surface rounded-3xl border-2 border-gold p-5">
             <div className="text-[10px] uppercase tracking-wider font-bold text-gold mb-2">🇫🇷 En français</div>
             <ol className="space-y-2.5 text-sm md:text-base text-navy list-decimal list-inside">
               {reply.fr.map((step, i) => <li key={i} className="leading-relaxed">{step}</li>)}
@@ -119,7 +119,7 @@ export function ExplainerForm() {
           </div>
 
           {/* AR card */}
-          <div className="bg-white rounded-3xl border-2 border-emerald-400 p-5" dir="rtl">
+          <div className="bg-surface rounded-3xl border-2 border-emerald-400 p-5" dir="rtl">
             <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 mb-2">🇩🇿 بالعربية</div>
             <ol className="space-y-2.5 text-sm md:text-base text-navy list-decimal list-inside">
               {reply.ar.map((step, i) => <li key={i} className="leading-relaxed">{step}</li>)}

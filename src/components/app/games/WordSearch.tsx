@@ -211,8 +211,8 @@ export function WordSearch() {
   const themeLabel = t(`theme_${theme.key}`);
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col" dir={isAR ? "rtl" : "ltr"}>
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col" dir={isAR ? "rtl" : "ltr"}>
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
         <button
           onClick={goBack}
           className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy"
@@ -235,7 +235,7 @@ export function WordSearch() {
 
         <div
           ref={gridRef}
-          className="bg-white rounded-2xl p-2 border-4 border-navy shadow-card select-none touch-none"
+          className="bg-surface rounded-2xl p-2 border-4 border-navy shadow-card select-none touch-none"
           onTouchMove={onTouchMove}
           onTouchEnd={finishDrag}
           onMouseUp={finishDrag}
@@ -271,7 +271,7 @@ export function WordSearch() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-3 border border-pale-blue w-full max-w-md">
+        <div className="bg-surface rounded-2xl p-3 border border-pale-blue w-full max-w-md">
           <div className="flex items-baseline justify-between mb-2">
             <span className="text-xs uppercase tracking-widest text-gold font-bold">{t("words_label")}</span>
             <span className="text-xs text-fg-soft">
@@ -298,7 +298,7 @@ export function WordSearch() {
         </div>
 
         {allFound && (
-          <div className="bg-white rounded-2xl p-5 border-4 border-gold w-full max-w-md text-center shadow-card">
+          <div className="bg-surface rounded-2xl p-5 border-4 border-gold w-full max-w-md text-center shadow-card">
             <div className="text-5xl mb-2">🎉</div>
             <div className="font-bold text-navy text-lg mb-3">{t("you_win")}</div>
             <button

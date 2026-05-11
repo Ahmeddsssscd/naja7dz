@@ -235,7 +235,7 @@ export function Contraires() {
     const total = TOTAL_ROUNDS * 6;
     const stars = misses === 0 ? 3 : misses <= 4 ? 2 : 1;
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <MascotCelebration trigger={misses === 0} locale={isAr ? "ar" : "fr"} />
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{misses === 0 ? "🏆" : misses <= 4 ? "🌟" : "✨"}</div>
@@ -256,9 +256,9 @@ export function Contraires() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
-        <button onClick={goBack} className="w-10 h-10 rounded-full bg-white border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
+      <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
+        <button onClick={goBack} className="w-10 h-10 rounded-full bg-surface border border-pale-blue flex items-center justify-center text-navy" aria-label={isAr ? "رجوع" : "Retour"}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <h1 className="text-base md:text-lg font-bold text-navy">
@@ -281,7 +281,7 @@ export function Contraires() {
               className={`rounded-2xl border-4 p-2 transition active:scale-95 ${
                 c.matched ? "bg-emerald-100 border-emerald-500 opacity-70"
                 : selected === i ? "bg-yellow-50 border-gold ring-4 ring-gold/30"
-                : "bg-white border-pale-blue hover:border-gold"
+                : "bg-surface border-pale-blue hover:border-gold"
               }`}
             >
               <div className="aspect-square mb-1">{c.draw()}</div>

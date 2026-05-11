@@ -95,7 +95,7 @@ export function EnglishFlashcards() {
 
   if (phase === "pick-deck") {
     return (
-      <div className="min-h-screen bg-cream flex flex-col">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
         <Header title="English Flashcards" subtitle="بطاقات الإنجليزية" emoji="🎴" onBack={goBack} />
         <main className="flex-1 px-5 py-6 max-w-md md:max-w-2xl lg:max-w-3xl mx-auto w-full">
           <p className="text-fg-soft text-sm text-center mb-1">
@@ -110,7 +110,7 @@ export function EnglishFlashcards() {
               <button
                 key={d.id}
                 onClick={() => startDeck(d.id)}
-                className="bg-white border-2 border-pale-blue rounded-2xl p-5 flex flex-col items-center gap-2 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
+                className="bg-surface border-2 border-pale-blue rounded-2xl p-5 flex flex-col items-center gap-2 hover:border-gold hover:scale-[1.03] active:scale-95 transition-all"
               >
                 <span className="text-4xl">{d.emoji}</span>
                 <span className="font-bold text-navy text-sm text-center">{d.name_fr}</span>
@@ -131,7 +131,7 @@ export function EnglishFlashcards() {
     const total = queue.length;
     const pct = Math.round((knownCount / total) * 100);
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+      <div className="min-h-screen bg-cream dark:bg-surface-2 flex items-center justify-center px-5">
         <div className="text-center max-w-sm">
           <div className="text-6xl mb-4">{pct >= 80 ? "🏆" : pct >= 60 ? "✨" : "📚"}</div>
           <h1 className="text-3xl font-bold text-navy mb-2">{DECKS.find((d) => d.id === deckId)?.name_fr}</h1>
@@ -140,7 +140,7 @@ export function EnglishFlashcards() {
           </div>
           <div className="text-base text-fg-soft mb-6">{pct}% mots connus</div>
           <div className="flex gap-3">
-            <button onClick={() => setPhase("pick-deck")} className="flex-1 py-3 rounded-2xl bg-white border-2 border-pale-blue text-navy font-bold">
+            <button onClick={() => setPhase("pick-deck")} className="flex-1 py-3 rounded-2xl bg-surface border-2 border-pale-blue text-navy font-bold">
               Autre thème
             </button>
             <button onClick={() => startDeck(deckId)} className="flex-1 py-3 rounded-2xl bg-navy text-white font-bold">
@@ -158,7 +158,7 @@ export function EnglishFlashcards() {
   const langLabel = face === "en" ? "English" : face === "fr" ? "Français" : "العربية";
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-surface-2 flex flex-col">
       <Header
         title={`${index + 1}/${queue.length}`}
         subtitle={`⭐ ${knownCount}`}
@@ -169,7 +169,7 @@ export function EnglishFlashcards() {
       <main className="flex-1 flex flex-col items-center justify-center px-5 gap-7">
         <button
           onClick={flip}
-          className="bg-white border-4 border-navy rounded-3xl p-8 md:p-12 min-w-[280px] min-h-[220px] flex flex-col items-center justify-center shadow-card-hover hover:scale-[1.02] active:scale-95 transition-all"
+          className="bg-surface border-4 border-navy rounded-3xl p-8 md:p-12 min-w-[280px] min-h-[220px] flex flex-col items-center justify-center shadow-card-hover hover:scale-[1.02] active:scale-95 transition-all"
           dir={dir}
         >
           <div className="text-xs uppercase font-semibold text-fg-faint mb-2">{langLabel}</div>
@@ -186,7 +186,7 @@ export function EnglishFlashcards() {
           <button
             onClick={() => speak(card.en)}
             className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl border-2 active:scale-90 transition-all ${
-              isSpeaking ? "bg-gold border-gold animate-pulse" : "bg-white border-navy"
+              isSpeaking ? "bg-gold border-gold animate-pulse" : "bg-surface border-navy"
             }`}
             aria-label="Écouter"
             disabled={!supported}
@@ -216,7 +216,7 @@ export function EnglishFlashcards() {
 
 function Header({ title, subtitle, emoji, onBack }: { title: string; subtitle: string; emoji: string; onBack: () => void }) {
   return (
-    <header className="px-5 py-4 flex items-center justify-between bg-white border-b border-pale-blue">
+    <header className="px-5 py-4 flex items-center justify-between bg-surface border-b border-line">
       <button onClick={onBack} className="w-10 h-10 rounded-full hover:bg-pale-blue/40 flex items-center justify-center text-navy" aria-label="Retour">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polyline points="15 18 9 12 15 6"/>
