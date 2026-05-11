@@ -20,7 +20,7 @@ export default async function DiagnosticPage() {
     <PageShell active="fac">
       <section className="py-16 md:py-20 bg-surface-2">
         <div className="container-x max-w-4xl text-center">
-          <span className="eyebrow mb-3 block">{t("eyebrow")}</span>
+          <span className="eyebrow mb-3 block">{t("hero_eyebrow")}</span>
           <h1 className="text-[clamp(28px,4.5vw,42px)] font-bold tracking-tight text-fg mb-3">
             {t("diag_page_title")}
           </h1>
