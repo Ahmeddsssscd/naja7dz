@@ -1,36 +1,33 @@
 /**
- * Najaح logo — uses official brand assets from /public/.
+ * Najaح logo — uses transparent PNG brand assets from /public/.
  *
  * Variants:
- *   <Logo />                          Wordmark (auto-swaps light/dark image)
- *   <Logo variant="mark" />           Just the navy app icon
- *   <Logo variant="mark" mono="white" />  White app icon (for use on dark bg)
+ *   <Logo />                          Wordmark (auto dark-mode via CSS invert)
+ *   <Logo variant="mark" />           Square icon (auto dark-mode via CSS invert)
+ *   <Logo variant="mark" mono="white" />  Force white icon (for solid dark backgrounds)
  *   <Logo variant="combined" />       Icon + wordmark side by side
  *
- * Theme awareness: rendered as two <Image> tags — one shown in light mode,
- * one in dark mode — toggled via Tailwind `dark:` utility classes. No
- * client-side JS needed; works during SSR.
+ * Theme awareness: In dark mode, `dark:invert` flips the navy (#0F1B33) to
+ * cream (#F0E4CC) which matches --fg (#F2EBDC) exactly. No separate dark-mode
+ * image needed — works during SSR, no client-side JS required.
+ *
+ * File mapping (save these in /public/):
+ *   logo-wordmark.png — full "Najaح" wordmark, transparent background
+ *   logo-icon.png     — crescent+cap icon only, transparent background
  *
  * Sizing:
  *   <Logo height={48} priority />     Sets height; width auto-scales by ratio.
- *
- * Source assets are produced by scripts/crop-logo.py from public/logo.png.
  */
 import Image from "next/image";
 
-const ASSETS = {
-  // Wordmark — paired light/dark
-  wordmarkLight: { src: "/logo-wordmark.png", w: 653, h: 320 },
-  wordmarkDark: { src: "/logo-wordmark-dark.png", w: 653, h: 320 },
-
-  // Mark — paired navy/white
-  markNavy: { src: "/logo-mark-navy.png", w: 165, h: 195 },
-  markWhite: { src: "/logo-mark-white.png", w: 185, h: 195 },
-} as const;
+// Intrinsic dimensions of the source PNGs (update if you swap the files)
+const WORDMARK = { src: "/logo-wordmark.png", w: 580, h: 150 };
+const ICON = { src: "/logo-icon.png", w: 200, h: 200 };
 
 type LogoProps = {
   height?: number;
   variant?: "wordmark" | "mark" | "combined";
+  /** Force a specific colour regardless of theme */
   mono?: "navy" | "white";
   className?: string;
   priority?: boolean;
@@ -44,108 +41,86 @@ export function Logo({
   priority = false,
 }: LogoProps) {
   if (variant === "combined") {
-    // Icon + wordmark together. Icon is square, sits at the start.
     return (
       <span className={`inline-flex items-center gap-3 ${className ?? ""}`}>
-        <ThemedMark height={height} priority={priority} />
-        <ThemedWordmark height={Math.round(height * 0.85)} priority={priority} />
+        <LogoMark height={height} mono={mono} priority={priority} />
+        <LogoWordmark height={Math.round(height * 0.85)} mono={mono} priority={priority} />
       </span>
     );
   }
 
   if (variant === "mark") {
-    // If user explicitly chose navy or white, render that single asset.
-    if (mono) {
-      const asset = mono === "white" ? ASSETS.markWhite : ASSETS.markNavy;
-      const width = Math.round(height * (asset.w / asset.h));
-      return (
-        <Image
-          src={asset.src}
-          alt="Najaح"
-          height={height}
-          width={width}
-          priority={priority}
-          className={className}
-          unoptimized
-        />
-      );
-    }
-    // Otherwise auto-swap: navy in light mode, white in dark mode.
-    return <ThemedMark height={height} priority={priority} className={className} />;
+    return <LogoMark height={height} mono={mono} priority={priority} className={className} />;
   }
 
   // wordmark (default)
-  return <ThemedWordmark height={height} priority={priority} className={className} />;
+  return <LogoWordmark height={height} mono={mono} priority={priority} className={className} />;
 }
 
-/* =================== Theme-aware pairs =================== */
+/* =================== Internal components =================== */
 
-function ThemedWordmark({
+function LogoWordmark({
   height,
+  mono,
   priority,
   className,
 }: {
   height: number;
+  mono?: "navy" | "white";
   priority: boolean;
   className?: string;
 }) {
-  const lightW = Math.round(height * (ASSETS.wordmarkLight.w / ASSETS.wordmarkLight.h));
-  const darkW = Math.round(height * (ASSETS.wordmarkDark.w / ASSETS.wordmarkDark.h));
+  const width = Math.round(height * (WORDMARK.w / WORDMARK.h));
+
+  // mono="white": apply invert via style so it works without Tailwind dark:
+  const filterStyle =
+    mono === "white" ? { filter: "brightness(0) invert(1)" } : undefined;
+
+  // auto theme: dark:invert flips navy → cream (matches --fg in dark mode)
+  const themeClass = !mono ? "dark:invert" : "";
+
   return (
-    <span className={`inline-flex ${className ?? ""}`}>
-      <Image
-        src={ASSETS.wordmarkLight.src}
-        alt="Najaح"
-        height={height}
-        width={lightW}
-        priority={priority}
-        unoptimized
-        className="dark:hidden"
-      />
-      <Image
-        src={ASSETS.wordmarkDark.src}
-        alt="Najaح"
-        height={height}
-        width={darkW}
-        priority={priority}
-        unoptimized
-        className="hidden dark:block"
-      />
-    </span>
+    <Image
+      src={WORDMARK.src}
+      alt="Najaح"
+      height={height}
+      width={width}
+      priority={priority}
+      unoptimized
+      className={`${themeClass} ${className ?? ""}`}
+      style={filterStyle}
+    />
   );
 }
 
-function ThemedMark({
+function LogoMark({
   height,
+  mono,
   priority,
   className,
 }: {
   height: number;
+  mono?: "navy" | "white";
   priority: boolean;
   className?: string;
 }) {
-  const navyW = Math.round(height * (ASSETS.markNavy.w / ASSETS.markNavy.h));
-  const whiteW = Math.round(height * (ASSETS.markWhite.w / ASSETS.markWhite.h));
+  const width = Math.round(height * (ICON.w / ICON.h));
+
+  const filterStyle =
+    mono === "white" ? { filter: "brightness(0) invert(1)" } : undefined;
+
+  const themeClass = !mono ? "dark:invert" : "";
+
   return (
-    <span className={`inline-flex ${className ?? ""}`}>
-      <Image
-        src={ASSETS.markNavy.src}
-        alt="Najaح"
-        height={height}
-        width={navyW}
-        priority={priority}
-        unoptimized
-        className="dark:hidden"
-      />
-      <Image
-        src={ASSETS.markWhite.src}
-        alt="Najaح"
-        height={height}
-        width={whiteW}
-        priority={priority}
-        unoptimized
-        className="hidden dark:block"
-      />
-    </span>
+    <Image
+      src={ICON.src}
+      alt="Najaح"
+      height={height}
+      width={width}
+      priority={priority}
+      unoptimized
+      className={`${themeClass} ${className ?? ""}`}
+      style={filterStyle}
+    />
   );
 }
