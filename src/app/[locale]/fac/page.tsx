@@ -61,8 +61,8 @@ export default async function FacHub() {
               title={t("card_services_title")}
               text={t("card_services_sub")}
               tag={t("card_services_tag")}
-              href="/fac/services"
-              cta={t("services_login_cta")}
+              href="/fac/aide"
+              cta={t("card_services_cta")}
             />
           </div>
         </div>

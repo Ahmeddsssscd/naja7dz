@@ -81,6 +81,12 @@
   .btn-secondary {
     @apply bg-gold text-navy hover:bg-gold-soft;
   }
+  /* btn-cta — bright gold call-to-action used for marketplace "Demander un service"
+     entry points. Same gold as btn-secondary but with extra weight + slightly
+     larger default sizing baked in. Distinct visual hierarchy from btn-primary. */
+  .btn-cta {
+    @apply bg-gold text-navy font-bold hover:bg-gold-soft px-6 py-3 text-base;
+  }
   .btn-outline {
     @apply bg-transparent text-fg border border-line-strong hover:border-fg;
   }
