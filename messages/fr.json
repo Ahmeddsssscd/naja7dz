@@ -66,7 +66,12 @@
     "services_login_sub": "On a besoin de ton email pour te recontacter.",
     "services_login_cta": "Se connecter",
     "cta_title": "Trouve ton orientation post-Bac.",
-    "cta_sub": "Diagnostic gratuit, sans inscription. Cinq questions, une recommandation personnalisée."
+    "cta_sub": "Diagnostic gratuit, sans inscription. Cinq questions, une recommandation personnalisée.",
+    "vision_eyebrow": "Pourquoi on a fait ça",
+    "vision_title": "Changer la façon dont les Algériens voient l'université.",
+    "vision_p1": "Pendant trop longtemps on a poussé nos enfants vers la médecine, l'ingénierie ou le droit — pas parce qu'ils en rêvaient, mais parce que c'était sûr. Le résultat : des amphis pleins d'étudiants désengagés et des passions étouffées.",
+    "vision_p2": "Nous croyons qu'un·e étudiant·e qui aime ce qu'il fait donne le meilleur de lui-même. Et que c'est exactement ça qui va bâtir l'Algérie de demain — pas en faisant les bons choix, mais en faisant des choix vrais.",
+    "vision_signature": "L'équipe Najaح"
   },
   "Support": {
     "eyebrow": "Aide & support",
