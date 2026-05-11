@@ -65,6 +65,11 @@ export default async function TeacherZone() {
                 <ToolCard icon={<ClipboardIcon />} title={t("tool_devoirs_title")} text={t("tool_devoirs_sub")} />
                 <ToolCard icon={<ChartIcon />} title={t("tool_results_title")} text={t("tool_results_sub")} />
               </div>
+              <div className="text-center mt-10">
+                <Link href="/enseignant/reseau" className="text-sm font-semibold text-fg-soft hover:text-fg inline-flex items-center gap-1.5">
+                  {t("see_network")} →
+                </Link>
+              </div>
             </div>
           </section>
 
