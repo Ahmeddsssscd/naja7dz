@@ -4,6 +4,7 @@ import { Logo } from "@/components/Logo";
 import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LogoutButton } from "@/components/app/LogoutButton";
+import { MobileNav } from "@/components/app/MobileNav";
 
 /**
  * Authenticated parent zone shell.
@@ -51,11 +52,14 @@ export function AppShell({
         <div className="text-xs font-semibold text-fg-faint uppercase tracking-wider px-3 mt-6 mb-2">{t("nav_tools")}</div>
         <SideLink href="/fac" active={active === "fac"} icon="cap">{t("nav_fac")}</SideLink>
         <SideLink href="/parent/parametres" active={active === "settings"} icon="settings">{t("nav_settings")}</SideLink>
-        <SideLink href="/contact" icon="help">{t("nav_help")}</SideLink>
+        <SideLink href="/support" icon="help">{t("nav_help")}</SideLink>
       </aside>
 
-      {/* MAIN */}
-      <main className="dash-main p-6 md:p-10">{children}</main>
+      {/* MAIN — bottom padding on mobile reserves space for the bottom-tab nav. */}
+      <main className="dash-main p-4 md:p-6 lg:p-10 pb-24 lg:pb-10">{children}</main>
+
+      {/* Mobile bottom-tab nav (hidden on lg+) */}
+      <MobileNav active={active} />
 
       <style>{`
         .dash-grid {
