@@ -21,7 +21,7 @@
 import Image from "next/image";
 
 // Intrinsic dimensions of the source PNGs (update if you swap the files)
-const WORDMARK = { src: "/logo-wordmark.png", w: 580, h: 150 };
+const WORDMARK = { src: "/logo-wordmark.png", w: 365, h: 150 };
 const ICON = { src: "/logo-icon.png", w: 200, h: 200 };
 
 type LogoProps = {
