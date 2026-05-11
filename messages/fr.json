@@ -1127,7 +1127,19 @@
     "page_title": "Rapports hebdomadaires",
     "subtitle": "Chaque dimanche, on t'envoie un PDF récapitulatif des progrès de tes enfants.",
     "empty_title": "Aucun rapport pour le moment.",
-    "empty_text": "Le premier rapport arrive après une semaine d'activité."
+    "empty_text": "Le premier rapport arrive après une semaine d'activité.",
+    "after_section_title": "Après le rapport — passe à l'action",
+    "cta_teacher_title": "Contacter un·e enseignant·e",
+    "cta_teacher_sub": "Pose ta question à un prof vérifié. Maths, français, sciences — choisis la matière, écris ton message.",
+    "cta_teacher_link": "Voir le réseau enseignants",
+    "cta_helper_title": "Demander de l'aide à un·e étudiant·e",
+    "cta_helper_sub": "Pour les ados et étudiants : orientation, mémoire, exercices. 400 DA / question (200 DA pour les abonnés).",
+    "cta_helper_link": "Trouver un helper",
+    "cta_explain_title": "Comment l'expliquer à mon enfant",
+    "cta_explain_sub": "Tape ta question (\"expliquer la photosynthèse à un 4AP\") et reçois un cadre pédagogique en français et arabe.",
+    "cta_explain_link": "Ouvrir l'assistant",
+    "perk_title": "Avantage abonné",
+    "perk_text": "Avec un abonnement Najah, tu bénéficies de 50% de remise sur chaque question posée à un·e helper de la marketplace."
   },
   "ParentSettings": {
     "page_title": "Paramètres",
