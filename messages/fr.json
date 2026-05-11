@@ -1094,6 +1094,9 @@
     "cta_kids": "Univers des petits",
     "cta_sub": "Mon abonnement"
   },
+  "ParentUni": {
+    "page_title": "Université"
+  },
   "ParentHome": {
     "page_title": "Espace parent",
     "greeting": "Bonjour {name} 👋",

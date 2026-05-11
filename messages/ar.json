@@ -1094,6 +1094,9 @@
     "cta_kids": "عالم الصّغار",
     "cta_sub": "اشتراكي"
   },
+  "ParentUni": {
+    "page_title": "الجامعة"
+  },
   "ParentHome": {
     "page_title": "فضاء الوالدين",
     "greeting": "مرحباً {name} 👋",

@@ -50,7 +50,7 @@ export function AppShell({
         <SideLink href="/parent/expliquer" active={active === "explain"} icon="bulb">{t("nav_explain")}</SideLink>
         <SideLink href="/parent/abonnement" active={active === "subscription"} icon="card">{t("nav_subscription")}</SideLink>
         <div className="text-xs font-semibold text-fg-faint uppercase tracking-wider px-3 mt-6 mb-2">{t("nav_tools")}</div>
-        <SideLink href="/fac" active={active === "fac"} icon="cap">{t("nav_fac")}</SideLink>
+        <SideLink href="/parent/universite" active={active === "fac"} icon="cap">{t("nav_fac")}</SideLink>
         <SideLink href="/parent/parametres" active={active === "settings"} icon="settings">{t("nav_settings")}</SideLink>
         <SideLink href="/support" icon="help">{t("nav_help")}</SideLink>
       </aside>
