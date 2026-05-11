@@ -25,7 +25,7 @@ export function AppShell({
     <div className="dash-grid bg-surface-2 min-h-screen">
       {/* TOP */}
       <header className="dash-top bg-surface border-b border-line h-16 flex items-center justify-between px-6 sticky top-0 z-40">
-        <Link href="/" className="flex items-center" aria-label="Najaح — accueil"><Logo height={32} /></Link>
+        <Link href="/" className="flex items-center" aria-label="Najaح — accueil"><Logo height={28} variant="combined" /></Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <LangSwitch />

@@ -32,7 +32,7 @@ export function PageShell({
       <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-nav border-b border-line">
         <div className="container-x flex items-center justify-between h-20 py-3">
           <Link href="/" aria-label="Najaح" className="flex-shrink-0">
-            <Logo variant="combined" height={44} priority />
+            <Logo variant="combined" height={32} priority />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link href="/tarifs" className={navLinkClass("tarifs")}>
@@ -85,7 +85,7 @@ export function PageShell({
         <div className="container-x">
           <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 mb-10">
             <div>
-              <Logo height={36} />
+              <Logo variant="combined" height={30} />
               <p className="text-fg-soft text-sm mt-4 max-w-xs">{f("tagline")}</p>
             </div>
             <FooterCol title={f("product")}>
