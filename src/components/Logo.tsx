@@ -23,8 +23,11 @@ type LogoProps = {
 
 export function Logo({ height = 36, variant = "wordmark", className = "" }: LogoProps) {
   if (variant === "combined") {
+    // Both images share the exact same height so they sit on the same baseline.
+    // The wordmark's internal content is shorter than its canvas, so we give it
+    // a touch more height to visually match the icon's apparent size.
     const iconH = height;
-    const wmH = Math.round(height * 0.88);
+    const wmH = height;
     return (
       <span className={`inline-flex items-center gap-2 ${className}`}>
         {/* Icon — inlined base64, never fails to load */}
@@ -34,7 +37,7 @@ export function Logo({ height = 36, variant = "wordmark", className = "" }: Logo
           alt=""
           aria-hidden="true"
           className="dark:invert flex-shrink-0 object-contain"
-          style={{ height: iconH, width: iconH }}
+          style={{ height: iconH, width: iconH, display: "block" }}
         />
         {/* Wordmark */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -42,7 +45,7 @@ export function Logo({ height = 36, variant = "wordmark", className = "" }: Logo
           src="/logo-wordmark.png"
           alt="Najaح"
           className="dark:invert flex-shrink-0 object-contain"
-          style={{ height: wmH, width: Math.round(wmH * WM_RATIO) }}
+          style={{ height: wmH, width: Math.round(wmH * WM_RATIO), display: "block" }}
         />
       </span>
     );
