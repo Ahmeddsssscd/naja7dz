@@ -11,8 +11,8 @@
  */
 import { LOGO_ICON_B64 } from "./logo-icon-data";
 
-// Wordmark aspect ratio (365 × 150 px source file)
-const WM_RATIO = 365 / 150;
+// Wordmark aspect ratio (365 × 113 px — trimmed to remove bottom padding)
+const WM_RATIO = 365 / 113;
 
 type LogoProps = {
   height?: number;
@@ -23,14 +23,10 @@ type LogoProps = {
 
 export function Logo({ height = 36, variant = "wordmark", className = "" }: LogoProps) {
   if (variant === "combined") {
-    // Icon canvas is square and fills ~90% of its box.
-    // Wordmark canvas is wider and its text fills ~65% of its box height.
-    // So we make the wordmark taller to compensate, then bottom-align both
-    // so their visual baselines sit on the same line.
-    const iconH = height;
-    const wmH = Math.round(height * 1.3);
+    // Both images have their visual content centered at ~52% of canvas height,
+    // so items-center + equal height produces perfect visual alignment.
     return (
-      <span className={`inline-flex items-end gap-2 ${className}`}>
+      <span className={`inline-flex items-center gap-2 ${className}`}>
         {/* Icon — inlined base64, never fails to load */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -38,7 +34,7 @@ export function Logo({ height = 36, variant = "wordmark", className = "" }: Logo
           alt=""
           aria-hidden="true"
           className="dark:invert flex-shrink-0"
-          style={{ height: iconH, width: iconH, display: "block" }}
+          style={{ height, width: height, display: "block" }}
         />
         {/* Wordmark */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -46,7 +42,7 @@ export function Logo({ height = 36, variant = "wordmark", className = "" }: Logo
           src="/logo-wordmark.png"
           alt="Najaح"
           className="dark:invert flex-shrink-0"
-          style={{ height: wmH, width: Math.round(wmH * WM_RATIO), display: "block" }}
+          style={{ height, width: Math.round(height * WM_RATIO), display: "block" }}
         />
       </span>
     );
