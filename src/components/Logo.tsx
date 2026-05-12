@@ -1,53 +1,48 @@
 /**
- * Najaح logo — uses transparent PNG brand assets from /public/.
+ * Najaح logo — icon is inlined as base64 (no loading failures),
+ * wordmark is served from /public/logo-wordmark.png.
  *
  * Variants:
- *   <Logo />                          Wordmark only
- *   <Logo variant="mark" />           Icon only
- *   <Logo variant="combined" />       Icon + wordmark side by side
+ *   <Logo />                   Wordmark only
+ *   <Logo variant="mark" />    Icon only
+ *   <Logo variant="combined" /> Icon + wordmark side by side  ← default for nav
  *
- * Dark mode: `dark:invert` flips navy (#0A1723) → cream, matching --fg.
- * No JS, no hydration, works during SSR.
+ * Dark mode: dark:invert flips navy → cream automatically.
  */
+import { LOGO_ICON_B64 } from "./logo-icon-data";
 
-// Aspect ratios of the source PNGs
-const WORDMARK_RATIO = 365 / 150; // width / height
-const ICON_RATIO = 1;              // square
+// Wordmark aspect ratio (365 × 150 px source file)
+const WM_RATIO = 365 / 150;
 
 type LogoProps = {
   height?: number;
   variant?: "wordmark" | "mark" | "combined";
   className?: string;
-  priority?: boolean; // kept for API compat, unused with <img>
+  priority?: boolean;
 };
 
-export function Logo({
-  height = 36,
-  variant = "wordmark",
-  className = "",
-}: LogoProps) {
+export function Logo({ height = 36, variant = "wordmark", className = "" }: LogoProps) {
   if (variant === "combined") {
     const iconH = height;
-    const wordmarkH = Math.round(height * 0.9);
+    const wmH = Math.round(height * 0.88);
     return (
       <span className={`inline-flex items-center gap-2 ${className}`}>
+        {/* Icon — inlined base64, never fails to load */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/logo-icon.png"
+          src={LOGO_ICON_B64}
           alt=""
-          height={iconH}
-          width={Math.round(iconH * ICON_RATIO)}
-          className="dark:invert flex-shrink-0"
-          style={{ height: iconH, width: Math.round(iconH * ICON_RATIO) }}
+          aria-hidden="true"
+          className="dark:invert flex-shrink-0 object-contain"
+          style={{ height: iconH, width: iconH }}
         />
+        {/* Wordmark */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/logo-wordmark.png"
           alt="Najaح"
-          height={wordmarkH}
-          width={Math.round(wordmarkH * WORDMARK_RATIO)}
-          className="dark:invert flex-shrink-0"
-          style={{ height: wordmarkH, width: Math.round(wordmarkH * WORDMARK_RATIO) }}
+          className="dark:invert flex-shrink-0 object-contain"
+          style={{ height: wmH, width: Math.round(wmH * WM_RATIO) }}
         />
       </span>
     );
@@ -57,12 +52,10 @@ export function Logo({
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src="/logo-icon.png"
+        src={LOGO_ICON_B64}
         alt="Najaح"
-        height={height}
-        width={Math.round(height * ICON_RATIO)}
         className={`dark:invert ${className}`}
-        style={{ height, width: Math.round(height * ICON_RATIO) }}
+        style={{ height, width: height }}
       />
     );
   }
@@ -73,10 +66,8 @@ export function Logo({
     <img
       src="/logo-wordmark.png"
       alt="Najaح"
-      height={height}
-      width={Math.round(height * WORDMARK_RATIO)}
       className={`dark:invert ${className}`}
-      style={{ height, width: Math.round(height * WORDMARK_RATIO) }}
+      style={{ height, width: Math.round(height * WM_RATIO) }}
     />
   );
 }
