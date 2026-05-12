@@ -17,7 +17,7 @@ export function PageShell({
   active,
 }: {
   children: React.ReactNode;
-  active?: "tarifs" | "parents" | "faq" | "contact" | "fac" | "teacher";
+  active?: "tarifs" | "parents" | "faq" | "contact" | "fac" | "teacher" | "bac";
 }) {
   const t = useTranslations("Nav");
   const f = useTranslations("Footer");
@@ -40,6 +40,9 @@ export function PageShell({
             </Link>
             <Link href="/pour-les-parents" className={navLinkClass("parents")}>
               {t("parents")}
+            </Link>
+            <Link href="/bac" className={navLinkClass("bac")}>
+              BAC
             </Link>
             <Link href="/fac" className={navLinkClass("fac")}>
               {t("fac")}
@@ -67,6 +70,7 @@ export function PageShell({
               items={[
                 { href: "/tarifs", label: t("pricing") },
                 { href: "/pour-les-parents", label: t("parents") },
+                { href: "/bac", label: "BAC" },
                 { href: "/fac", label: t("fac") },
                 { href: "/enseignant", label: t("teacher") },
                 { href: "/faq", label: t("faq") },

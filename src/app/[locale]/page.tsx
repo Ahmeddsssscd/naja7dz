@@ -5,6 +5,7 @@ import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileMenu } from "@/components/MobileMenu";
 import { EmailCapture } from "@/components/EmailCapture";
+import { HeroInteractive } from "@/components/hero/HeroInteractive";
 import { createServerClient } from "@/lib/supabase/server";
 import { getActiveSubscription } from "@/lib/subscriptions";
 import {
@@ -65,6 +66,7 @@ export default async function LandingPage() {
       <TrustStrip />
       <HowItWorks />
       <Features />
+      <BacTeaser />
       <Pricing />
       <FAQ />
       <FinalCTA auth={auth} />
@@ -96,6 +98,9 @@ function SiteNav({ auth }: { auth: AuthState }) {
           </Link>
           <Link href="/pour-les-parents" className="hover:text-fg transition-colors">
             {t("parents")}
+          </Link>
+          <Link href="/bac" className="hover:text-fg transition-colors">
+            BAC
           </Link>
           <Link href="/fac" className="hover:text-fg transition-colors">
             {t("fac")}
@@ -137,6 +142,7 @@ function SiteNav({ auth }: { auth: AuthState }) {
                   { href: dashboardHref, label: t("open_dashboard") },
                   { href: "/eleve/pratique", label: t("cta_practice") },
                   { href: "/parent/abonnement", label: t("subscription") },
+                  { href: "/bac", label: "BAC" },
                   { href: "/fac", label: t("fac") },
                   { href: "/enseignant", label: t("teacher") },
                   { href: "/faq", label: t("faq") },
@@ -157,6 +163,7 @@ function SiteNav({ auth }: { auth: AuthState }) {
                 items={[
                   { href: "/tarifs", label: t("pricing") },
                   { href: "/pour-les-parents", label: t("parents") },
+                  { href: "/bac", label: "BAC" },
                   { href: "/fac", label: t("fac") },
                   { href: "/enseignant", label: t("teacher") },
                   { href: "/faq", label: t("faq") },
@@ -238,65 +245,9 @@ function Hero({ auth }: { auth: AuthState }) {
             <span>{t("trust")}</span>
           </div>
         </div>
-        <HeroQuizMock />
+        <HeroInteractive />
       </div>
     </section>
-  );
-}
-
-function HeroQuizMock() {
-  const t = useTranslations("HeroMock");
-  return (
-    <div
-      aria-hidden
-      className="bg-surface rounded-modal p-7 shadow-card-hover border border-line max-w-md w-full mx-auto md:ms-auto"
-    >
-      <div className="flex items-center gap-3 pb-4 mb-5 border-b border-line text-sm text-fg-soft">
-        <span>{t("subject")}</span>
-        <div className="flex-1 h-1 bg-surface-3 rounded overflow-hidden">
-          <div className="h-full w-3/5 bg-gold rounded" />
-        </div>
-        <span>3/5</span>
-      </div>
-      <div className="text-lg font-semibold text-fg mb-5 leading-snug">
-        {t("question")}
-      </div>
-      <div className="flex flex-col gap-2.5">
-        <MockOption letter="A" text="x = 2" />
-        <MockOption letter="B" text="x = 4" correct />
-        <MockOption letter="C" text="x = 6" />
-        <MockOption letter="D" text="x = 10" />
-      </div>
-    </div>
-  );
-}
-
-function MockOption({
-  letter,
-  text,
-  correct = false,
-}: {
-  letter: string;
-  text: string;
-  correct?: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-3.5 px-4 py-3.5 rounded-btn border text-base ${
-        correct
-          ? "border-gold bg-gold-faint dark:bg-gold/10 text-fg font-medium"
-          : "border-line text-fg"
-      }`}
-    >
-      <span
-        className={`inline-flex w-7 h-7 rounded-md items-center justify-center text-xs font-semibold ${
-          correct ? "bg-gold text-navy" : "bg-surface-2 text-fg-soft"
-        }`}
-      >
-        {letter}
-      </span>
-      <span>{text}</span>
-    </div>
   );
 }
 
@@ -374,6 +325,52 @@ function Features() {
               <p className="text-base text-fg-soft">{it.text}</p>
             </article>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =============== BAC TEASER =============== */
+function BacTeaser() {
+  return (
+    <section className="py-16 md:py-20 bg-surface border-y border-line">
+      <div className="container-x">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+          {/* Left: text */}
+          <div>
+            <span className="eyebrow mb-3">📋 BAC Algérie</span>
+            <h2 className="text-[clamp(26px,3.5vw,36px)] font-bold text-fg leading-tight tracking-tight mb-4">
+              Sujets & corrections BAC<br />
+              <span className="text-gold">2019 → 2024</span>
+            </h2>
+            <p className="text-fg-soft text-base mb-6 max-w-sm">
+              Accède aux vraies épreuves du baccalauréat algérien — toutes branches, toutes matières — et entraîne-toi avec les corrections officielles.
+            </p>
+            <Link href="/bac" className="btn btn-primary">
+              Consulter les annales →
+            </Link>
+          </div>
+
+          {/* Right: stat pills */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { emoji: '📐', label: 'Mathématiques', sub: '6 ans · 4 filières' },
+              { emoji: '⚗️', label: 'Sciences physiques', sub: '6 ans · 3 filières' },
+              { emoji: '📖', label: 'Langue arabe', sub: '6 ans · 6 filières' },
+              { emoji: '✒️', label: 'Français', sub: '6 ans · 6 filières' },
+              { emoji: '🌿', label: 'Sciences nat.', sub: '6 ans · 1 filière' },
+              { emoji: '🧠', label: 'Philosophie', sub: '6 ans · 3 filières' },
+            ].map(({ emoji, label, sub }) => (
+              <div key={label} className="bg-surface-2 border border-line rounded-card p-4 flex items-start gap-3 hover:shadow-card hover:border-transparent transition-all">
+                <span className="text-2xl">{emoji}</span>
+                <div>
+                  <p className="text-sm font-semibold text-fg leading-tight">{label}</p>
+                  <p className="text-xs text-fg-faint mt-0.5">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
