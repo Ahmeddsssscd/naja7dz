@@ -23,20 +23,21 @@ type LogoProps = {
 
 export function Logo({ height = 36, variant = "wordmark", className = "" }: LogoProps) {
   if (variant === "combined") {
-    // Both images share the exact same height so they sit on the same baseline.
-    // The wordmark's internal content is shorter than its canvas, so we give it
-    // a touch more height to visually match the icon's apparent size.
+    // Icon canvas is square and fills ~90% of its box.
+    // Wordmark canvas is wider and its text fills ~65% of its box height.
+    // So we make the wordmark taller to compensate, then bottom-align both
+    // so their visual baselines sit on the same line.
     const iconH = height;
-    const wmH = height;
+    const wmH = Math.round(height * 1.3);
     return (
-      <span className={`inline-flex items-center gap-2 ${className}`}>
+      <span className={`inline-flex items-end gap-2 ${className}`}>
         {/* Icon — inlined base64, never fails to load */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={LOGO_ICON_B64}
           alt=""
           aria-hidden="true"
-          className="dark:invert flex-shrink-0 object-contain"
+          className="dark:invert flex-shrink-0"
           style={{ height: iconH, width: iconH, display: "block" }}
         />
         {/* Wordmark */}
@@ -44,7 +45,7 @@ export function Logo({ height = 36, variant = "wordmark", className = "" }: Logo
         <img
           src="/logo-wordmark.png"
           alt="Najaح"
-          className="dark:invert flex-shrink-0 object-contain"
+          className="dark:invert flex-shrink-0"
           style={{ height: wmH, width: Math.round(wmH * WM_RATIO), display: "block" }}
         />
       </span>
