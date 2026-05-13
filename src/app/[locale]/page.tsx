@@ -90,7 +90,7 @@ function SiteNav({ auth }: { auth: AuthState }) {
     <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-nav border-b border-line">
       <div className="container-x flex items-center justify-between h-20 py-3">
         <Link href="/" aria-label="Najaح" className="flex-shrink-0">
-          <Logo variant="combined" height={26} priority />
+          <Logo variant="wordmark" height={26} priority />
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-fg-soft ms-12">
           <Link href="/tarifs" className="hover:text-fg transition-colors">
