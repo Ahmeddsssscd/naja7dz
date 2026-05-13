@@ -92,7 +92,7 @@ function SiteNav({ auth }: { auth: AuthState }) {
         <Link href="/" aria-label="Najaح" className="flex-shrink-0">
           <Logo variant="combined" height={26} priority />
         </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-fg-soft">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-fg-soft ms-12">
           <Link href="/tarifs" className="hover:text-fg transition-colors">
             {t("pricing")}
           </Link>

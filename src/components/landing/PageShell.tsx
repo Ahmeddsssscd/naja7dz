@@ -34,7 +34,7 @@ export function PageShell({
           <Link href="/" aria-label="Najaح" className="flex-shrink-0">
             <Logo variant="combined" height={26} priority />
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium ms-12">
             <Link href="/tarifs" className={navLinkClass("tarifs")}>
               {t("pricing")}
             </Link>
