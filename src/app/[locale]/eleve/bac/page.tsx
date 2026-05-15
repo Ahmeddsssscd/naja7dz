@@ -96,7 +96,11 @@ export default async function BacListPage() {
 
         {(!papers || papers.length === 0) ? (
           <div className="bg-surface border border-line rounded-card p-8 text-center">
-            <div className="text-4xl mb-2">📄</div>
+            <div className="w-12 h-12 rounded-xl bg-surface-3 flex items-center justify-center mx-auto mb-3">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-fg-soft">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
             <p className="font-semibold text-fg mb-1">{t("archive_empty_title")}</p>
             <p className="text-fg-soft text-sm">{t("archive_empty_text")}</p>
           </div>

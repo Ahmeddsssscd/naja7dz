@@ -192,7 +192,7 @@ function Hero({ auth }: { auth: AuthState }) {
           {/* Welcome-back banner for signed-in users */}
           {auth.isAuthed && (
             <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full bg-gold/15 dark:bg-gold/10 border border-gold/40 text-sm">
-              <span className="text-gold">👋</span>
+              <span className="w-2 h-2 rounded-full bg-gold inline-block" />
               <span className="text-fg font-medium">
                 {t("welcome_back", { name: auth.name?.split(" ")[0] ?? "" })}
               </span>
@@ -219,10 +219,10 @@ function Hero({ auth }: { auth: AuthState }) {
               {auth.hasSub ? (
                 <>
                   <Link href="/eleve/pratique" className="btn btn-primary btn-lg">
-                    🎯 {tNav("cta_practice")}
+                    {tNav("cta_practice")}
                   </Link>
                   <Link href="/petits" className="btn btn-outline btn-lg">
-                    🦊 {tNav("cta_kids_universe")}
+                    {tNav("cta_kids_universe")}
                   </Link>
                 </>
               ) : (
@@ -332,6 +332,15 @@ function Features() {
 }
 
 /* =============== BAC TEASER =============== */
+const BAC_SUBJECTS = [
+  { abbr: 'MA', color: 'bg-blue-600 text-white',    label: 'Mathématiques',    sub: '6 ans · 4 filières' },
+  { abbr: 'PH', color: 'bg-violet-600 text-white',  label: 'Sciences physiques', sub: '6 ans · 3 filières' },
+  { abbr: 'ع',  color: 'bg-teal-600 text-white',    label: 'Langue arabe',     sub: '6 ans · 6 filières' },
+  { abbr: 'FR', color: 'bg-rose-600 text-white',    label: 'Français',         sub: '6 ans · 6 filières' },
+  { abbr: 'SN', color: 'bg-emerald-600 text-white', label: 'Sciences nat.',    sub: '6 ans · 1 filière'  },
+  { abbr: 'HG', color: 'bg-amber-600 text-white',   label: 'Histoire-Géo',     sub: '6 ans · 3 filières' },
+];
+
 function BacTeaser() {
   return (
     <section className="py-16 md:py-20 bg-surface border-y border-line">
@@ -339,31 +348,24 @@ function BacTeaser() {
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           {/* Left: text */}
           <div>
-            <span className="eyebrow mb-3">📋 BAC Algérie</span>
+            <span className="eyebrow mb-3 block">BAC Algérie</span>
             <h2 className="text-[clamp(26px,3.5vw,36px)] font-bold text-fg leading-tight tracking-tight mb-4">
-              Sujets & corrections BAC<br />
-              <span className="text-gold">2019 → 2024</span>
+              Sujets &amp; corrections BAC<br />
+              <span className="text-gold">2019 — 2024</span>
             </h2>
             <p className="text-fg-soft text-base mb-6 max-w-sm">
-              Accède aux vraies épreuves du baccalauréat algérien — toutes branches, toutes matières — et entraîne-toi avec les corrections officielles.
+              Accède aux vraies épreuves du baccalauréat algérien — toutes filières, toutes matières — et entraîne-toi avec les corrections officielles.
             </p>
             <Link href="/bac" className="btn btn-primary">
               Consulter les annales →
             </Link>
           </div>
 
-          {/* Right: stat pills */}
+          {/* Right: subject grid */}
           <div className="grid grid-cols-2 gap-3">
-            {[
-              { emoji: '📐', label: 'Mathématiques', sub: '6 ans · 4 filières' },
-              { emoji: '⚗️', label: 'Sciences physiques', sub: '6 ans · 3 filières' },
-              { emoji: '📖', label: 'Langue arabe', sub: '6 ans · 6 filières' },
-              { emoji: '✒️', label: 'Français', sub: '6 ans · 6 filières' },
-              { emoji: '🌿', label: 'Sciences nat.', sub: '6 ans · 1 filière' },
-              { emoji: '🧠', label: 'Philosophie', sub: '6 ans · 3 filières' },
-            ].map(({ emoji, label, sub }) => (
+            {BAC_SUBJECTS.map(({ abbr, color, label, sub }) => (
               <div key={label} className="bg-surface-2 border border-line rounded-card p-4 flex items-start gap-3 hover:shadow-card hover:border-transparent transition-all">
-                <span className="text-2xl">{emoji}</span>
+                <span className={`w-8 h-8 rounded-md text-[11px] font-bold flex items-center justify-center flex-shrink-0 ${color}`}>{abbr}</span>
                 <div>
                   <p className="text-sm font-semibold text-fg leading-tight">{label}</p>
                   <p className="text-xs text-fg-faint mt-0.5">{sub}</p>
@@ -562,10 +564,10 @@ function FinalCTA({ auth }: { auth: AuthState }) {
         {auth.hasSub ? (
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/eleve/pratique" className="btn btn-secondary btn-lg">
-              🎯 {tNav("cta_practice")}
+              {tNav("cta_practice")}
             </Link>
             <Link href="/petits" className="btn bg-white/10 text-white border-white/30 hover:bg-white/20 btn-lg">
-              🦊 {tNav("cta_kids_universe")}
+              {tNav("cta_kids_universe")}
             </Link>
           </div>
         ) : auth.isAuthed ? (
