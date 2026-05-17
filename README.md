@@ -2,7 +2,7 @@
 
 > La plateforme éducative qui aide ton enfant à réussir, du primaire au Bac. En arabe, en français.
 
-**Live:** [naja7dz.com](https://naja7dz.com) *(once deployed)*
+**Live:** [naja7dz.com](https://naja7dz.com)
 
 ## Stack
 
@@ -36,33 +36,55 @@ najahdz/
 └─ STRUCTURE.md           Full site map (96 pages)
 ```
 
-## Getting started
+## New machine / laptop setup
 
+**Step 1 — Clone**
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Copy env vars (then fill in real values from Supabase)
-cp .env.example .env.local
-
-# 3. ⚠ Apply the database schema ONCE
-#    Open https://supabase.com/dashboard/project/<YOUR-PROJECT>/sql/new
-#    Paste the full contents of database/SETUP.sql
-#    Click "Run"
-#    (The file is idempotent — safe to re-run.)
-
-# 4. Run the dev server
-npm run dev
+git clone https://github.com/Ahmeddsssscd/naja7dz.git
+cd najahdz
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — French (default).
-Open [http://localhost:3000/ar](http://localhost:3000/ar) — Arabic with full RTL.
+**Step 2 — Install Node 20+ (if not already)**
+```bash
+node -v   # must be >= 20
+# if not: https://nodejs.org  or  nvm install 20
+```
+
+**Step 3 — Install dependencies**
+```bash
+npm install
+```
+
+**Step 4 — Create `.env.local`**
+
+Copy the example file and fill in the real values.
+The values are the same as on your other machine (or find them in the Supabase & Chargily dashboards):
+```bash
+cp .env.example .env.local
+# then open .env.local and paste the real keys
+```
+
+Required variables:
+| Variable | Where to find it |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API (secret) |
+| `CHARGILY_SECRET_KEY` | Chargily dashboard → API Keys |
+| `CHARGILY_API_BASE` | `https://pay.chargily.net/test/api/v2` (or prod) |
+| `CHARGILY_WEBHOOK_SECRET` | Chargily dashboard → Webhooks |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` for local dev |
+
+**Step 5 — Run**
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000)
 
 ### Health check
 
-Visit [/api/health/db](http://localhost:3000/api/health/db) at any time to see which tables are missing.
-If you see a friendly **"Configuration requise"** screen on a protected page, it means the schema
-isn't applied yet — paste `database/SETUP.sql` into the Supabase SQL Editor.
+Visit [/api/health/db](http://localhost:3000/api/health/db) — it shows which DB tables are present.
+If a protected page shows "Configuration requise", paste `database/SETUP.sql` into the Supabase SQL Editor and run it.
 
 ## Brand discipline
 
