@@ -22,7 +22,7 @@ export default async function FeatureFlagsPage() {
 
       {(!rows || rows.length === 0) ? (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-6 text-sm">
-          ⚠️ La table <code>feature_flags</code> n&apos;est pas encore créée. Applique la migration
+          La table <code>feature_flags</code> n&apos;est pas encore créée. Applique la migration
           <code className="ms-1">database/migrations/20260507_006_quiz_questions_and_flags.sql</code>{" "}
           dans le SQL Editor de Supabase.
         </div>

@@ -493,7 +493,7 @@
   },
   "Student": {
     "default_name": "Étudiant",
-    "streak_days": "🔥 {days} jours",
+    "streak_days": "{days} jours d'affilée",
     "nav_home": "Accueil",
     "nav_subjects": "Matières",
     "nav_practice": "Pratique",
@@ -729,7 +729,7 @@
     "audio_aria": "Audio",
     "next": "Suivant →",
     "finish": "Terminer",
-    "done_title": "Quiz terminé 🎉",
+    "done_title": "Quiz terminé",
     "done_lead": "Tu as obtenu",
     "done_correct": "{score} / {total} bonnes réponses",
     "back_home": "Accueil",
@@ -1024,8 +1024,8 @@
   },
   "Onboarding": {
     "step_label": "Étape {current} sur {total}",
-    "s1_welcome_named": "Bienvenue {name} 👋",
-    "s1_welcome_default": "Bienvenue dans Najaح 👋",
+    "s1_welcome_named": "Bienvenue {name}",
+    "s1_welcome_default": "Bienvenue dans Najaح",
     "s1_lead": "On va configurer ton compte en deux minutes. À chaque étape, tu peux modifier tes choix plus tard depuis ton espace.",
     "s1_cta": "Commencer →",
     "s2_title": "Ton premier enfant",
@@ -1039,7 +1039,7 @@
     "s2_submit": "Continuer",
     "s2_submitting": "Création…",
     "s2_back": "← Retour",
-    "s3_title": "Tout est prêt 🎉",
+    "s3_title": "Tout est prêt",
     "s3_lead": "Tu peux maintenant explorer ton espace, ajouter d'autres enfants, ou laisser ton enfant commencer son premier exercice.",
     "s3_cta": "Découvrir mon espace →",
     "setup_required": "Configuration de la base de données incomplète. Applique database/SETUP.sql dans Supabase.",
@@ -1099,7 +1099,7 @@
   },
   "ParentHome": {
     "page_title": "Espace parent",
-    "greeting": "Bonjour {name} 👋",
+    "greeting": "Bonjour {name}",
     "subtitle": "Voici un résumé de la semaine de tes enfants.",
     "kpi_study_time": "Temps d'étude",
     "kpi_quizzes": "Quiz complétés",
@@ -1533,6 +1533,6 @@
     "legal_loi": "Loi 18-07",
     "legal_mentions": "Mentions légales",
     "rights": "© 2026 Najaح. Tous droits réservés.",
-    "made_in": "Fait avec ❤️ en Algérie"
+    "made_in": "Fait en Algérie"
   }
 }

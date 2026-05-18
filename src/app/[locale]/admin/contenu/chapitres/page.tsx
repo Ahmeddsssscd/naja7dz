@@ -32,7 +32,7 @@ export default async function AdminChaptersPage() {
 
       {!subjects?.length && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-6 text-sm">
-          ⚠️ Aucune matière définie. <Link href="/admin/contenu/matieres" className="underline font-semibold">Crée d&apos;abord les matières</Link>.
+          Aucune matière définie. <Link href="/admin/contenu/matieres" className="underline font-semibold">Crée d&apos;abord les matières</Link>.
         </div>
       )}
 

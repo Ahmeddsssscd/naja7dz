@@ -23,7 +23,7 @@ export default async function ExplainerPage() {
     <div className="min-h-screen bg-cream dark:bg-surface-2 pb-12">
       <header className="px-5 lg:px-8 pt-5 pb-4 max-w-3xl mx-auto">
         <Link href="/parent" className="text-xs text-fg-soft hover:text-navy">← {t("back")}</Link>
-        <h1 className="text-2xl md:text-3xl font-bold text-navy mt-2">💡 {t("page_title")}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-navy mt-2">{t("page_title")}</h1>
         <p className="text-sm text-fg-soft mt-1 max-w-prose">{t("page_sub")}</p>
       </header>
 

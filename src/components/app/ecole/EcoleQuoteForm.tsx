@@ -92,7 +92,9 @@ export function EcoleQuoteForm() {
   if (done) {
     return (
       <div className="bg-surface border-2 border-emerald-500/50 rounded-card p-8 text-center">
-        <div className="text-6xl mb-3">✅</div>
+        <div className="inline-flex w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 items-center justify-center mb-3">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
         <h3 className="text-xl font-bold text-fg mb-2">{isAr ? "شكراً ! تمّ استلام طلبك" : "Merci ! Demande reçue"}</h3>
         <p className="text-base text-fg-soft mb-1 max-w-prose mx-auto">
           {isAr

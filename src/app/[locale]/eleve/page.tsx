@@ -6,6 +6,18 @@ import { Link } from "@/i18n/routing";
 import { requireAccessForGrade } from "@/lib/subscriptions";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { getStreak } from "@/lib/streak";
+import {
+  BookIcon,
+  TargetIcon,
+  PaletteIcon,
+  PenIcon,
+  TrendingUpIcon,
+  FileTextIcon,
+  CalendarIcon,
+  LockIcon,
+  AlertIcon,
+} from "@/components/Icon";
+import type { ComponentType } from "react";
 
 export const metadata = { title: "Mon espace" };
 
@@ -117,21 +129,21 @@ export default async function StudentHome() {
       {/* Subscription gating banner */}
       {!sub && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-5 text-sm">
-          <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
-            🔒 Aucun abonnement actif
+          <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1 inline-flex items-center gap-2">
+            <LockIcon size={16} /> Aucun abonnement actif
           </div>
           <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">
             Tu peux explorer la plateforme, mais le contenu nécessite un abonnement.
           </p>
           <Link href="/tarifs" className="btn btn-primary btn-sm">
-            Voir les abonnements →
+            Voir les abonnements
           </Link>
         </div>
       )}
       {sub && !canAccess && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-5 text-sm">
-          <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
-            ⚠️ Niveau non couvert par ton plan
+          <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1 inline-flex items-center gap-2">
+            <AlertIcon size={16} /> Niveau non couvert par ton plan
           </div>
           <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">
             Le Pack Bac couvre uniquement la 3AS et la 4AM. Passe au plan Élève
@@ -149,7 +161,7 @@ export default async function StudentHome() {
           {grade ? `Mon espace ${grade}` : t("today_eyebrow")}
         </span>
         <h1 className="text-2xl md:text-3xl font-bold mt-2 mb-1">
-          {childFirstName ? `Salut ${childFirstName} ! 👋` : t("title")}
+          {childFirstName ? `Salut ${childFirstName}` : t("title")}
         </h1>
         <p className="text-white/70 text-sm md:text-base mb-5 max-w-prose">
           {firstReadyChapters[0]
@@ -169,7 +181,7 @@ export default async function StudentHome() {
         {/* 1. Mes matières — visible to everyone, shows count */}
         <BigTile
           href="/eleve/matieres"
-          emoji="📚"
+          icon={BookIcon}
           title={`Mes matières${grade ? ` (${grade})` : ""}`}
           subtitle={`${subjects.length} ${subjects.length === 1 ? "matière" : "matières"}`}
           color="bg-pale-blue text-navy"
@@ -177,7 +189,7 @@ export default async function StudentHome() {
         {/* 2. Pratique — universal */}
         <BigTile
           href="/eleve/pratique"
-          emoji="🎯"
+          icon={TargetIcon}
           title="Pratiquer"
           subtitle={totalReadyForGrade > 0 ? `${totalReadyForGrade} chapitre${totalReadyForGrade > 1 ? "s" : ""} prêt${totalReadyForGrade > 1 ? "s" : ""}` : "Quiz, jeux et activités"}
           color="bg-gold/15 text-fg border-gold/40"
@@ -187,14 +199,14 @@ export default async function StudentHome() {
           <>
             <BigTile
               href="/petits"
-              emoji="🦊"
+              icon={PaletteIcon}
               title="Univers des petits"
               subtitle="Coloriage, lecture, jeux"
               color="bg-pink-100 dark:bg-pink-950/30 text-pink-900 dark:text-pink-100"
             />
             <BigTile
               href="/petits/lecture"
-              emoji="📖"
+              icon={BookIcon}
               title="Lis avec moi"
               subtitle="Histoires bilingues"
               color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100"
@@ -205,14 +217,14 @@ export default async function StudentHome() {
           <>
             <BigTile
               href="/eleve/redaction"
-              emoji="✍️"
+              icon={PenIcon}
               title="Rédaction du jour"
               subtitle="Sujet libre, FR + AR"
               color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100"
             />
             <BigTile
               href="/eleve/calligraphie"
-              emoji="🎨"
+              icon={PaletteIcon}
               title="Calligraphie arabe"
               subtitle="Trace les lettres"
               color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100"
@@ -223,14 +235,14 @@ export default async function StudentHome() {
           <>
             <BigTile
               href="/eleve/redaction"
-              emoji="✍️"
+              icon={PenIcon}
               title="Rédaction"
               subtitle="Pratique l'écriture"
               color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100"
             />
             <BigTile
               href="/eleve/progres"
-              emoji="📈"
+              icon={TrendingUpIcon}
               title="Mes progrès"
               subtitle="Suis tes scores"
               color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100"
@@ -241,14 +253,14 @@ export default async function StudentHome() {
           <>
             <BigTile
               href="/eleve/bac"
-              emoji="📄"
+              icon={FileTextIcon}
               title="Archive Bac & BEM"
               subtitle="25 sujets officiels"
               color="bg-navy/10 dark:bg-navy/30 text-fg border-navy/20"
             />
             <BigTile
               href="/eleve/bac/countdown"
-              emoji="📅"
+              icon={CalendarIcon}
               title="Compte à rebours"
               subtitle="Jours avant le grand jour"
               color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100"
@@ -318,10 +330,10 @@ export default async function StudentHome() {
 }
 
 function BigTile({
-  href, emoji, title, subtitle, color,
+  href, icon: Icon, title, subtitle, color,
 }: {
   href: string;
-  emoji: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
   title: string;
   subtitle: string;
   color: string;
@@ -329,9 +341,11 @@ function BigTile({
   return (
     <Link
       href={href as never}
-      className={`${color} border border-line rounded-card p-4 md:p-5 flex flex-col gap-2 hover:shadow-card-hover hover:-translate-y-0.5 transition-all min-h-[120px]`}
+      className={`${color} border border-line rounded-card p-4 md:p-5 flex flex-col gap-3 hover:shadow-card-hover hover:-translate-y-0.5 transition-all min-h-[120px]`}
     >
-      <div className="text-3xl md:text-4xl">{emoji}</div>
+      <span className="w-10 h-10 rounded-[10px] bg-surface/60 inline-flex items-center justify-center">
+        <Icon size={20} />
+      </span>
       <div>
         <div className="font-bold text-sm md:text-base leading-tight">{title}</div>
         <div className="text-xs opacity-75 mt-0.5">{subtitle}</div>

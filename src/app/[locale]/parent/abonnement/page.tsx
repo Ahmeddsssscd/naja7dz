@@ -84,7 +84,7 @@ export default async function SubscriptionPage() {
             </div>
             {daysUntil(sub.expires_at) <= 7 && (
               <div className="mt-4 text-xs bg-white/10 rounded-btn px-3 py-2">
-                ⏰ Expire bientôt — pense à renouveler.
+                Expire bientôt — pense à renouveler.
               </div>
             )}
           </div>

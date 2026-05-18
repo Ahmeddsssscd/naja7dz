@@ -33,15 +33,15 @@ export async function AdminShell({
 }) {
   const t = await getTranslations("Admin");
   const NAV = [
-    { id: "overview", href: "/admin", label: t("nav_overview"), icon: "📊" },
-    { id: "users", href: "/admin/utilisateurs", label: t("nav_users"), icon: "👥" },
-    { id: "revenue", href: "/admin/revenus", label: t("nav_revenue"), icon: "💳" },
-    { id: "content", href: "/admin/contenu", label: t("nav_content"), icon: "📚" },
-    { id: "features", href: "/admin/fonctionnalites", label: "Fonctionnalités", icon: "🎛" },
-    { id: "approvals", href: "/admin/approvals", label: "Approbations", icon: "✓" },
-    { id: "moderation", href: "/admin/moderation", label: t("nav_moderation"), icon: "🛡" },
-    { id: "speeches", href: "/admin/discours", label: t("nav_speeches"), icon: "🎤" },
-    { id: "support", href: "/admin/support", label: t("nav_support"), icon: "💬" },
+    { id: "overview", href: "/admin", label: t("nav_overview") },
+    { id: "users", href: "/admin/utilisateurs", label: t("nav_users") },
+    { id: "revenue", href: "/admin/revenus", label: t("nav_revenue") },
+    { id: "content", href: "/admin/contenu", label: t("nav_content") },
+    { id: "features", href: "/admin/fonctionnalites", label: "Fonctionnalités" },
+    { id: "approvals", href: "/admin/approvals", label: "Approbations" },
+    { id: "moderation", href: "/admin/moderation", label: t("nav_moderation") },
+    { id: "speeches", href: "/admin/discours", label: t("nav_speeches") },
+    { id: "support", href: "/admin/support", label: t("nav_support") },
   ];
 
   return (
@@ -71,7 +71,13 @@ export async function AdminShell({
                 active === n.id ? "bg-navy text-white" : "text-fg-soft hover:text-fg hover:bg-surface-3"
               }`}
             >
-              <span className="text-lg">{n.icon}</span>
+              <span
+                className={`w-6 h-6 inline-flex items-center justify-center rounded-md text-[10px] font-bold ${
+                  active === n.id ? "bg-white/15 text-white" : "bg-surface-3 text-fg-soft"
+                }`}
+              >
+                {n.label.slice(0, 2).toUpperCase()}
+              </span>
               {n.label}
             </Link>
           ))}

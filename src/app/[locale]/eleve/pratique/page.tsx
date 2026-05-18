@@ -153,7 +153,6 @@ export default async function PracticeHub() {
   // ---- Sections ordered by audience --------------------------------------
   const QuizSection = () => (
     <Section
-      icon="🎯"
       title={t("section_quiz_title")}
       subtitle={t("section_quiz_subtitle")}
       stat={primary.length || fallback.length}
@@ -164,7 +163,7 @@ export default async function PracticeHub() {
         <>
           <div className="bg-pale-blue/30 dark:bg-surface-3 border border-line rounded-card p-4 mb-5 text-sm">
             <div className="font-semibold text-fg mb-1">
-              📚 {t("fallback_title", { grade: childGrade ?? "" })}
+              {t("fallback_title", { grade: childGrade ?? "" })}
             </div>
             <p className="text-fg-soft">
               {t("fallback_text", { grades: fallbackGrades.join(", ") })}
@@ -175,7 +174,6 @@ export default async function PracticeHub() {
       )}
       {!showSection && (
         <div className="bg-surface border border-line rounded-card p-6 text-center">
-          <div className="text-3xl mb-2">📚</div>
           <p className="text-fg-soft text-sm">{t("empty_text")}</p>
         </div>
       )}
@@ -200,7 +198,7 @@ export default async function PracticeHub() {
   const visibleActivities = allActivities.filter((a) => a.audiences.includes(audience));
 
   const ActivitiesSection = () => (
-    <Section icon="📝" title={t("section_activities_title")} subtitle={t("section_activities_subtitle")}>
+    <Section title={t("section_activities_title")} subtitle={t("section_activities_subtitle")}>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {visibleActivities.map((a) => (
           <ActivityTile key={a.href} {...a} />
@@ -271,7 +269,7 @@ export default async function PracticeHub() {
   };
 
   const GamesSection = () => (
-    <Section icon="🎮" title={t("section_games_title")} subtitle={t("section_games_subtitle")}>
+    <Section title={t("section_games_title")} subtitle={t("section_games_subtitle")}>
       <div className="space-y-6">
         {gamesByGroup.maths.length > 0 && (
           <SubGroup label={t("games_group_math")}>
@@ -303,7 +301,7 @@ export default async function PracticeHub() {
   );
 
   const ExamsSection = () => (
-    <Section icon="🎓" title={t("section_exams_title")} subtitle={t("section_exams_subtitle")}>
+    <Section title={t("section_exams_title")} subtitle={t("section_exams_subtitle")}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <ActivityTile
           href="/eleve/bac"
@@ -347,16 +345,16 @@ export default async function PracticeHub() {
         {!sub && (
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-6 text-sm">
             <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
-              🔒 {t("locked_title")}
+              {t("locked_title")}
             </div>
             <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">{t("locked_text")}</p>
-            <Link href="/tarifs" className="btn btn-primary btn-sm">{t("view_plans")} →</Link>
+            <Link href="/tarifs" className="btn btn-primary btn-sm">{t("view_plans")}</Link>
           </div>
         )}
         {sub && !canAccess && (
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-6 text-sm">
             <div className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
-              ⚠️ {t("tier_limit_title")}
+              {t("tier_limit_title")}
             </div>
             <p className="text-amber-900/80 dark:text-amber-100/80 mb-3">{t("tier_limit_text")}</p>
             <Link href="/parent/abonnement" className="btn btn-outline btn-sm">{t("change_plan")}</Link>
@@ -386,9 +384,8 @@ export default async function PracticeHub() {
 /* ============================================================ */
 
 function Section({
-  icon, title, subtitle, stat, statLabel, children,
+  title, subtitle, stat, statLabel, children,
 }: {
-  icon: string;
   title: string;
   subtitle?: string;
   stat?: number;
@@ -399,10 +396,7 @@ function Section({
     <section>
       <div className="flex items-baseline justify-between mb-3 md:mb-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-fg flex items-center gap-2">
-            <span className="text-2xl">{icon}</span>
-            {title}
-          </h2>
+          <h2 className="text-xl md:text-2xl font-bold text-fg">{title}</h2>
           {subtitle && <p className="text-fg-soft text-sm mt-1">{subtitle}</p>}
         </div>
         {stat !== undefined && stat > 0 && (
@@ -433,10 +427,11 @@ function SubGroup({ label, children }: { label: string; children: React.ReactNod
 }
 
 function ActivityTile({
-  href, emoji, title, subtitle, color, compact = false,
+  href, title, subtitle, color, compact = false,
 }: {
   href: string;
-  emoji: string;
+  /** kept on the source for backwards compat but not rendered (no emojis). */
+  emoji?: string;
   title: string;
   subtitle?: string;
   color: string;
@@ -447,7 +442,6 @@ function ActivityTile({
       href={href as never}
       className={`${color} border rounded-card p-4 ${compact ? "" : "md:p-5"} flex flex-col justify-between hover:shadow-card-hover hover:-translate-y-0.5 transition-all min-h-[110px] active:scale-[0.98]`}
     >
-      <div className={compact ? "text-3xl" : "text-4xl mb-2"}>{emoji}</div>
       <div>
         <div className={`font-bold text-fg leading-tight ${compact ? "text-sm" : "text-base"}`}>{title}</div>
         {!compact && subtitle && (
@@ -458,23 +452,22 @@ function ActivityTile({
   );
 }
 
-// Per-subject visual theme: icon + accent color. Replaces the uniform gold
-// bullseye that was on every chapter card. Match by lowercase substring of
-// the FR subject name so it works across grades.
+// Per-subject visual theme: letter monogram badge + accent color. Match by
+// lowercase substring of the FR subject name so it works across grades.
 function subjectTheme(name: string): {
-  emoji: string; bgClass: string; ringClass: string; iconClass: string;
+  abbr: string; bgClass: string; ringClass: string; iconClass: string;
 } {
   const n = name.toLowerCase();
-  if (n.includes("math")) return { emoji: "🔢", bgClass: "bg-blue-100 dark:bg-blue-950/40", ringClass: "ring-blue-300 dark:ring-blue-800", iconClass: "text-blue-700 dark:text-blue-300" };
-  if (n.startsWith("arabe") || n.startsWith("اللغة العر")) return { emoji: "✍️", bgClass: "bg-amber-100 dark:bg-amber-950/40", ringClass: "ring-amber-300 dark:ring-amber-800", iconClass: "text-amber-700 dark:text-amber-300" };
-  if (n.startsWith("français") || n.startsWith("francais")) return { emoji: "📖", bgClass: "bg-rose-100 dark:bg-rose-950/40", ringClass: "ring-rose-300 dark:ring-rose-800", iconClass: "text-rose-700 dark:text-rose-300" };
-  if (n.startsWith("anglais") || n.startsWith("english")) return { emoji: "🇬🇧", bgClass: "bg-indigo-100 dark:bg-indigo-950/40", ringClass: "ring-indigo-300 dark:ring-indigo-800", iconClass: "text-indigo-700 dark:text-indigo-300" };
-  if (n.startsWith("éveil") || n.startsWith("eveil")) return { emoji: "🔬", bgClass: "bg-teal-100 dark:bg-teal-950/40", ringClass: "ring-teal-300 dark:ring-teal-800", iconClass: "text-teal-700 dark:text-teal-300" };
-  if (n.startsWith("sciences naturelles") || n.includes("svt")) return { emoji: "🧬", bgClass: "bg-emerald-100 dark:bg-emerald-950/40", ringClass: "ring-emerald-300 dark:ring-emerald-800", iconClass: "text-emerald-700 dark:text-emerald-300" };
-  if (n.startsWith("sciences physiques") || n.startsWith("physique")) return { emoji: "⚛️", bgClass: "bg-orange-100 dark:bg-orange-950/40", ringClass: "ring-orange-300 dark:ring-orange-800", iconClass: "text-orange-700 dark:text-orange-300" };
-  if (n.startsWith("histoire")) return { emoji: "🏛️", bgClass: "bg-stone-100 dark:bg-stone-900/60", ringClass: "ring-stone-300 dark:ring-stone-700", iconClass: "text-stone-700 dark:text-stone-300" };
-  if (n.startsWith("philo")) return { emoji: "💭", bgClass: "bg-purple-100 dark:bg-purple-950/40", ringClass: "ring-purple-300 dark:ring-purple-800", iconClass: "text-purple-700 dark:text-purple-300" };
-  return { emoji: "📚", bgClass: "bg-pale-blue dark:bg-surface-3", ringClass: "ring-line", iconClass: "text-navy dark:text-fg" };
+  if (n.includes("math")) return { abbr: "MA", bgClass: "bg-blue-100 dark:bg-blue-950/40", ringClass: "ring-blue-300 dark:ring-blue-800", iconClass: "text-blue-700 dark:text-blue-300" };
+  if (n.startsWith("arabe") || n.startsWith("اللغة العر")) return { abbr: "AR", bgClass: "bg-amber-100 dark:bg-amber-950/40", ringClass: "ring-amber-300 dark:ring-amber-800", iconClass: "text-amber-700 dark:text-amber-300" };
+  if (n.startsWith("français") || n.startsWith("francais")) return { abbr: "FR", bgClass: "bg-rose-100 dark:bg-rose-950/40", ringClass: "ring-rose-300 dark:ring-rose-800", iconClass: "text-rose-700 dark:text-rose-300" };
+  if (n.startsWith("anglais") || n.startsWith("english")) return { abbr: "EN", bgClass: "bg-indigo-100 dark:bg-indigo-950/40", ringClass: "ring-indigo-300 dark:ring-indigo-800", iconClass: "text-indigo-700 dark:text-indigo-300" };
+  if (n.startsWith("éveil") || n.startsWith("eveil")) return { abbr: "EV", bgClass: "bg-teal-100 dark:bg-teal-950/40", ringClass: "ring-teal-300 dark:ring-teal-800", iconClass: "text-teal-700 dark:text-teal-300" };
+  if (n.startsWith("sciences naturelles") || n.includes("svt")) return { abbr: "SN", bgClass: "bg-emerald-100 dark:bg-emerald-950/40", ringClass: "ring-emerald-300 dark:ring-emerald-800", iconClass: "text-emerald-700 dark:text-emerald-300" };
+  if (n.startsWith("sciences physiques") || n.startsWith("physique")) return { abbr: "PH", bgClass: "bg-orange-100 dark:bg-orange-950/40", ringClass: "ring-orange-300 dark:ring-orange-800", iconClass: "text-orange-700 dark:text-orange-300" };
+  if (n.startsWith("histoire")) return { abbr: "HG", bgClass: "bg-stone-100 dark:bg-stone-900/60", ringClass: "ring-stone-300 dark:ring-stone-700", iconClass: "text-stone-700 dark:text-stone-300" };
+  if (n.startsWith("philo")) return { abbr: "PI", bgClass: "bg-purple-100 dark:bg-purple-950/40", ringClass: "ring-purple-300 dark:ring-purple-800", iconClass: "text-purple-700 dark:text-purple-300" };
+  return { abbr: name.slice(0, 2).toUpperCase(), bgClass: "bg-pale-blue dark:bg-surface-3", ringClass: "ring-line", iconClass: "text-navy dark:text-fg" };
 }
 
 function SubjectGroups({
@@ -493,9 +486,11 @@ function SubjectGroups({
         const totalQ = g.chapters.reduce((s, c) => s + c.questionCount, 0);
         return (
           <section key={g.subject_id} className="relative">
-            {/* Subject header — colored card with emoji + chapter count */}
+            {/* Subject header — colored card with monogram badge + chapter count */}
             <header className={`${theme.bgClass} ring-1 ${theme.ringClass} rounded-card p-3 md:p-4 flex items-center gap-3 mb-3`}>
-              <span className="text-3xl md:text-4xl flex-shrink-0">{theme.emoji}</span>
+              <span className={`w-10 h-10 md:w-11 md:h-11 rounded-[10px] bg-surface text-xs md:text-sm font-bold flex items-center justify-center flex-shrink-0 ${theme.iconClass} ring-1 ${theme.ringClass}`}>
+                {theme.abbr}
+              </span>
               <div className="flex-1 min-w-0">
                 <h3 className={`text-base md:text-lg font-bold ${theme.iconClass}`}>{g.name}</h3>
                 <p className="text-xs text-fg-soft">

@@ -40,42 +40,36 @@ export default async function ContentPage() {
           title="Matières"
           subtitle="Gère les matières par niveau (1AP → 3AS)"
           count={subjectsCount}
-          emoji="📚"
         />
         <ContentCard
           href="/admin/contenu/chapitres"
           title="Chapitres"
           subtitle="Découpe chaque matière en chapitres"
           count={chaptersCount}
-          emoji="📖"
         />
         <ContentCard
           href="/admin/contenu/quiz-questions"
           title="Questions de quiz"
           subtitle="Banque de questions par chapitre"
           count={quizCount}
-          emoji="❓"
         />
         <ContentCard
           href="/admin/contenu/examens"
           title="Sujets d'examens"
           subtitle="Archive Bac & BEM avec PDF"
           count={examsCount}
-          emoji="📝"
         />
         <ContentCard
           href="/admin/contenu/writing-prompts"
           title="Sujets de rédaction"
           subtitle="Pour la page « Rédaction du jour »"
           count={writingCount}
-          emoji="✍️"
         />
         <ContentCard
           href="/admin/contenu/adab"
           title="Bonnes manières"
           subtitle="Leçons d'adab pour les petits"
           count={adabCount}
-          emoji="🤲"
         />
       </div>
     </AdminShell>
@@ -83,15 +77,14 @@ export default async function ContentPage() {
 }
 
 function ContentCard({
-  href, title, subtitle, count, emoji,
-}: { href: string; title: string; subtitle: string; count: number; emoji: string }) {
+  href, title, subtitle, count,
+}: { href: string; title: string; subtitle: string; count: number }) {
   return (
     <Link
       href={href as never}
       className="bg-surface border border-line rounded-card p-6 hover:border-gold hover:shadow-card-hover transition-all group"
     >
       <div className="flex items-start justify-between mb-3">
-        <span className="text-3xl">{emoji}</span>
         <span className="bg-surface-2 text-fg-soft text-xs font-bold px-2 py-1 rounded-full">
           {count}
         </span>

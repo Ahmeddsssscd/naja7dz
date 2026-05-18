@@ -207,8 +207,12 @@ export function QuizPlayer({
       <footer className="fixed bottom-0 inset-x-0 bg-surface border-t border-line p-4">
         <div className="max-w-2xl mx-auto flex justify-between gap-3">
           <div className="flex gap-2">
-            <button className="w-11 h-11 rounded-full bg-cream dark:bg-surface-3 text-fg" title={t("hint_aria")} aria-label={t("hint_aria")}>💡</button>
-            <button className="w-11 h-11 rounded-full bg-cream dark:bg-surface-3 text-fg" title={t("audio_aria")} aria-label={t("audio_aria")}>🔊</button>
+            <button className="w-11 h-11 rounded-full bg-cream dark:bg-surface-3 text-fg flex items-center justify-center" title={t("hint_aria")} aria-label={t("hint_aria")}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M2 12a10 10 0 1 1 20 0c0 3.5-2 5-3 6H5c-1-1-3-2.5-3-6z"/></svg>
+            </button>
+            <button className="w-11 h-11 rounded-full bg-cream dark:bg-surface-3 text-fg flex items-center justify-center" title={t("audio_aria")} aria-label={t("audio_aria")}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            </button>
           </div>
           <button
             onClick={onNext}

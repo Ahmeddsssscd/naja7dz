@@ -59,7 +59,7 @@ export function PhotoHelper() {
               className="hidden"
             />
             <button onClick={onPick} className="btn btn-primary btn-lg">
-              📷 Prendre une photo
+              Prendre une photo
             </button>
           </div>
         )}

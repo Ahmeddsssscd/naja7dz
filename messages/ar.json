@@ -493,7 +493,7 @@
   },
   "Student": {
     "default_name": "طالب",
-    "streak_days": "🔥 {days} يوم",
+    "streak_days": "{days} يوماً متتالياً",
     "nav_home": "الرئيسية",
     "nav_subjects": "المواد",
     "nav_practice": "تمرّن",
@@ -729,7 +729,7 @@
     "audio_aria": "صوت",
     "next": "التالي ←",
     "finish": "إنهاء",
-    "done_title": "انتهى الاختبار 🎉",
+    "done_title": "انتهى الاختبار",
     "done_lead": "حصلت على",
     "done_correct": "{score} / {total} إجابات صحيحة",
     "back_home": "الرئيسية",
@@ -1024,8 +1024,8 @@
   },
   "Onboarding": {
     "step_label": "الخطوة {current} من {total}",
-    "s1_welcome_named": "أهلاً {name} 👋",
-    "s1_welcome_default": "أهلاً بك في نجاح 👋",
+    "s1_welcome_named": "أهلاً {name}",
+    "s1_welcome_default": "أهلاً بك في نجاح",
     "s1_lead": "سنُعدّ حسابك في دقيقتين. يمكنك تعديل خياراتك لاحقاً من فضائك الخاص في أيّ وقت.",
     "s1_cta": "ابدأ ←",
     "s2_title": "طفلك الأوّل",
@@ -1039,7 +1039,7 @@
     "s2_submit": "متابعة",
     "s2_submitting": "جارٍ الإنشاء…",
     "s2_back": "→ رجوع",
-    "s3_title": "كلّ شيء جاهز 🎉",
+    "s3_title": "كلّ شيء جاهز",
     "s3_lead": "يمكنك الآن استكشاف فضائك، إضافة أطفال آخرين، أو ترك طفلك يبدأ تمرينه الأوّل.",
     "s3_cta": "اكتشف فضائي ←",
     "setup_required": "إعداد قاعدة البيانات غير مكتمل. طبّق database/SETUP.sql في Supabase.",
@@ -1099,7 +1099,7 @@
   },
   "ParentHome": {
     "page_title": "فضاء الوالدين",
-    "greeting": "مرحباً {name} 👋",
+    "greeting": "مرحباً {name}",
     "subtitle": "إليك ملخّصاً لأسبوع أطفالك.",
     "kpi_study_time": "وقت الدراسة",
     "kpi_quizzes": "اختبارات مكتملة",
@@ -1533,6 +1533,6 @@
     "legal_loi": "القانون 18-07",
     "legal_mentions": "بيانات قانونية",
     "rights": "© 2026 نجاح. جميع الحقوق محفوظة.",
-    "made_in": "صُنع بـ ❤️ في الجزائر"
+    "made_in": "صُنع في الجزائر"
   }
 }

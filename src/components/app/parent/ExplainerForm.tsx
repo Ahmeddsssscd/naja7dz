@@ -108,7 +108,7 @@ export function ExplainerForm() {
         <div className="space-y-3">
           {/* FR card */}
           <div className="bg-surface rounded-3xl border-2 border-gold p-5">
-            <div className="text-[10px] uppercase tracking-wider font-bold text-gold mb-2">🇫🇷 En français</div>
+            <div className="text-[10px] uppercase tracking-wider font-bold text-gold mb-2">FR · En français</div>
             <ol className="space-y-2.5 text-sm md:text-base text-navy list-decimal list-inside">
               {reply.fr.map((step, i) => <li key={i} className="leading-relaxed">{step}</li>)}
             </ol>
@@ -120,7 +120,7 @@ export function ExplainerForm() {
 
           {/* AR card */}
           <div className="bg-surface rounded-3xl border-2 border-emerald-400 p-5" dir="rtl">
-            <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 mb-2">🇩🇿 بالعربية</div>
+            <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 mb-2">AR · بالعربية</div>
             <ol className="space-y-2.5 text-sm md:text-base text-navy list-decimal list-inside">
               {reply.ar.map((step, i) => <li key={i} className="leading-relaxed">{step}</li>)}
             </ol>

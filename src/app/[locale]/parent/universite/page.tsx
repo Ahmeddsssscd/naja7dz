@@ -58,7 +58,7 @@ export default async function ParentUniversitePage() {
             href="/fac"
             className="bg-navy text-white rounded-2xl p-5 flex flex-col gap-2 hover:bg-navy/90 transition group"
           >
-            <span className="text-2xl">🎓</span>
+            <span className="text-[11px] font-bold tracking-wider text-gold uppercase">Guide</span>
             <div className="font-bold text-base">
               {isAr ? "دليل الباكالوريا" : "Guide DZ-Fac"}
             </div>
@@ -71,7 +71,7 @@ export default async function ParentUniversitePage() {
             href="/fac/diagnostic"
             className="bg-gold/20 dark:bg-gold/10 border border-gold/30 rounded-2xl p-5 flex flex-col gap-2 hover:bg-gold/30 transition group"
           >
-            <span className="text-2xl">🔍</span>
+            <span className="text-[11px] font-bold tracking-wider text-gold uppercase">Diagnostic</span>
             <div className="font-bold text-base text-fg">
               {isAr ? "التشخيص المهني" : "Diagnostic orientation"}
             </div>
@@ -84,7 +84,7 @@ export default async function ParentUniversitePage() {
             href="/fac/universites"
             className="bg-surface border border-line rounded-2xl p-5 flex flex-col gap-2 hover:bg-surface-3 transition group"
           >
-            <span className="text-2xl">🏫</span>
+            <span className="text-[11px] font-bold tracking-wider text-fg-soft uppercase">Annuaire</span>
             <div className="font-bold text-base text-fg">
               {isAr ? "كل الجامعات" : "Toutes les universités"}
             </div>

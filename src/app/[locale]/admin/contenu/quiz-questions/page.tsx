@@ -45,7 +45,7 @@ export default async function AdminQuizQuestionsPage() {
 
       {!chapterOptions.length && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 rounded-card p-4 mb-6 text-sm">
-          ⚠️ Aucun chapitre.{" "}
+          Aucun chapitre.{" "}
           <Link href="/admin/contenu/chapitres" className="underline font-semibold">
             Crée d&apos;abord les chapitres
           </Link>

@@ -65,8 +65,8 @@ export default async function LandingPage() {
       <Hero auth={auth} />
       <TrustStrip />
       <HowItWorks />
+      <ParcoursTeaser />
       <Features />
-      <BacTeaser />
       <Pricing />
       <FAQ />
       <FinalCTA auth={auth} />
@@ -309,14 +309,14 @@ function Features() {
     { icon: ChartIcon, title: t("f6_title"), text: t("f6_text") },
   ];
   return (
-    <section id="features" className="py-24 md:py-26 bg-surface-2">
+    <section id="features" className="py-24 md:py-26 bg-surface">
       <div className="container-x">
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((it, i) => (
             <article
               key={i}
-              className="bg-surface border border-line rounded-card p-7 hover:shadow-card-hover hover:-translate-y-0.5 hover:border-transparent transition-all duration-200"
+              className="bg-surface-2 border border-line rounded-card p-7 hover:shadow-card-hover hover:-translate-y-0.5 hover:border-transparent transition-all duration-200"
             >
               <div className="w-11 h-11 rounded-[10px] bg-surface-3 text-fg inline-flex items-center justify-center mb-5">
                 <it.icon size={24} />
@@ -331,48 +331,68 @@ function Features() {
   );
 }
 
-/* =============== BAC TEASER =============== */
-const BAC_SUBJECTS = [
-  { abbr: 'MA', color: 'bg-blue-600 text-white',    label: 'Mathématiques',    sub: '6 ans · 4 filières' },
-  { abbr: 'PH', color: 'bg-violet-600 text-white',  label: 'Sciences physiques', sub: '6 ans · 3 filières' },
-  { abbr: 'ع',  color: 'bg-teal-600 text-white',    label: 'Langue arabe',     sub: '6 ans · 6 filières' },
-  { abbr: 'FR', color: 'bg-rose-600 text-white',    label: 'Français',         sub: '6 ans · 6 filières' },
-  { abbr: 'SN', color: 'bg-emerald-600 text-white', label: 'Sciences nat.',    sub: '6 ans · 1 filière'  },
-  { abbr: 'HG', color: 'bg-amber-600 text-white',   label: 'Histoire-Géo',     sub: '6 ans · 3 filières' },
-];
-
-function BacTeaser() {
+/* =============== PARCOURS (BAC + FAC) =============== */
+function ParcoursTeaser() {
   return (
-    <section className="py-16 md:py-20 bg-surface border-y border-line">
+    <section className="py-24 md:py-26 bg-surface-2">
       <div className="container-x">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
-          {/* Left: text */}
-          <div>
-            <span className="eyebrow mb-3 block">BAC Algérie</span>
-            <h2 className="text-[clamp(26px,3.5vw,36px)] font-bold text-fg leading-tight tracking-tight mb-4">
-              Sujets &amp; corrections BAC<br />
-              <span className="text-gold">2019 — 2024</span>
-            </h2>
-            <p className="text-fg-soft text-base mb-6 max-w-sm">
-              Accède aux vraies épreuves du baccalauréat algérien — toutes filières, toutes matières — et entraîne-toi avec les corrections officielles.
+        <SectionHead
+          eyebrow="Parcours"
+          title="Du baccalauréat à l'université"
+          subtitle="Najaح accompagne les lycéens vers le BAC et les bacheliers vers leur orientation universitaire."
+        />
+        <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+          {/* BAC card */}
+          <article className="bg-surface-2 border border-line rounded-card p-8 flex flex-col hover:shadow-card-hover hover:border-transparent transition-all duration-200">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="w-11 h-11 rounded-[10px] bg-navy text-white inline-flex items-center justify-center font-bold text-sm tracking-wide">
+                BAC
+              </span>
+              <span className="eyebrow">Lycéens</span>
+            </div>
+            <h3 className="text-xl font-semibold text-fg mb-2 leading-tight">
+              Annales BAC Algérie · 2019 — 2024
+            </h3>
+            <p className="text-base text-fg-soft mb-6 flex-1">
+              Sujets et corrections officiels, toutes filières, toutes matières. Mode examen blanc chronométré pour s'entraîner dans les conditions réelles.
             </p>
-            <Link href="/bac" className="btn btn-primary">
-              Consulter les annales →
+            <div className="flex flex-wrap gap-1.5 mb-7">
+              {["Mathématiques", "Sciences", "Français", "Arabe", "Histoire-Géo", "Philosophie"].map((s) => (
+                <span key={s} className="text-xs font-medium text-fg-soft bg-surface border border-line rounded-full px-2.5 py-1">
+                  {s}
+                </span>
+              ))}
+            </div>
+            <Link href="/bac" className="btn btn-outline self-start">
+              Voir les annales BAC
             </Link>
-          </div>
+          </article>
 
-          {/* Right: subject grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {BAC_SUBJECTS.map(({ abbr, color, label, sub }) => (
-              <div key={label} className="bg-surface-2 border border-line rounded-card p-4 flex items-start gap-3 hover:shadow-card hover:border-transparent transition-all">
-                <span className={`w-8 h-8 rounded-md text-[11px] font-bold flex items-center justify-center flex-shrink-0 ${color}`}>{abbr}</span>
-                <div>
-                  <p className="text-sm font-semibold text-fg leading-tight">{label}</p>
-                  <p className="text-xs text-fg-faint mt-0.5">{sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Fac card */}
+          <article className="bg-surface-2 border border-line rounded-card p-8 flex flex-col hover:shadow-card-hover hover:border-transparent transition-all duration-200">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="w-11 h-11 rounded-[10px] bg-gold text-navy inline-flex items-center justify-center font-bold text-sm tracking-wide">
+                FAC
+              </span>
+              <span className="eyebrow">Bacheliers &amp; étudiants</span>
+            </div>
+            <h3 className="text-xl font-semibold text-fg mb-2 leading-tight">
+              Orientation &amp; vie universitaire
+            </h3>
+            <p className="text-base text-fg-soft mb-6 flex-1">
+              Diagnostic d'orientation, catalogue des universités algériennes et accompagnement par des helpers étudiants pour réussir ta première année.
+            </p>
+            <div className="flex flex-wrap gap-1.5 mb-7">
+              {["Diagnostic", "Universités", "Helpers", "Inscriptions", "Bourses", "Logement"].map((s) => (
+                <span key={s} className="text-xs font-medium text-fg-soft bg-surface border border-line rounded-full px-2.5 py-1">
+                  {s}
+                </span>
+              ))}
+            </div>
+            <Link href="/fac" className="btn btn-outline self-start">
+              Découvrir le pôle Fac
+            </Link>
+          </article>
         </div>
       </div>
     </section>
@@ -383,7 +403,7 @@ function BacTeaser() {
 function Pricing() {
   const t = useTranslations("Pricing");
   return (
-    <section id="pricing" className="py-24 md:py-26 bg-surface">
+    <section id="pricing" className="py-24 md:py-26 bg-surface-2">
       <div className="container-x">
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -522,7 +542,7 @@ function FAQ() {
     a: t(`a${i}` as "a1"),
   }));
   return (
-    <section id="faq" className="py-24 md:py-26 bg-surface-2">
+    <section id="faq" className="py-24 md:py-26 bg-surface">
       <div className="container-x">
         <SectionHead eyebrow={t("eyebrow")} title={t("title")} />
         <div className="max-w-3xl mx-auto">

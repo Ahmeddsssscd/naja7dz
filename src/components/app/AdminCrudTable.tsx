@@ -227,10 +227,10 @@ function RowOrEdit<R extends { id: string }>({
       ))}
       <td className="p-4 text-end whitespace-nowrap">
         <button onClick={onEdit} disabled={disabled} className="text-fg-soft hover:text-fg text-xs me-3">
-          ✏️ Modifier
+          Modifier
         </button>
         <button onClick={onDelete} disabled={disabled} className="text-red-500 hover:text-red-600 text-xs">
-          🗑 Supprimer
+          Supprimer
         </button>
       </td>
     </tr>

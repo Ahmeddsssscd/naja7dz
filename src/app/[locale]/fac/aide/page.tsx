@@ -258,7 +258,7 @@ function HelperCard({ helper: h, isAr }: { helper: Helper; isAr: boolean }) {
 
       <div className="flex items-center justify-between border-t border-line pt-3 mt-auto text-xs">
         <div className="text-fg-soft">
-          {h.responds_within && <span>⌚ {h.responds_within}</span>}
+          {h.responds_within && <span>{h.responds_within}</span>}
         </div>
         <span className="text-fg font-semibold inline-flex items-center gap-1">
           {isAr ? "اطلب" : "Demander"} <ArrowRightIcon size={12} />

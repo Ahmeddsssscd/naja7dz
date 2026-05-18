@@ -215,7 +215,7 @@ function ChildCard({
           href="/eleve/pratique"
           className="btn btn-primary btn-sm flex-1 justify-center"
         >
-          🎯 {t("child_practice")}
+          {t("child_practice")}
         </Link>
         <Link
           href={`/parent/enfants/${child.id}` as never}

@@ -16,7 +16,6 @@ export const metadata = { title: "Catalogue Najaح" };
 interface Stat {
   label: string;
   value: number;
-  emoji: string;
   href?: string;
   hint?: string;
 }
@@ -57,25 +56,25 @@ export default async function CataloguePage() {
   const totalSubjects = 9; // Math, Arabe, Français, Anglais, Sciences nat, Sciences phys, Histoire-géo, Éveil, Philo
 
   const subjectStats: Stat[] = [
-    { emoji: "📚", label: t("subjects"), value: totalSubjects, hint: t("subjects_hint") },
-    { emoji: "📖", label: t("chapters"), value: chaptersR.count ?? 0, hint: t("chapters_hint") },
-    { emoji: "❓", label: t("questions"), value: questionsR.count ?? 0, hint: t("questions_hint") },
+    { label: t("subjects"), value: totalSubjects, hint: t("subjects_hint") },
+    { label: t("chapters"), value: chaptersR.count ?? 0, hint: t("chapters_hint") },
+    { label: t("questions"), value: questionsR.count ?? 0, hint: t("questions_hint") },
   ];
 
   const kidsStats: Stat[] = [
-    { emoji: "🎮", label: t("games"), value: totalGames, href: "/eleve/pratique", hint: t("games_hint") },
-    { emoji: "📝", label: t("activities"), value: totalActivities, href: "/eleve/pratique", hint: t("activities_hint") },
-    { emoji: "📖", label: t("stories"), value: storiesR.count ?? 0, href: "/petits/lecture", hint: t("stories_hint") },
-    { emoji: "🤔", label: t("riddles"), value: riddlesR.count ?? 0, hint: t("riddles_hint") },
-    { emoji: "📿", label: t("surahs"), value: suraR.count ?? 0, href: "/petits/quran", hint: t("surahs_hint") },
-    { emoji: "🤲", label: t("adab"), value: adabR.count ?? 0, href: "/petits/monde-reel/adab", hint: t("adab_hint") },
-    { emoji: "🇩🇿", label: t("wilayas"), value: wilayasR.count ?? 0, href: "/petits/monde-reel/wilayas", hint: t("wilayas_hint") },
+    { label: t("games"), value: totalGames, href: "/eleve/pratique", hint: t("games_hint") },
+    { label: t("activities"), value: totalActivities, href: "/eleve/pratique", hint: t("activities_hint") },
+    { label: t("stories"), value: storiesR.count ?? 0, href: "/petits/lecture", hint: t("stories_hint") },
+    { label: t("riddles"), value: riddlesR.count ?? 0, hint: t("riddles_hint") },
+    { label: t("surahs"), value: suraR.count ?? 0, href: "/petits/quran", hint: t("surahs_hint") },
+    { label: t("adab"), value: adabR.count ?? 0, href: "/petits/monde-reel/adab", hint: t("adab_hint") },
+    { label: t("wilayas"), value: wilayasR.count ?? 0, href: "/petits/monde-reel/wilayas", hint: t("wilayas_hint") },
   ];
 
   const bacStats: Stat[] = [
-    { emoji: "📄", label: t("exam_papers"), value: examsR.count ?? 0, href: "/eleve/bac", hint: t("exam_hint") },
-    { emoji: "✍️", label: t("writing_prompts"), value: writingR.count ?? 0, href: "/eleve/redaction", hint: t("writing_hint") },
-    { emoji: "🎤", label: t("speeches"), value: speechesR.count ?? 0, hint: t("speeches_hint") },
+    { label: t("exam_papers"), value: examsR.count ?? 0, href: "/eleve/bac", hint: t("exam_hint") },
+    { label: t("writing_prompts"), value: writingR.count ?? 0, href: "/eleve/redaction", hint: t("writing_hint") },
+    { label: t("speeches"), value: speechesR.count ?? 0, hint: t("speeches_hint") },
   ];
 
   const total =
@@ -111,21 +110,21 @@ export default async function CataloguePage() {
         </div>
 
         {/* Apprentissage scolaire (subjects + chapters + questions) */}
-        <h2 className="text-lg md:text-xl font-bold text-fg mb-3">📚 {t("section_school")}</h2>
+        <h2 className="text-lg md:text-xl font-bold text-fg mb-3">{t("section_school")}</h2>
         <p className="text-fg-soft text-sm mb-4">{t("section_school_subtitle")}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
           {subjectStats.map((s) => <StatCard key={s.label} stat={s} />)}
         </div>
 
         {/* Univers des petits */}
-        <h2 className="text-lg md:text-xl font-bold text-fg mb-3">🦊 {t("section_kids")}</h2>
+        <h2 className="text-lg md:text-xl font-bold text-fg mb-3">{t("section_kids")}</h2>
         <p className="text-fg-soft text-sm mb-4">{t("section_kids_subtitle")}</p>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
           {kidsStats.map((s) => <StatCard key={s.label} stat={s} />)}
         </div>
 
         {/* Bac & secondaire */}
-        <h2 className="text-lg md:text-xl font-bold text-fg mb-3">🎓 {t("section_bac")}</h2>
+        <h2 className="text-lg md:text-xl font-bold text-fg mb-3">{t("section_bac")}</h2>
         <p className="text-fg-soft text-sm mb-4">{t("section_bac_subtitle")}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
           {bacStats.map((s) => <StatCard key={s.label} stat={s} />)}
@@ -133,7 +132,7 @@ export default async function CataloguePage() {
 
         {/* Highlight: 5 sub-groups of games */}
         <div className="bg-surface border border-line rounded-card p-6 mb-10">
-          <h3 className="text-base font-bold text-fg mb-3">🎮 {t("games_breakdown_title")}</h3>
+          <h3 className="text-base font-bold text-fg mb-3">{t("games_breakdown_title")}</h3>
           <p className="text-fg-soft text-sm mb-4">{t("games_breakdown_subtitle")}</p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
             <div><div className="font-semibold text-fg">{t("group_math")}</div><div className="text-fg-soft text-xs">7 jeux</div></div>
@@ -147,13 +146,13 @@ export default async function CataloguePage() {
         {/* Quick CTAs */}
         <div className="flex flex-wrap gap-3">
           <Link href="/eleve/pratique" className="btn btn-primary">
-            🎯 {t("cta_practice")}
+            {t("cta_practice")}
           </Link>
           <Link href="/petits" className="btn btn-outline">
-            🦊 {t("cta_kids")}
+            {t("cta_kids")}
           </Link>
           <Link href="/parent/abonnement" className="btn btn-outline">
-            💳 {t("cta_sub")}
+            {t("cta_sub")}
           </Link>
         </div>
       </div>
@@ -164,7 +163,6 @@ export default async function CataloguePage() {
 function StatCard({ stat }: { stat: Stat }) {
   const inner = (
     <>
-      <div className="text-3xl mb-2">{stat.emoji}</div>
       <div className="text-3xl md:text-4xl font-bold text-fg leading-none mb-1">
         {stat.value.toLocaleString("fr-DZ")}
       </div>

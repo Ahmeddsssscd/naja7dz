@@ -195,10 +195,10 @@ export function QuizQuestionsCrud({
                 </ul>
                 <div className="flex justify-end gap-3 mt-3">
                   <button onClick={() => { setEditingId(r.id); setAdding(false); }} className="text-fg-soft hover:text-fg text-xs">
-                    ✏️ Modifier
+                    Modifier
                   </button>
                   <button onClick={() => onDelete(r.id)} className="text-red-500 hover:text-red-600 text-xs">
-                    🗑 Supprimer
+                    Supprimer
                   </button>
                 </div>
               </div>

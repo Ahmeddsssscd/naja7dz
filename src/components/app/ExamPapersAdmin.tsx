@@ -155,7 +155,7 @@ export function ExamPapersAdmin({ initialRows }: { initialRows: ExamPaperRow[] }
                   </button>
                 </td>
                 <td className="p-4 text-end">
-                  <button onClick={() => remove(r.id)} className="text-red-500 hover:text-red-600 text-xs">🗑</button>
+                  <button onClick={() => remove(r.id)} className="text-red-500 hover:text-red-600 text-xs">Suppr</button>
                 </td>
               </tr>
             ))}

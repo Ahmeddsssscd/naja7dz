@@ -62,7 +62,6 @@ export function MockExamMode({
     return (
       <div className="min-h-screen bg-surface-2 flex items-center justify-center px-5">
         <div className="bg-surface border-2 border-amber-500 rounded-modal p-8 max-w-md w-full">
-          <div className="text-4xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-fg mb-3">Mode examen blanc — bloqué</h1>
           <p className="text-fg-soft mb-5 text-sm leading-relaxed">
             Tu es sur le point de commencer un examen blanc en mode <strong className="text-fg">bloqué</strong>.
@@ -101,7 +100,6 @@ export function MockExamMode({
     return (
       <div className="min-h-screen bg-surface-2 flex items-center justify-center px-5">
         <div className="bg-surface rounded-modal p-8 max-w-md w-full text-center border border-line">
-          <div className="text-5xl mb-4">📝</div>
           <h1 className="text-2xl font-bold text-fg mb-2">Examen terminé</h1>
           <p className="text-fg-soft mb-6">Tu as répondu à {answered} / {questionCount} questions.</p>
           <div className="text-5xl font-bold text-navy dark:text-cream mb-1">{pct}%</div>
@@ -125,7 +123,7 @@ export function MockExamMode({
       <header className="h-14 border-b border-line flex items-center justify-between px-5 bg-surface-2">
         <div className="text-sm text-fg-soft truncate">{examTitle}</div>
         <div className={`text-base font-bold tabular-nums ${isLowTime ? "text-red-500 animate-pulse" : "text-fg"}`}>
-          ⏱ {minutes}:{seconds.toString().padStart(2, "0")}
+          {minutes}:{seconds.toString().padStart(2, "0")}
         </div>
       </header>
 

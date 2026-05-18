@@ -57,7 +57,7 @@ export function SignupWaitlistForm() {
         <span className="inline-flex w-14 h-14 rounded-full bg-gold text-navy items-center justify-center mb-4">
           <CheckIcon size={28} />
         </span>
-        <h3 className="text-lg font-semibold text-fg mb-2">Tu es sur la liste 🎉</h3>
+        <h3 className="text-lg font-semibold text-fg mb-2">Tu es sur la liste</h3>
         <p className="text-fg-soft text-sm">
           On t&apos;envoie un email à <strong className="text-fg">{form.email}</strong> dès
           que l&apos;inscription complète ouvre. À très vite.

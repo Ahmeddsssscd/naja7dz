@@ -54,7 +54,6 @@ export function QuizRunner({ title, chapterId, childId, locale }: Props) {
     return (
       <div className="min-h-screen bg-surface-2 flex items-center justify-center px-5">
         <div className="bg-surface border border-line rounded-modal p-8 max-w-md w-full text-center">
-          <div className="text-4xl mb-4">📚</div>
           <h2 className="text-xl font-bold text-fg mb-2">Quiz à venir</h2>
           <p className="text-fg-soft text-sm mb-6">{error}</p>
           <button onClick={() => router.back()} className="btn btn-outline">
@@ -88,7 +87,6 @@ export function QuizRunner({ title, chapterId, childId, locale }: Props) {
     return (
       <div className="min-h-screen bg-surface-2 flex items-center justify-center px-5">
         <div className="bg-surface border border-line rounded-modal p-8 max-w-md w-full text-center">
-          <div className="text-4xl mb-4">📚</div>
           <h2 className="text-xl font-bold text-fg mb-2">Quiz à venir</h2>
           <Link href="/eleve" className="btn btn-outline mt-4 inline-block">{t("back_home")}</Link>
         </div>
