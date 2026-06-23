@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "@/i18n/routing";
 
 type Item = { href: string; label: string };
@@ -9,9 +10,20 @@ type Item = { href: string; label: string };
  * Hamburger drawer for mobile screens.
  * Slides in from the end (right in LTR, left in RTL).
  * Closes on link click, Escape, or backdrop tap.
+ *
+ * The backdrop + drawer are rendered via a portal into document.body.
+ * Reason: the header they'd otherwise nest under uses backdrop-blur-nav
+ * (backdrop-filter), which per spec makes that header a containing block
+ * for its `position: fixed` descendants — so `h-full`/`inset-0` would
+ * resolve against the 80px header instead of the viewport, collapsing
+ * the drawer into a sliver with no real backdrop. Portaling to body
+ * sidesteps that containing-block entirely.
  */
 export function MobileMenu({ items, ctaHref = "/inscription", ctaLabel = "Commencer" }: { items: Item[]; ctaHref?: string; ctaLabel?: string }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -24,20 +36,8 @@ export function MobileMenu({ items, ctaHref = "/inscription", ctaLabel = "Commen
     };
   }, [open]);
 
-  return (
+  const drawer = (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="md:hidden inline-flex w-10 h-10 items-center justify-center rounded-btn text-fg hover:bg-surface-3"
-        aria-label="Menu"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
-
       {open && (
         <div
           className="md:hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
@@ -47,7 +47,7 @@ export function MobileMenu({ items, ctaHref = "/inscription", ctaLabel = "Commen
       )}
 
       <aside
-        className={`md:hidden fixed top-0 end-0 h-full w-[80vw] max-w-xs bg-surface border-s border-line z-[101] transform transition-transform duration-200 ${
+        className={`md:hidden fixed top-0 end-0 h-dvh w-[80vw] max-w-xs bg-surface border-s border-line z-[101] transform transition-transform duration-200 ${
           open ? "translate-x-0" : "translate-x-full rtl:-translate-x-full"
         }`}
         role="dialog"
@@ -61,7 +61,7 @@ export function MobileMenu({ items, ctaHref = "/inscription", ctaLabel = "Commen
           </button>
         </div>
 
-        <nav className="p-5 flex flex-col gap-1">
+        <nav className="p-5 flex flex-col gap-1 overflow-y-auto">
           {items.map((it) => (
             <Link
               key={it.href}
@@ -81,6 +81,24 @@ export function MobileMenu({ items, ctaHref = "/inscription", ctaLabel = "Commen
           </Link>
         </nav>
       </aside>
+    </>
+  );
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="md:hidden inline-flex w-10 h-10 items-center justify-center rounded-btn text-fg hover:bg-surface-3"
+        aria-label="Menu"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      {mounted && createPortal(drawer, document.body)}
     </>
   );
 }
