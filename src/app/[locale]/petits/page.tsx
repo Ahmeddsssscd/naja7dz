@@ -162,6 +162,9 @@ export default async function KidsHome({ searchParams }: PageProps) {
             <Tile href="/petits/jeux-malins/chiffres-arabes" emoji="🔢" title={tHub("game_chiffres_ar")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
             <Tile href="/petits/jeux-malins/patissier" emoji="👨‍🍳" title={tHub("game_patissier")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
             <Tile href="/petits/jeux-malins/horloge-vivante" emoji="⏰" title={tHub("game_horloge")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
+            <Tile href="/petits/jeux-malins/fractions" emoji="🍕" title={tHub("game_fractions")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+            <Tile href="/petits/jeux-malins/comparaison" emoji="🐊" title={tHub("game_comparaison")} color="bg-green-100 dark:bg-green-950/30 text-green-900 dark:text-green-100" />
+            <Tile href="/petits/jeux-malins/mesures" emoji="📏" title={tHub("game_mesures")} color="bg-sky-100 dark:bg-sky-950/30 text-sky-900 dark:text-sky-100" />
           </SubGroup>
 
           {/* Logique & réflexion */}
@@ -205,6 +208,7 @@ export default async function KidsHome({ searchParams }: PageProps) {
             <Tile href="/petits/jeux-malins/petits-scientifiques" emoji="🧪" title={tHub("game_science")} color="bg-emerald-100 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100" />
             <Tile href="/petits/monde-reel/heure" emoji="⏰" title={tHub("game_clock")} color="bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100" />
             <Tile href="/petits/monde-reel/wilayas" emoji="🇩🇿" title={tHub("game_wilayas")} color="bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100" />
+            <Tile href="/petits/jeux-malins/monuments" emoji="🕌" title={tHub("game_monuments")} color="bg-teal-100 dark:bg-teal-950/30 text-teal-900 dark:text-teal-100" />
             {quranOn && <Tile href="/petits/quran" emoji="📿" title={t("tile_quran")} color="bg-rose-100 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100" />}
             {readingOn && <Tile href="/petits/lecture" emoji="📖" title={t("tile_reading")} color="bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100" />}
           </SubGroup>

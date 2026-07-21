@@ -6,7 +6,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
-import { QuizRunner } from "@/components/app/QuizRunner";
+import { LessonThenQuiz } from "@/components/app/LessonThenQuiz";
 import { requireAccessForGrade } from "@/lib/subscriptions";
 
 export const metadata = { title: "Quiz" };
@@ -26,7 +26,7 @@ export default async function ChapterQuizPage({
   const [{ data: chapter }, { data: child }] = await Promise.all([
     admin
       .from("chapters")
-      .select("id, title_fr, title_ar, subject_id, subjects(name_fr, name_ar, grade_code)")
+      .select("id, title_fr, title_ar, lesson_fr, lesson_ar, subject_id, subjects(name_fr, name_ar, grade_code)")
       .eq("id", chapterId)
       .maybeSingle(),
     supabase.from("children").select("id, full_name, grade").eq("parent_id", user.id).limit(1).maybeSingle(),
@@ -42,9 +42,12 @@ export default async function ChapterQuizPage({
   const title =
     `${(isAr && subj?.name_ar) || subj?.name_fr || ""} · ${(isAr && chapter.title_ar) || chapter.title_fr}`;
 
+  const lesson = (isAr && chapter.lesson_ar) || chapter.lesson_fr || null;
+
   return (
-    <QuizRunner
+    <LessonThenQuiz
       title={title}
+      lesson={lesson}
       chapterId={chapterId}
       childId={child?.id ?? null}
       locale={locale === "ar" ? "ar" : "fr"}

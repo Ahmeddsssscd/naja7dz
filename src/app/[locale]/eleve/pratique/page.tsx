@@ -226,6 +226,9 @@ export default async function PracticeHub() {
     { href: "/petits/jeux-malins/pieces", emoji: "🪙", title: t("game_coins"), color: "bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900", group: "maths", audiences: ["primary", "middle"] },
     { href: "/petits/jeux-malins/tables", emoji: "🟰", title: t("game_tables"), color: "bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-900", group: "maths", audiences: ["primary", "middle"] },
     { href: "/petits/jeux-malins/chiffres-arabes", emoji: "🔢", title: t("game_chiffres_ar"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", group: "maths", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/fractions", emoji: "🍕", title: t("game_fractions"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "maths", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/comparaison", emoji: "🐊", title: t("game_comparaison"), color: "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900", group: "maths", audiences: ["primary"] },
+    { href: "/petits/jeux-malins/mesures", emoji: "📏", title: t("game_mesures"), color: "bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-900", group: "maths", audiences: ["primary", "middle"] },
 
     // ── Logique & réflexion
     { href: "/petits/jeux-malins/sudoku", emoji: "🧩", title: t("game_sudoku"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "logic", audiences: ["primary"] },
@@ -250,6 +253,7 @@ export default async function PracticeHub() {
     { href: "/petits/jeux-malins/petits-scientifiques", emoji: "🧪", title: t("game_science"), color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900", group: "decouvertes", audiences: ["primary", "middle"] },
     { href: "/petits/monde-reel/heure", emoji: "⏰", title: t("game_clock"), color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900", group: "decouvertes", audiences: ["primary"] },
     { href: "/petits/monde-reel/wilayas", emoji: "🇩🇿", title: t("game_wilayas"), color: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900", group: "decouvertes", audiences: ["primary", "middle"] },
+    { href: "/petits/jeux-malins/monuments", emoji: "🕌", title: t("game_monuments"), color: "bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900", group: "decouvertes", audiences: ["primary", "middle"] },
 
     // ── Création
     { href: "/petits/coloriage", emoji: "🎨", title: t("game_coloriage"), color: "bg-pink-50 dark:bg-pink-950/30 border-pink-200 dark:border-pink-900", group: "creation", audiences: ["primary"] },
