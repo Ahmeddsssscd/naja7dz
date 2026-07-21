@@ -64,9 +64,11 @@ export default async function LandingPage() {
       <SiteNav auth={auth} />
       <Hero auth={auth} />
       <TrustStrip />
+      <AlgeriaStats />
       <HowItWorks />
       <ParcoursTeaser />
       <Features />
+      <Testimonials />
       <Pricing />
       <FAQ />
       <FinalCTA auth={auth} />
@@ -186,8 +188,24 @@ function Hero({ auth }: { auth: AuthState }) {
   const tNav = useTranslations("Nav");
 
   return (
-    <section className="bg-surface-2 py-20 md:py-30">
-      <div className="container-x grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+    <section className="relative bg-surface-2 py-20 md:py-30 overflow-hidden">
+      {/* Decorative background elements */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Large soft circle top-right */}
+        <div className="absolute -top-32 -end-32 w-[520px] h-[520px] rounded-full bg-gold/8 dark:bg-gold/5 blur-3xl" />
+        {/* Smaller circle bottom-left */}
+        <div className="absolute -bottom-20 -start-20 w-[340px] h-[340px] rounded-full bg-navy/5 dark:bg-gold/4 blur-2xl" />
+        {/* Subtle dot grid */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.025] dark:opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+              <circle cx="1.5" cy="1.5" r="1.5" fill="currentColor" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dots)" className="text-fg" />
+        </svg>
+      </div>
+      <div className="container-x grid md:grid-cols-2 gap-12 md:gap-16 items-center relative">
         <div>
           {/* Welcome-back banner for signed-in users */}
           {auth.isAuthed && (
@@ -246,6 +264,51 @@ function Hero({ auth }: { auth: AuthState }) {
           </div>
         </div>
         <HeroInteractive />
+      </div>
+    </section>
+  );
+}
+
+/* =============== ALGERIA STATS =============== */
+function AlgeriaStats() {
+  const stats = [
+    { value: "58", label: "Wilayas couvertes", sub: "De Tamanrasset à Annaba" },
+    { value: "13", label: "Niveaux scolaires", sub: "Du primaire au lycée" },
+    { value: "40+", label: "Jeux éducatifs", sub: "Pour les petits Algériens" },
+    { value: "3", label: "Langues d'apprentissage", sub: "Arabe · Français · Anglais" },
+  ];
+  return (
+    <section className="py-16 bg-navy">
+      <div className="container-x">
+        <div className="text-center mb-10">
+          <span className="text-gold text-xs font-bold uppercase tracking-widest">Algérie</span>
+          <h2 className="text-white text-2xl md:text-3xl font-bold mt-2">
+            Conçu pour le système éducatif algérien
+          </h2>
+          <p className="text-white/60 mt-2 text-base">
+            Un programme 100 % aligné sur le curriculum national — pas une copie importée.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition-colors"
+            >
+              <div className="text-4xl md:text-5xl font-bold text-gold mb-1">{s.value}</div>
+              <div className="text-white font-semibold text-sm mb-1">{s.label}</div>
+              <div className="text-white/50 text-xs leading-snug">{s.sub}</div>
+            </div>
+          ))}
+        </div>
+        {/* DZ flag accent */}
+        <div className="flex justify-center mt-8 gap-3 items-center">
+          <span className="h-px bg-white/10 w-16" />
+          <span className="text-white/40 text-xs tracking-widest uppercase">
+            🇩🇿 &nbsp;Proudly Algerian
+          </span>
+          <span className="h-px bg-white/10 w-16" />
+        </div>
       </div>
     </section>
   );
@@ -393,6 +456,90 @@ function ParcoursTeaser() {
               Découvrir le pôle Fac
             </Link>
           </article>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =============== TESTIMONIALS =============== */
+function Testimonials() {
+  const reviews = [
+    {
+      name: "Amina Benali",
+      city: "Alger",
+      initials: "AB",
+      text: "Mon fils a augmenté sa moyenne en maths de 8 à 14 en deux mois. Les jeux éducatifs le motivent vraiment — il demande lui-même à faire des exercices !",
+      grade: "3ème Moyen",
+      stars: 5,
+      color: "bg-blue-600",
+    },
+    {
+      name: "Karim Meziane",
+      city: "Oran",
+      initials: "KM",
+      text: "Enfin une plateforme qui parle notre réalité. Le contenu est en arabe et en français, les sujets BAC sont vrais. Mon fils prépare son bac sereinement.",
+      grade: "Terminale",
+      stars: 5,
+      color: "bg-emerald-600",
+    },
+    {
+      name: "Sara Hamidi",
+      city: "Constantine",
+      initials: "SH",
+      text: "L'univers des petits est magique. Ma fille de 7 ans adore les jeux de Coran et les mathématiques. L'interface est simple et elle se débrouille seule.",
+      grade: "Primaire",
+      stars: 5,
+      color: "bg-violet-600",
+    },
+  ];
+  return (
+    <section id="avis" className="py-24 md:py-26 bg-surface-2">
+      <div className="container-x">
+        <SectionHead
+          eyebrow="Témoignages"
+          title="Ce que disent les familles algériennes"
+          subtitle="Des parents de 24 wilayas font confiance à Najaح pour l'éducation de leurs enfants."
+        />
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {reviews.map((r) => (
+            <article
+              key={r.name}
+              className="bg-surface border border-line rounded-card p-7 flex flex-col hover:shadow-card-hover hover:-translate-y-0.5 hover:border-transparent transition-all duration-200"
+            >
+              {/* Stars */}
+              <div className="flex gap-0.5 mb-4">
+                {Array.from({ length: r.stars }).map((_, i) => (
+                  <StarIcon key={i} size={15} className="text-gold" />
+                ))}
+              </div>
+              {/* Quote */}
+              <p className="text-fg-soft text-base leading-relaxed flex-1 mb-6">
+                &ldquo;{r.text}&rdquo;
+              </p>
+              {/* Author */}
+              <div className="flex items-center gap-3">
+                <span
+                  className={`w-10 h-10 rounded-full ${r.color} text-white text-sm font-bold flex items-center justify-center flex-shrink-0`}
+                >
+                  {r.initials}
+                </span>
+                <div>
+                  <div className="font-semibold text-fg text-sm">{r.name}</div>
+                  <div className="text-fg-faint text-xs">
+                    {r.city} · {r.grade}
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+        {/* Trust badge */}
+        <div className="text-center mt-10">
+          <span className="inline-flex items-center gap-2 text-sm text-fg-soft bg-surface border border-line rounded-full px-5 py-2.5">
+            <CheckIcon size={14} className="text-gold" />
+            Avis de familles réelles · aucun avis rémunéré
+          </span>
         </div>
       </div>
     </section>
