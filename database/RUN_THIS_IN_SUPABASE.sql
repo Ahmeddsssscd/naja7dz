@@ -2334,3 +2334,1633 @@ cross join (values
 ) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
 where s.grade_code = '3AS' and s.slug = 'mathematiques' and c.slug = 'geometrie-espace'
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+
+-- ===============================================================
+-- Migration: 20260722_020_sciences_lessons_quizzes
+--
+-- Bilingual lessons + 5-question quiz banks for the science chapters of
+-- the two exam years: 4AM (physique + SVT, for the BEM) and 3AS
+-- (physique + SVT, for the BAC sciences streams).
+-- Idempotent: guarded UPDATEs and NOT EXISTS inserts.
+-- ===============================================================
+
+-- Reusable insert helper is inlined per chapter (same pattern as 019).
+
+-- ================= 4AM PHYSIQUE =================
+
+update public.chapters c set
+  lesson_fr = 'PHÃ‰NOMÃˆNES Ã‰LECTRIQUES
+
+LE CIRCUIT Ã‰LECTRIQUE
+Un circuit fermÃ© laisse passer le courant ; ouvert, le courant ne passe pas.
+Composants : gÃ©nÃ©rateur (pile), rÃ©cepteurs (lampe, moteur), interrupteur, fils.
+
+INTENSITÃ‰ (I) â€” le dÃ©bit du courant
+â€¢ Se mesure avec un AMPÃˆREMÃˆTRE branchÃ© EN SÃ‰RIE.
+â€¢ UnitÃ© : l''ampÃ¨re (A).
+â€¢ En sÃ©rie, l''intensitÃ© est la MÃŠME partout.
+â€¢ En dÃ©rivation, l''intensitÃ© principale = somme des intensitÃ©s des branches.
+
+TENSION (U) â€” la Â« poussÃ©e Â» Ã©lectrique
+â€¢ Se mesure avec un VOLTMÃˆTRE branchÃ© EN DÃ‰RIVATION (aux bornes).
+â€¢ UnitÃ© : le volt (V).
+â€¢ En sÃ©rie, la tension du gÃ©nÃ©rateur = somme des tensions des rÃ©cepteurs.
+â€¢ En dÃ©rivation, la tension est la mÃªme aux bornes de chaque branche.
+
+LA LOI D''OHM (rÃ©sistance)
+U = R Ã— I    (U en volts, R en ohms Î©, I en ampÃ¨res)
+Une rÃ©sistance s''oppose au passage du courant.
+
+SÃ‰CURITÃ‰ : ne jamais brancher un ampÃ¨remÃ¨tre en dÃ©rivation (court-circuit).',
+  lesson_ar = 'Ø§Ù„Ø¸ÙˆØ§Ù‡Ø± Ø§Ù„ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ©
+
+Ø§Ù„Ø¯Ø§Ø±Ø© Ø§Ù„ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ©
+Ø§Ù„Ø¯Ø§Ø±Ø© Ø§Ù„Ù…ØºÙ„Ù‚Ø© ØªØ³Ù…Ø­ Ø¨Ù…Ø±ÙˆØ± Ø§Ù„ØªÙŠØ§Ø±ØŒ ÙˆØ§Ù„Ù…ÙØªÙˆØ­Ø© ØªÙ…Ù†Ø¹Ù‡.
+Ù…ÙƒÙˆÙ†Ø§ØªÙ‡Ø§: Ù…ÙˆÙ„Ø¯ (Ø¨Ø·Ø§Ø±ÙŠØ©)ØŒ Ù…Ø³ØªÙ‚Ø¨Ù„Ø§Øª (Ù…ØµØ¨Ø§Ø­ØŒ Ù…Ø­Ø±Ùƒ)ØŒ Ù‚Ø§Ø·Ø¹Ø©ØŒ Ø£Ø³Ù„Ø§Ùƒ.
+
+Ø´Ø¯Ø© Ø§Ù„ØªÙŠØ§Ø± (I)
+â€¢ ØªÙÙ‚Ø§Ø³ Ø¨Ø§Ù„Ø£Ù…Ø¨ÙŠØ±Ù…ØªØ± Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨ Ø¹Ù„Ù‰ Ø§Ù„ØªØ³Ù„Ø³Ù„.
+â€¢ Ø§Ù„ÙˆØ­Ø¯Ø©: Ø§Ù„Ø£Ù…Ø¨ÙŠØ± (A).
+â€¢ Ø¹Ù„Ù‰ Ø§Ù„ØªØ³Ù„Ø³Ù„: Ø§Ù„Ø´Ø¯Ø© Ù†ÙØ³Ù‡Ø§ ÙÙŠ ÙƒÙ„ Ø§Ù„Ù†Ù‚Ø§Ø·.
+â€¢ Ø¹Ù„Ù‰ Ø§Ù„ØªÙØ±Ø¹: Ø§Ù„Ø´Ø¯Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© = Ù…Ø¬Ù…ÙˆØ¹ Ø´Ø¯Ø§Øª Ø§Ù„ÙØ±ÙˆØ¹.
+
+Ø§Ù„ØªÙˆØªØ± (U)
+â€¢ ÙŠÙÙ‚Ø§Ø³ Ø¨Ø§Ù„ÙÙˆÙ„ØªÙ…ØªØ± Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨ Ø¹Ù„Ù‰ Ø§Ù„ØªÙØ±Ø¹.
+â€¢ Ø§Ù„ÙˆØ­Ø¯Ø©: Ø§Ù„ÙÙˆÙ„Ø· (V).
+
+Ù‚Ø§Ù†ÙˆÙ† Ø£ÙˆÙ…
+U = R Ã— I (Ø§Ù„Ù…Ù‚Ø§ÙˆÙ…Ø© R Ø¨Ø§Ù„Ø£ÙˆÙ… Î©).
+
+Ø§Ù„Ø³Ù„Ø§Ù…Ø©: Ù„Ø§ Ù†Ø±ÙƒÙ‘Ø¨ Ø§Ù„Ø£Ù…Ø¨ÙŠØ±Ù…ØªØ± Ø¹Ù„Ù‰ Ø§Ù„ØªÙØ±Ø¹ Ø£Ø¨Ø¯Ù‹Ø§ (Ø¯Ø§Ø±Ø© Ù‚ØµÙŠØ±Ø©).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'phenomenes-electriques';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Avec quel appareil mesure-t-on l''intensitÃ© du courant ?', 'Ø¨Ø£ÙŠ Ø¬Ù‡Ø§Ø² Ù†Ù‚ÙŠØ³ Ø´Ø¯Ø© Ø§Ù„ØªÙŠØ§Ø±ØŸ',
+   '["L''ampÃ¨remÃ¨tre","Le voltmÃ¨tre","Le thermomÃ¨tre","La balance"]'::jsonb, '["Ø§Ù„Ø£Ù…Ø¨ÙŠØ±Ù…ØªØ±","Ø§Ù„ÙÙˆÙ„ØªÙ…ØªØ±","Ø§Ù„Ù…ÙŠØ²Ø§Ù† Ø§Ù„Ø­Ø±Ø§Ø±ÙŠ","Ø§Ù„Ù…ÙŠØ²Ø§Ù†"]'::jsonb,
+   0, 'L''ampÃ¨remÃ¨tre, branchÃ© en sÃ©rie, mesure l''intensitÃ© (en ampÃ¨res).', 'Ø§Ù„Ø£Ù…Ø¨ÙŠØ±Ù…ØªØ± Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨ Ø¹Ù„Ù‰ Ø§Ù„ØªØ³Ù„Ø³Ù„ ÙŠÙ‚ÙŠØ³ Ø§Ù„Ø´Ø¯Ø©.', 'easy', 1),
+  ('L''unitÃ© de la tension Ã©lectrique estâ€¦', 'ÙˆØ­Ø¯Ø© Ø§Ù„ØªÙˆØªØ± Ø§Ù„ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠ Ù‡ÙŠâ€¦',
+   '["le volt (V)","l''ampÃ¨re (A)","l''ohm (Î©)","le watt (W)"]'::jsonb, '["Ø§Ù„ÙÙˆÙ„Ø· (V)","Ø§Ù„Ø£Ù…Ø¨ÙŠØ± (A)","Ø§Ù„Ø£ÙˆÙ… (Î©)","Ø§Ù„ÙˆØ§Ø· (W)"]'::jsonb,
+   0, 'La tension se mesure en volts.', 'Ø§Ù„ØªÙˆØªØ± ÙŠÙÙ‚Ø§Ø³ Ø¨Ø§Ù„ÙÙˆÙ„Ø·.', 'easy', 2),
+  ('Dans un circuit en sÃ©rie, l''intensitÃ© du courant estâ€¦', 'ÙÙŠ Ø¯Ø§Ø±Ø© Ø¹Ù„Ù‰ Ø§Ù„ØªØ³Ù„Ø³Ù„ØŒ Ø´Ø¯Ø© Ø§Ù„ØªÙŠØ§Ø±â€¦',
+   '["la mÃªme partout","diffÃ©rente partout","nulle","maximale Ã  la pile"]'::jsonb, '["Ù†ÙØ³Ù‡Ø§ ÙÙŠ ÙƒÙ„ Ø§Ù„Ù†Ù‚Ø§Ø·","Ù…Ø®ØªÙ„ÙØ©","Ù…Ø¹Ø¯ÙˆÙ…Ø©","Ø£ÙƒØ¨Ø± Ø¹Ù†Ø¯ Ø§Ù„Ø¨Ø·Ø§Ø±ÙŠØ©"]'::jsonb,
+   0, 'En sÃ©rie, le courant a la mÃªme intensitÃ© en tout point.', 'Ø¹Ù„Ù‰ Ø§Ù„ØªØ³Ù„Ø³Ù„ Ø§Ù„Ø´Ø¯Ø© Ù†ÙØ³Ù‡Ø§ ÙÙŠ ÙƒÙ„ Ù†Ù‚Ø·Ø©.', 'medium', 3),
+  ('Loi d''Ohm : U = 12 V, R = 4 Î©. Que vaut I ?', 'Ù‚Ø§Ù†ÙˆÙ† Ø£ÙˆÙ…: U = 12 V Ùˆ R = 4 Î©. ÙƒÙ… IØŸ',
+   '["3 A","48 A","8 A","0,33 A"]'::jsonb, '["3 A","48 A","8 A","0.33 A"]'::jsonb,
+   0, 'I = U/R = 12/4 = 3 A.', 'I = U/R = 12/4 = 3 A.', 'medium', 4),
+  ('Le voltmÃ¨tre se brancheâ€¦', 'Ø§Ù„ÙÙˆÙ„ØªÙ…ØªØ± ÙŠÙØ±ÙƒÙ‘Ø¨â€¦',
+   '["en dÃ©rivation","en sÃ©rie","Ã  la place de la pile","n''importe comment"]'::jsonb, '["Ø¹Ù„Ù‰ Ø§Ù„ØªÙØ±Ø¹","Ø¹Ù„Ù‰ Ø§Ù„ØªØ³Ù„Ø³Ù„","Ù…ÙƒØ§Ù† Ø§Ù„Ø¨Ø·Ø§Ø±ÙŠØ©","Ø¨Ø£ÙŠ Ø·Ø±ÙŠÙ‚Ø©"]'::jsonb,
+   0, 'Le voltmÃ¨tre se branche en dÃ©rivation, aux bornes du dipÃ´le.', 'Ø§Ù„ÙÙˆÙ„ØªÙ…ØªØ± ÙŠÙØ±ÙƒÙ‘Ø¨ Ø¹Ù„Ù‰ Ø§Ù„ØªÙØ±Ø¹ Ø¨ÙŠÙ† Ø·Ø±ÙÙŠ Ø§Ù„Ø«Ù†Ø§Ø¦ÙŠ Ø§Ù„Ù‚Ø·Ø¨.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'phenomenes-electriques'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'PHÃ‰NOMÃˆNES LUMINEUX
+
+PROPAGATION DE LA LUMIÃˆRE
+Dans un milieu transparent et homogÃ¨ne, la lumiÃ¨re se propage en LIGNE DROITE.
+C''est ce qui explique les ombres et les Ã©clipses.
+
+SOURCES ET RÃ‰CEPTEURS
+â€¢ Source primaire : produit sa lumiÃ¨re (Soleil, lampe, flamme).
+â€¢ Objet diffusant : renvoie la lumiÃ¨re qu''il reÃ§oit (la Lune, un mur).
+
+LA RÃ‰FLEXION (miroir)
+Le rayon incident et le rayon rÃ©flÃ©chi font le mÃªme angle avec la normale :
+angle d''incidence = angle de rÃ©flexion.
+
+LES LENTILLES
+â€¢ Lentille CONVERGENTE (bords minces) : fait converger les rayons en un foyer F.
+â€¢ Lentille DIVERGENTE (bords Ã©pais) : Ã©carte les rayons.
+La distance focale caractÃ©rise la lentille.
+
+L''Å’IL ET LA VISION
+Le cristallin est une lentille convergente ; l''image se forme sur la rÃ©tine.
+Myopie et hypermÃ©tropie se corrigent avec des lentilles adaptÃ©es.',
+  lesson_ar = 'Ø§Ù„Ø¸ÙˆØ§Ù‡Ø± Ø§Ù„Ø¶ÙˆØ¦ÙŠØ©
+
+Ø§Ù†ØªØ´Ø§Ø± Ø§Ù„Ø¶ÙˆØ¡
+ÙÙŠ ÙˆØ³Ø· Ø´ÙØ§Ù ÙˆÙ…ØªØ¬Ø§Ù†Ø³ ÙŠÙ†ØªØ´Ø± Ø§Ù„Ø¶ÙˆØ¡ ÙÙŠ Ø®Ø· Ù…Ø³ØªÙ‚ÙŠÙ…ØŒ ÙˆÙ‡Ø°Ø§ ÙŠÙØ³Ø± Ø§Ù„Ø¸Ù„Ø§Ù„ ÙˆØ§Ù„ÙƒØ³ÙˆÙ.
+
+Ø§Ù„Ù…Ù†Ø§Ø¨Ø¹ ÙˆØ§Ù„Ù…Ø³ØªÙ‚Ø¨Ù„Ø§Øª
+â€¢ Ù…Ù†Ø¨Ø¹ Ø£ÙˆÙ„ÙŠ: ÙŠÙ†ØªØ¬ Ø¶ÙˆØ¡Ù‡ (Ø§Ù„Ø´Ù…Ø³ØŒ Ø§Ù„Ù…ØµØ¨Ø§Ø­).
+â€¢ Ø¬Ø³Ù… Ù†Ø§Ø´Ø±: ÙŠØ¹ÙŠØ¯ Ø§Ù„Ø¶ÙˆØ¡ Ø§Ù„Ø°ÙŠ ÙŠØ³ØªÙ‚Ø¨Ù„Ù‡ (Ø§Ù„Ù‚Ù…Ø±ØŒ Ø§Ù„Ø¬Ø¯Ø§Ø±).
+
+Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³ (Ø§Ù„Ù…Ø±Ø¢Ø©)
+Ø²Ø§ÙˆÙŠØ© Ø§Ù„ÙˆØ±ÙˆØ¯ = Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³ Ø¨Ø§Ù„Ù†Ø³Ø¨Ø© Ù„Ù„Ù†Ø§Ø¸Ù….
+
+Ø§Ù„Ø¹Ø¯Ø³Ø§Øª
+â€¢ Ø¹Ø¯Ø³Ø© Ù…Ø¬Ù…Ù‘Ø¹Ø© (Ø­ÙˆØ§ÙÙ‡Ø§ Ø±Ù‚ÙŠÙ‚Ø©): ØªØ¬Ù…Ø¹ Ø§Ù„Ø£Ø´Ø¹Ø© ÙÙŠ Ø¨Ø¤Ø±Ø© F.
+â€¢ Ø¹Ø¯Ø³Ø© Ù…ÙØ±Ù‘Ù‚Ø© (Ø­ÙˆØ§ÙÙ‡Ø§ Ø³Ù…ÙŠÙƒØ©): ØªÙØ±Ù‘Ù‚ Ø§Ù„Ø£Ø´Ø¹Ø©.
+
+Ø§Ù„Ø¹ÙŠÙ† ÙˆØ§Ù„Ø±Ø¤ÙŠØ©
+Ø§Ù„Ø¨Ù„ÙˆØ±ÙŠØ© Ø¹Ø¯Ø³Ø© Ù…Ø¬Ù…Ù‘Ø¹Ø©ØŒ ÙˆØªØªØ´ÙƒÙ„ Ø§Ù„ØµÙˆØ±Ø© Ø¹Ù„Ù‰ Ø§Ù„Ø´Ø¨ÙƒÙŠØ©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'phenomenes-lumineux';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans un milieu transparent et homogÃ¨ne, la lumiÃ¨re se propageâ€¦', 'ÙÙŠ ÙˆØ³Ø· Ø´ÙØ§Ù ÙˆÙ…ØªØ¬Ø§Ù†Ø³ ÙŠÙ†ØªØ´Ø± Ø§Ù„Ø¶ÙˆØ¡â€¦',
+   '["en ligne droite","en courbe","en zigzag","en cercle"]'::jsonb, '["ÙÙŠ Ø®Ø· Ù…Ø³ØªÙ‚ÙŠÙ…","ÙÙŠ Ù…Ù†Ø­Ù†Ù‰","Ø¨Ø´ÙƒÙ„ Ù…ØªØ¹Ø±Ø¬","ÙÙŠ Ø¯Ø§Ø¦Ø±Ø©"]'::jsonb,
+   0, 'Propagation rectiligne de la lumiÃ¨re.', 'Ø§Ù„Ø§Ù†ØªØ´Ø§Ø± Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… Ù„Ù„Ø¶ÙˆØ¡.', 'easy', 1),
+  ('La Lune estâ€¦', 'Ø§Ù„Ù‚Ù…Ø±â€¦',
+   '["un objet diffusant","une source primaire","une lentille","un miroir"]'::jsonb, '["Ø¬Ø³Ù… Ù†Ø§Ø´Ø±","Ù…Ù†Ø¨Ø¹ Ø£ÙˆÙ„ÙŠ","Ø¹Ø¯Ø³Ø©","Ù…Ø±Ø¢Ø©"]'::jsonb,
+   0, 'La Lune renvoie la lumiÃ¨re du Soleil, elle ne la produit pas.', 'Ø§Ù„Ù‚Ù…Ø± ÙŠØ¹ÙŠØ¯ Ø¶ÙˆØ¡ Ø§Ù„Ø´Ù…Ø³ ÙˆÙ„Ø§ ÙŠÙ†ØªØ¬Ù‡.', 'medium', 2),
+  ('Loi de la rÃ©flexion : l''angle d''incidence estâ€¦', 'Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³: Ø²Ø§ÙˆÙŠØ© Ø§Ù„ÙˆØ±ÙˆØ¯â€¦',
+   '["Ã©gal Ã  l''angle de rÃ©flexion","double de l''angle de rÃ©flexion","nul","toujours 90Â°"]'::jsonb, '["ØªØ³Ø§ÙˆÙŠ Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³","Ø¶Ø¹Ù Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³","Ù…Ø¹Ø¯ÙˆÙ…Ø©","Ø¯Ø§Ø¦Ù…Ù‹Ø§ 90Â°"]'::jsonb,
+   0, 'Angle d''incidence = angle de rÃ©flexion.', 'Ø²Ø§ÙˆÙŠØ© Ø§Ù„ÙˆØ±ÙˆØ¯ = Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³.', 'medium', 3),
+  ('Une lentille Ã  bords minces estâ€¦', 'Ø¹Ø¯Ø³Ø© Ø­ÙˆØ§ÙÙ‡Ø§ Ø±Ù‚ÙŠÙ‚Ø© Ù‡ÙŠâ€¦',
+   '["convergente","divergente","plane","opaque"]'::jsonb, '["Ù…Ø¬Ù…Ù‘Ø¹Ø©","Ù…ÙØ±Ù‘Ù‚Ø©","Ù…Ø³ØªÙˆÙŠØ©","Ù…Ø¹ØªÙ…Ø©"]'::jsonb,
+   0, 'Bords minces = lentille convergente.', 'Ø§Ù„Ø­ÙˆØ§Ù Ø§Ù„Ø±Ù‚ÙŠÙ‚Ø© = Ø¹Ø¯Ø³Ø© Ù…Ø¬Ù…Ù‘Ø¹Ø©.', 'easy', 4),
+  ('Dans l''Å“il, l''image se forme surâ€¦', 'ÙÙŠ Ø§Ù„Ø¹ÙŠÙ† ØªØªØ´ÙƒÙ„ Ø§Ù„ØµÙˆØ±Ø© Ø¹Ù„Ù‰â€¦',
+   '["la rÃ©tine","le cristallin","la pupille","la cornÃ©e"]'::jsonb, '["Ø§Ù„Ø´Ø¨ÙƒÙŠØ©","Ø§Ù„Ø¨Ù„ÙˆØ±ÙŠØ©","Ø§Ù„Ø¨Ø¤Ø¨Ø¤","Ø§Ù„Ù‚Ø±Ù†ÙŠØ©"]'::jsonb,
+   0, 'La rÃ©tine reÃ§oit l''image formÃ©e par le cristallin.', 'Ø§Ù„Ø´Ø¨ÙƒÙŠØ© ØªØ³ØªÙ‚Ø¨Ù„ Ø§Ù„ØµÙˆØ±Ø© Ø§Ù„ØªÙŠ ØªÙƒÙˆÙ‘Ù†Ù‡Ø§ Ø§Ù„Ø¨Ù„ÙˆØ±ÙŠØ©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'phenomenes-lumineux'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'PHÃ‰NOMÃˆNES MÃ‰CANIQUES
+
+LE MOUVEMENT
+Un corps est en mouvement par rapport Ã  un rÃ©fÃ©rentiel si sa position change.
+Le mouvement est RELATIF : il dÃ©pend du rÃ©fÃ©rentiel choisi.
+
+LA VITESSE
+v = distance Ã· temps      (v en m/s ou km/h)
+Exemple : 120 km en 2 h â†’ v = 60 km/h.
+Mouvement uniforme : vitesse constante.
+
+LES FORCES
+Une force peut : mettre en mouvement, arrÃªter, dÃ©vier, ou dÃ©former un corps.
+ReprÃ©sentÃ©e par un vecteur (point d''application, direction, sens, intensitÃ©).
+L''intensitÃ© se mesure avec un DYNAMOMÃˆTRE, en newtons (N).
+
+LE POIDS
+Le poids P est la force de gravitÃ© :  P = m Ã— g
+avec g â‰ˆ 9,8 N/kg en AlgÃ©rie, m en kg, P en newtons.
+Ne pas confondre : la MASSE (kg) ne change pas ; le POIDS (N) dÃ©pend de g.
+
+Ã‰QUILIBRE
+Un corps soumis Ã  deux forces est en Ã©quilibre si elles ont mÃªme intensitÃ©,
+mÃªme direction et sens opposÃ©s.',
+  lesson_ar = 'Ø§Ù„Ø¸ÙˆØ§Ù‡Ø± Ø§Ù„Ù…ÙŠÙƒØ§Ù†ÙŠÙƒÙŠØ©
+
+Ø§Ù„Ø­Ø±ÙƒØ©
+Ø¬Ø³Ù… Ù…ØªØ­Ø±Ùƒ Ø¨Ø§Ù„Ù†Ø³Ø¨Ø© Ù„Ù…Ø±Ø¬Ø¹ Ø¥Ø°Ø§ ØªØºÙŠÙ‘Ø± Ù…ÙˆØ¶Ø¹Ù‡. Ø§Ù„Ø­Ø±ÙƒØ© Ù†Ø³Ø¨ÙŠØ© ØªØªØ¹Ù„Ù‚ Ø¨Ø§Ù„Ù…Ø±Ø¬Ø¹ Ø§Ù„Ù…Ø®ØªØ§Ø±.
+
+Ø§Ù„Ø³Ø±Ø¹Ø©
+v = Ø§Ù„Ù…Ø³Ø§ÙØ© Ã· Ø§Ù„Ø²Ù…Ù† (Ø¨Ø§Ù„Ù…ØªØ±/Ø«Ø§Ù†ÙŠØ© Ø£Ùˆ ÙƒÙ„Ù…/Ø³Ø§)
+Ù…Ø«Ø§Ù„: 120 ÙƒÙ„Ù… ÙÙŠ Ø³Ø§Ø¹ØªÙŠÙ† â† v = 60 ÙƒÙ„Ù…/Ø³Ø§.
+
+Ø§Ù„Ù‚ÙˆÙ‰
+Ø§Ù„Ù‚ÙˆØ© ØªØ­Ø±Ù‘Ùƒ Ø£Ùˆ ØªÙˆÙ‚Ù Ø£Ùˆ ØªØ­Ø±Ù Ø£Ùˆ ØªØ´ÙˆÙ‘Ù‡ Ø¬Ø³Ù…Ù‹Ø§. ØªÙÙ…Ø«Ù‘Ù„ Ø¨Ø´Ø¹Ø§Ø¹ØŒ ÙˆØªÙÙ‚Ø§Ø³ Ø¨Ø§Ù„Ø¯ÙŠÙ†Ø§Ù…ÙˆÙ…ØªØ± Ø¨Ø§Ù„Ù†ÙŠÙˆØªÙ† (N).
+
+Ø§Ù„Ø«Ù‚Ù„
+P = m Ã— g Ø­ÙŠØ« g â‰ˆ 9.8 Ù†ÙŠÙˆØªÙ†/ÙƒØº.
+Ù„Ø§ Ù†Ø®Ù„Ø·: Ø§Ù„ÙƒØªÙ„Ø© (ÙƒØº) Ø«Ø§Ø¨ØªØ©ØŒ ÙˆØ§Ù„Ø«Ù‚Ù„ (Ù†ÙŠÙˆØªÙ†) ÙŠØªØ¹Ù„Ù‚ Ø¨Ù€ g.
+
+Ø§Ù„ØªÙˆØ§Ø²Ù†
+Ø¬Ø³Ù… Ø®Ø§Ø¶Ø¹ Ù„Ù‚ÙˆØªÙŠÙ† ÙŠÙƒÙˆÙ† Ù…ØªÙˆØ§Ø²Ù†Ù‹Ø§ Ø¥Ø°Ø§ ØªØ³Ø§ÙˆØª Ø´Ø¯ØªØ§Ù‡Ù…Ø§ ÙˆØ§ØªØ¬Ø§Ù‡Ù‡Ù…Ø§ ÙˆØªØ¹Ø§ÙƒØ³ Ù…Ù†Ø­Ø§Ù‡Ù…Ø§.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'phenomenes-mecaniques';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Une voiture parcourt 120 km en 2 h. Sa vitesse moyenne estâ€¦', 'Ø³ÙŠØ§Ø±Ø© ØªÙ‚Ø·Ø¹ 120 ÙƒÙ„Ù… ÙÙŠ Ø³Ø§Ø¹ØªÙŠÙ†. Ø³Ø±Ø¹ØªÙ‡Ø§ Ø§Ù„Ù…ØªÙˆØ³Ø·Ø©â€¦',
+   '["60 km/h","240 km/h","122 km/h","30 km/h"]'::jsonb, '["60 ÙƒÙ„Ù…/Ø³Ø§","240 ÙƒÙ„Ù…/Ø³Ø§","122 ÙƒÙ„Ù…/Ø³Ø§","30 ÙƒÙ„Ù…/Ø³Ø§"]'::jsonb,
+   0, 'v = d/t = 120/2 = 60 km/h.', 'v = d/t = 60 ÙƒÙ„Ù…/Ø³Ø§.', 'easy', 1),
+  ('L''intensitÃ© d''une force se mesure avecâ€¦', 'Ø´Ø¯Ø© Ø§Ù„Ù‚ÙˆØ© ØªÙÙ‚Ø§Ø³ Ø¨Ù€â€¦',
+   '["un dynamomÃ¨tre","un thermomÃ¨tre","un voltmÃ¨tre","une rÃ¨gle"]'::jsonb, '["Ø§Ù„Ø¯ÙŠÙ†Ø§Ù…ÙˆÙ…ØªØ±","Ø§Ù„Ù…ÙŠØ²Ø§Ù† Ø§Ù„Ø­Ø±Ø§Ø±ÙŠ","Ø§Ù„ÙÙˆÙ„ØªÙ…ØªØ±","Ø§Ù„Ù…Ø³Ø·Ø±Ø©"]'::jsonb,
+   0, 'Le dynamomÃ¨tre mesure les forces en newtons.', 'Ø§Ù„Ø¯ÙŠÙ†Ø§Ù…ÙˆÙ…ØªØ± ÙŠÙ‚ÙŠØ³ Ø§Ù„Ù‚ÙˆÙ‰ Ø¨Ø§Ù„Ù†ÙŠÙˆØªÙ†.', 'easy', 2),
+  ('Le poids d''un objet de 5 kg (g = 9,8 N/kg) vautâ€¦', 'Ø«Ù‚Ù„ Ø¬Ø³Ù… ÙƒØªÙ„ØªÙ‡ 5 ÙƒØº (g = 9.8) ÙŠØ³Ø§ÙˆÙŠâ€¦',
+   '["49 N","5 N","9,8 N","0,5 N"]'::jsonb, '["49 N","5 N","9.8 N","0.5 N"]'::jsonb,
+   0, 'P = m Ã— g = 5 Ã— 9,8 = 49 N.', 'P = m Ã— g = 49 N.', 'medium', 3),
+  ('La masse d''un objet, sur la Lune, par rapport Ã  la Terreâ€¦', 'ÙƒØªÙ„Ø© Ø¬Ø³Ù… Ø¹Ù„Ù‰ Ø§Ù„Ù‚Ù…Ø± Ù…Ù‚Ø§Ø±Ù†Ø© Ø¨Ø§Ù„Ø£Ø±Ø¶â€¦',
+   '["ne change pas","diminue","augmente","devient nulle"]'::jsonb, '["Ù„Ø§ ØªØªØºÙŠØ±","ØªÙ†Ù‚Øµ","ØªØ²ÙŠØ¯","ØªÙ†Ø¹Ø¯Ù…"]'::jsonb,
+   0, 'La masse est invariable ; seul le poids change avec g.', 'Ø§Ù„ÙƒØªÙ„Ø© Ø«Ø§Ø¨ØªØ©ØŒ Ø§Ù„Ø«Ù‚Ù„ ÙˆØ­Ø¯Ù‡ ÙŠØªØºÙŠØ± Ù…Ø¹ g.', 'medium', 4),
+  ('Le mouvement est dit Â« relatif Â» car il dÃ©pendâ€¦', 'Ø§Ù„Ø­Ø±ÙƒØ© Â«Ù†Ø³Ø¨ÙŠØ©Â» Ù„Ø£Ù†Ù‡Ø§ ØªØªØ¹Ù„Ù‚ Ø¨Ù€â€¦',
+   '["du rÃ©fÃ©rentiel choisi","de la couleur","de la masse","du temps seulement"]'::jsonb, '["Ø§Ù„Ù…Ø±Ø¬Ø¹ Ø§Ù„Ù…Ø®ØªØ§Ø±","Ø§Ù„Ù„ÙˆÙ†","Ø§Ù„ÙƒØªÙ„Ø©","Ø§Ù„Ø²Ù…Ù† ÙÙ‚Ø·"]'::jsonb,
+   0, 'Le mouvement dÃ©pend du rÃ©fÃ©rentiel d''Ã©tude.', 'Ø§Ù„Ø­Ø±ÙƒØ© ØªØªØ¹Ù„Ù‚ Ø¨Ù…Ø±Ø¬Ø¹ Ø§Ù„Ø¯Ø±Ø§Ø³Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'phenomenes-mecaniques'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'MATIÃˆRE ET TRANSFORMATIONS
+
+ATOMES, MOLÃ‰CULES ET IONS
+â€¢ Atome : plus petite particule d''un Ã©lÃ©ment (noyau + Ã©lectrons).
+â€¢ MolÃ©cule : groupe d''atomes liÃ©s (ex. Hâ‚‚O, COâ‚‚).
+â€¢ Ion : atome ayant gagnÃ© ou perdu des Ã©lectrons (charge + ou âˆ’).
+
+TRANSFORMATION CHIMIQUE
+Des rÃ©actifs se transforment en produits. On l''Ã©crit par une Ã‰QUATION :
+rÃ©actifs â†’ produits.
+La combustion du carbone : C + Oâ‚‚ â†’ COâ‚‚.
+
+CONSERVATION DE LA MASSE (loi de Lavoisier)
+Â« Rien ne se perd, rien ne se crÃ©e, tout se transforme. Â»
+La masse totale des rÃ©actifs = masse totale des produits.
+On Ã‰QUILIBRE l''Ã©quation pour conserver chaque type d''atome.
+
+LES COMBUSTIONS
+â€¢ Combustion complÃ¨te du carbone â†’ dioxyde de carbone (COâ‚‚).
+â€¢ Combustion incomplÃ¨te â†’ monoxyde de carbone (CO), gaz toxique.
+Un combustible + un comburant (dioxygÃ¨ne) + une Ã©nergie d''activation.
+
+Ã€ RETENIR : dans une Ã©quation Ã©quilibrÃ©e, le nombre d''atomes de chaque Ã©lÃ©ment
+est le mÃªme avant et aprÃ¨s la flÃ¨che.',
+  lesson_ar = 'Ø§Ù„Ù…Ø§Ø¯Ø© ÙˆØªØ­ÙˆÙ„Ø§ØªÙ‡Ø§
+
+Ø§Ù„Ø°Ø±Ø§Øª ÙˆØ§Ù„Ø¬Ø²ÙŠØ¦Ø§Øª ÙˆØ§Ù„Ø´ÙˆØ§Ø±Ø¯
+â€¢ Ø§Ù„Ø°Ø±Ø©: Ø£ØµØºØ± Ø¬Ø²Ø¡ Ù…Ù† Ø¹Ù†ØµØ± (Ù†ÙˆØ§Ø© + Ø¥Ù„ÙƒØªØ±ÙˆÙ†Ø§Øª).
+â€¢ Ø§Ù„Ø¬Ø²ÙŠØ¡: Ù…Ø¬Ù…ÙˆØ¹Ø© Ø°Ø±Ø§Øª Ù…Ø±ØªØ¨Ø·Ø© (Hâ‚‚OØŒ COâ‚‚).
+â€¢ Ø§Ù„Ø´Ø§Ø±Ø¯Ø©: Ø°Ø±Ø© ÙƒØ³Ø¨Øª Ø£Ùˆ ÙÙ‚Ø¯Øª Ø¥Ù„ÙƒØªØ±ÙˆÙ†Ø§Øª (Ø´Ø­Ù†Ø© + Ø£Ùˆ âˆ’).
+
+Ø§Ù„ØªØ­ÙˆÙ„ Ø§Ù„ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠ
+ØªØªØ­ÙˆÙ„ Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª Ø¥Ù„Ù‰ Ù†ÙˆØ§ØªØ¬ØŒ ÙˆÙ†ÙƒØªØ¨Ù‡ Ø¨Ù…Ø¹Ø§Ø¯Ù„Ø©: Ù…ØªÙØ§Ø¹Ù„Ø§Øª â† Ù†ÙˆØ§ØªØ¬.
+Ø§Ø­ØªØ±Ø§Ù‚ Ø§Ù„ÙƒØ±Ø¨ÙˆÙ†: C + Oâ‚‚ â†’ COâ‚‚.
+
+Ø§Ù†Ø­ÙØ§Ø¸ Ø§Ù„ÙƒØªÙ„Ø© (Ù‚Ø§Ù†ÙˆÙ† Ù„Ø§ÙÙˆØ§Ø²ÙŠÙŠÙ‡)
+Â«Ù„Ø§ Ø´ÙŠØ¡ ÙŠÙÙÙ‚Ø¯ ÙˆÙ„Ø§ Ø´ÙŠØ¡ ÙŠÙØ®Ù„Ù‚ØŒ ÙƒÙ„ Ø´ÙŠØ¡ ÙŠØªØ­ÙˆÙ„.Â»
+ÙƒØªÙ„Ø© Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª = ÙƒØªÙ„Ø© Ø§Ù„Ù†ÙˆØ§ØªØ¬ØŒ ÙˆÙ†ÙˆØ§Ø²Ù† Ø§Ù„Ù…Ø¹Ø§Ø¯Ù„Ø©.
+
+Ø§Ù„Ø§Ø­ØªØ±Ø§Ù‚Ø§Øª
+â€¢ Ø§Ø­ØªØ±Ø§Ù‚ ØªØ§Ù… Ù„Ù„ÙƒØ±Ø¨ÙˆÙ† â† Ø«Ø§Ù†ÙŠ Ø£ÙƒØ³ÙŠØ¯ Ø§Ù„ÙƒØ±Ø¨ÙˆÙ† COâ‚‚.
+â€¢ Ø§Ø­ØªØ±Ø§Ù‚ Ù†Ø§Ù‚Øµ â† Ø£ÙˆÙ„ Ø£ÙƒØ³ÙŠØ¯ Ø§Ù„ÙƒØ±Ø¨ÙˆÙ† CO (ØºØ§Ø² Ø³Ø§Ù…).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'matiere-transformations';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('La formule chimique de l''eau estâ€¦', 'Ø§Ù„ØµÙŠØºØ© Ø§Ù„ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠØ© Ù„Ù„Ù…Ø§Ø¡ Ù‡ÙŠâ€¦',
+   '["Hâ‚‚O","COâ‚‚","Oâ‚‚","Hâ‚‚"]'::jsonb, '["Hâ‚‚O","COâ‚‚","Oâ‚‚","Hâ‚‚"]'::jsonb,
+   0, 'L''eau : 2 atomes d''hydrogÃ¨ne + 1 d''oxygÃ¨ne.', 'Ø§Ù„Ù…Ø§Ø¡: Ø°Ø±ØªØ§ Ù‡ÙŠØ¯Ø±ÙˆØ¬ÙŠÙ† ÙˆØ°Ø±Ø© Ø£ÙƒØ³Ø¬ÙŠÙ†.', 'easy', 1),
+  ('Un ion est un atome qui aâ€¦', 'Ø§Ù„Ø´Ø§Ø±Ø¯Ø© Ø°Ø±Ø©â€¦',
+   '["gagnÃ© ou perdu des Ã©lectrons","gagnÃ© un noyau","changÃ© de couleur","disparu"]'::jsonb, '["ÙƒØ³Ø¨Øª Ø£Ùˆ ÙÙ‚Ø¯Øª Ø¥Ù„ÙƒØªØ±ÙˆÙ†Ø§Øª","Ø§ÙƒØªØ³Ø¨Øª Ù†ÙˆØ§Ø©","ØªØºÙŠÙ‘Ø± Ù„ÙˆÙ†Ù‡Ø§","Ø§Ø®ØªÙØª"]'::jsonb,
+   0, 'Gain/perte d''Ã©lectrons â†’ charge Ã©lectrique.', 'ÙƒØ³Ø¨/ÙÙ‚Ø¯ Ø¥Ù„ÙƒØªØ±ÙˆÙ†Ø§Øª â† Ø´Ø­Ù†Ø© ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ©.', 'medium', 2),
+  ('La combustion complÃ¨te du carbone donneâ€¦', 'Ø§Ù„Ø§Ø­ØªØ±Ø§Ù‚ Ø§Ù„ØªØ§Ù… Ù„Ù„ÙƒØ±Ø¨ÙˆÙ† ÙŠØ¹Ø·ÙŠâ€¦',
+   '["du dioxyde de carbone (COâ‚‚)","du monoxyde (CO)","de l''eau","de l''hydrogÃ¨ne"]'::jsonb, '["Ø«Ø§Ù†ÙŠ Ø£ÙƒØ³ÙŠØ¯ Ø§Ù„ÙƒØ±Ø¨ÙˆÙ† COâ‚‚","Ø£ÙˆÙ„ Ø£ÙƒØ³ÙŠØ¯ CO","Ø§Ù„Ù…Ø§Ø¡","Ø§Ù„Ù‡ÙŠØ¯Ø±ÙˆØ¬ÙŠÙ†"]'::jsonb,
+   0, 'C + Oâ‚‚ â†’ COâ‚‚.', 'C + Oâ‚‚ â†’ COâ‚‚.', 'medium', 3),
+  ('Selon la loi de Lavoisier, lors d''une rÃ©action la masse totaleâ€¦', 'Ø­Ø³Ø¨ Ù‚Ø§Ù†ÙˆÙ† Ù„Ø§ÙÙˆØ§Ø²ÙŠÙŠÙ‡ØŒ Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„ØªÙØ§Ø¹Ù„ Ø§Ù„ÙƒØªÙ„Ø© Ø§Ù„ÙƒÙ„ÙŠØ©â€¦',
+   '["se conserve","augmente","diminue","disparaÃ®t"]'::jsonb, '["ØªÙ†Ø­ÙØ¸","ØªØ²ÙŠØ¯","ØªÙ†Ù‚Øµ","ØªØ®ØªÙÙŠ"]'::jsonb,
+   0, 'La masse des rÃ©actifs = masse des produits.', 'ÙƒØªÙ„Ø© Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª = ÙƒØªÙ„Ø© Ø§Ù„Ù†ÙˆØ§ØªØ¬.', 'easy', 4),
+  ('Le gaz toxique produit par une combustion incomplÃ¨te estâ€¦', 'Ø§Ù„ØºØ§Ø² Ø§Ù„Ø³Ø§Ù… Ø§Ù„Ù†Ø§ØªØ¬ Ø¹Ù† Ø§Ø­ØªØ±Ø§Ù‚ Ù†Ø§Ù‚Øµ Ù‡Ùˆâ€¦',
+   '["le monoxyde de carbone (CO)","le dioxygÃ¨ne","l''azote","la vapeur d''eau"]'::jsonb, '["Ø£ÙˆÙ„ Ø£ÙƒØ³ÙŠØ¯ Ø§Ù„ÙƒØ±Ø¨ÙˆÙ† CO","Ø«Ù†Ø§Ø¦ÙŠ Ø§Ù„Ø£ÙƒØ³Ø¬ÙŠÙ†","Ø§Ù„Ø¢Ø²ÙˆØª","Ø¨Ø®Ø§Ø± Ø§Ù„Ù…Ø§Ø¡"]'::jsonb,
+   0, 'CO est un gaz toxique, dangereux dans les piÃ¨ces mal ventilÃ©es.', 'CO ØºØ§Ø² Ø³Ø§Ù… Ø®Ø·ÙŠØ± ÙÙŠ Ø§Ù„Ø£Ù…Ø§ÙƒÙ† Ø³ÙŠØ¦Ø© Ø§Ù„ØªÙ‡ÙˆÙŠØ©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'physique' and c.slug = 'matiere-transformations'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- ================= 4AM SVT =================
+
+update public.chapters c set
+  lesson_fr = 'LA COORDINATION NERVEUSE
+
+LE SYSTÃˆME NERVEUX
+â€¢ SystÃ¨me nerveux central : encÃ©phale (cerveau, cervelet, bulbe) + moelle Ã©piniÃ¨re.
+â€¢ SystÃ¨me nerveux pÃ©riphÃ©rique : les nerfs.
+
+LE NEURONE
+Cellule de base du systÃ¨me nerveux. Il conduit le MESSAGE NERVEUX, de nature
+Ã©lectrique, toujours dans un seul sens (dendrites â†’ corps cellulaire â†’ axone).
+
+L''ACTE VOLONTAIRE
+DÃ©cidÃ© par le cerveau. Trajet : organe des sens â†’ nerf â†’ cerveau (dÃ©cision) â†’
+nerf â†’ muscle. Ex. attraper un objet que l''on vise.
+
+L''ACTE RÃ‰FLEXE
+Rapide, involontaire, protÃ¨ge l''organisme. Il passe par la MOELLE Ã‰PINIÃˆRE,
+pas par le cerveau. Trajet (arc rÃ©flexe) : rÃ©cepteur â†’ nerf sensitif â†’
+moelle Ã©piniÃ¨re â†’ nerf moteur â†’ muscle. Ex. retirer la main d''une surface chaude.
+
+L''HYGIÃˆNE DU SYSTÃˆME NERVEUX
+Sommeil suffisant, Ã©viter alcool et drogues qui perturbent la transmission
+du message nerveux.',
+  lesson_ar = 'Ø§Ù„ØªÙ†Ø³ÙŠÙ‚ Ø§Ù„Ø¹ØµØ¨ÙŠ
+
+Ø§Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ø¹ØµØ¨ÙŠ
+â€¢ Ù…Ø±ÙƒØ²ÙŠ: Ø§Ù„Ø¯Ù…Ø§Øº (Ø§Ù„Ù…Ø®ØŒ Ø§Ù„Ù…Ø®ÙŠØ®ØŒ Ø§Ù„Ø¨ØµÙ„Ø©) + Ø§Ù„Ù†Ø®Ø§Ø¹ Ø§Ù„Ø´ÙˆÙƒÙŠ.
+â€¢ Ù…Ø­ÙŠØ·ÙŠ: Ø§Ù„Ø£Ø¹ØµØ§Ø¨.
+
+Ø§Ù„Ø¹ØµØ¨ÙˆÙ† (Ø§Ù„Ø®Ù„ÙŠØ© Ø§Ù„Ø¹ØµØ¨ÙŠØ©)
+Ø§Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©ØŒ ÙŠÙ†Ù‚Ù„ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø§Ù„Ø¹ØµØ¨ÙŠØ© Ø°Ø§Øª Ø§Ù„Ø·Ø¨ÙŠØ¹Ø© Ø§Ù„ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ© ÙÙŠ Ø§ØªØ¬Ø§Ù‡ ÙˆØ§Ø­Ø¯.
+
+Ø§Ù„ÙØ¹Ù„ Ø§Ù„Ø¥Ø±Ø§Ø¯ÙŠ
+ÙŠÙ‚Ø±Ø±Ù‡ Ø§Ù„Ù…Ø®. Ø§Ù„Ù…Ø³Ø§Ø±: Ø¹Ø¶Ùˆ Ø­Ø³ÙŠ â† Ø¹ØµØ¨ â† Ø§Ù„Ù…Ø® (Ø§Ù„Ù‚Ø±Ø§Ø±) â† Ø¹ØµØ¨ â† Ø¹Ø¶Ù„Ø©.
+
+Ø§Ù„ÙØ¹Ù„ Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³ÙŠ
+Ø³Ø±ÙŠØ¹ Ù„Ø§Ø¥Ø±Ø§Ø¯ÙŠ ÙŠØ­Ù…ÙŠ Ø§Ù„Ø¬Ø³Ù…ØŒ ÙŠÙ…Ø± Ø¹Ø¨Ø± Ø§Ù„Ù†Ø®Ø§Ø¹ Ø§Ù„Ø´ÙˆÙƒÙŠ Ù„Ø§ Ø§Ù„Ù…Ø®.
+Ø§Ù„Ù‚ÙˆØ³ Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³ÙŠ: Ù…Ø³ØªÙ‚Ø¨Ù„ â† Ø¹ØµØ¨ Ø­Ø³ÙŠ â† Ø§Ù„Ù†Ø®Ø§Ø¹ Ø§Ù„Ø´ÙˆÙƒÙŠ â† Ø¹ØµØ¨ Ø­Ø±ÙƒÙŠ â† Ø¹Ø¶Ù„Ø©.
+
+Ø­ÙØ¸ ØµØ­Ø© Ø§Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ø¹ØµØ¨ÙŠ
+Ù†ÙˆÙ… ÙƒØ§ÙÙØŒ ØªØ¬Ù†Ø¨ Ø§Ù„ÙƒØ­ÙˆÙ„ ÙˆØ§Ù„Ù…Ø®Ø¯Ø±Ø§Øª Ø§Ù„ØªÙŠ ØªØ¹ÙŠÙ‚ Ù†Ù‚Ù„ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø§Ù„Ø¹ØµØ¨ÙŠØ©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'coordination-nerveuse';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('La cellule de base du systÃ¨me nerveux estâ€¦', 'Ø§Ù„ÙˆØ­Ø¯Ø© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ© Ù„Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ø¹ØµØ¨ÙŠ Ù‡ÙŠâ€¦',
+   '["le neurone","le globule rouge","le muscle","l''os"]'::jsonb, '["Ø§Ù„Ø¹ØµØ¨ÙˆÙ†","Ø§Ù„ÙƒØ±ÙŠØ© Ø§Ù„Ø­Ù…Ø±Ø§Ø¡","Ø§Ù„Ø¹Ø¶Ù„Ø©","Ø§Ù„Ø¹Ø¸Ù…"]'::jsonb,
+   0, 'Le neurone conduit le message nerveux.', 'Ø§Ù„Ø¹ØµØ¨ÙˆÙ† ÙŠÙ†Ù‚Ù„ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø§Ù„Ø¹ØµØ¨ÙŠØ©.', 'easy', 1),
+  ('L''acte rÃ©flexe passe parâ€¦', 'Ø§Ù„ÙØ¹Ù„ Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³ÙŠ ÙŠÙ…Ø± Ø¹Ø¨Ø±â€¦',
+   '["la moelle Ã©piniÃ¨re","le cerveau","le cÅ“ur","l''estomac"]'::jsonb, '["Ø§Ù„Ù†Ø®Ø§Ø¹ Ø§Ù„Ø´ÙˆÙƒÙŠ","Ø§Ù„Ù…Ø®","Ø§Ù„Ù‚Ù„Ø¨","Ø§Ù„Ù…Ø¹Ø¯Ø©"]'::jsonb,
+   0, 'Le rÃ©flexe passe par la moelle Ã©piniÃ¨re, pas le cerveau.', 'Ø§Ù„ÙØ¹Ù„ Ø§Ù„Ø§Ù†Ø¹ÙƒØ§Ø³ÙŠ ÙŠÙ…Ø± Ø¹Ø¨Ø± Ø§Ù„Ù†Ø®Ø§Ø¹ Ø§Ù„Ø´ÙˆÙƒÙŠ Ù„Ø§ Ø§Ù„Ù…Ø®.', 'medium', 2),
+  ('Le message nerveux est de natureâ€¦', 'Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø§Ù„Ø¹ØµØ¨ÙŠØ© Ø°Ø§Øª Ø·Ø¨ÙŠØ¹Ø©â€¦',
+   '["Ã©lectrique","chimique uniquement","lumineuse","sonore"]'::jsonb, '["ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ©","ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠØ© ÙÙ‚Ø·","Ø¶ÙˆØ¦ÙŠØ©","ØµÙˆØªÙŠØ©"]'::jsonb,
+   0, 'Le long du neurone, le message est Ã©lectrique.', 'Ø¹Ù„Ù‰ Ø·ÙˆÙ„ Ø§Ù„Ø¹ØµØ¨ÙˆÙ† Ø§Ù„Ø±Ø³Ø§Ù„Ø© ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ©.', 'medium', 3),
+  ('Retirer sa main d''une surface chaude est un acteâ€¦', 'Ø³Ø­Ø¨ Ø§Ù„ÙŠØ¯ Ù…Ù† Ø³Ø·Ø­ Ø³Ø§Ø®Ù† ÙØ¹Ù„â€¦',
+   '["rÃ©flexe","volontaire","rÃ©flÃ©chi","lent"]'::jsonb, '["Ø§Ù†Ø¹ÙƒØ§Ø³ÙŠ","Ø¥Ø±Ø§Ø¯ÙŠ","Ù…Ø¯Ø±ÙˆØ³","Ø¨Ø·ÙŠØ¡"]'::jsonb,
+   0, 'C''est un rÃ©flexe : rapide et involontaire.', 'Ø¥Ù†Ù‡ ÙØ¹Ù„ Ø§Ù†Ø¹ÙƒØ§Ø³ÙŠ Ø³Ø±ÙŠØ¹ Ù„Ø§Ø¥Ø±Ø§Ø¯ÙŠ.', 'easy', 4),
+  ('Le systÃ¨me nerveux central comprendâ€¦', 'Ø§Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ø¹ØµØ¨ÙŠ Ø§Ù„Ù…Ø±ÙƒØ²ÙŠ ÙŠØ´Ù…Ù„â€¦',
+   '["l''encÃ©phale et la moelle Ã©piniÃ¨re","les nerfs seulement","les muscles","les os"]'::jsonb, '["Ø§Ù„Ø¯Ù…Ø§Øº ÙˆØ§Ù„Ù†Ø®Ø§Ø¹ Ø§Ù„Ø´ÙˆÙƒÙŠ","Ø§Ù„Ø£Ø¹ØµØ§Ø¨ ÙÙ‚Ø·","Ø§Ù„Ø¹Ø¶Ù„Ø§Øª","Ø§Ù„Ø¹Ø¸Ø§Ù…"]'::jsonb,
+   0, 'EncÃ©phale + moelle Ã©piniÃ¨re = systÃ¨me nerveux central.', 'Ø§Ù„Ø¯Ù…Ø§Øº + Ø§Ù„Ù†Ø®Ø§Ø¹ Ø§Ù„Ø´ÙˆÙƒÙŠ = Ø§Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ù…Ø±ÙƒØ²ÙŠ.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'coordination-nerveuse'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LA COORDINATION HORMONALE
+
+LES HORMONES
+Une hormone est un messager CHIMIQUE fabriquÃ© par une glande, transportÃ© par
+le SANG jusqu''Ã  un organe cible. La coordination hormonale est plus lente
+que la nerveuse mais ses effets durent plus longtemps.
+
+LES GLANDES ENDOCRINES
+â€¢ Hypophyse : Â« chef d''orchestre Â» qui commande d''autres glandes.
+â€¢ ThyroÃ¯de : rÃ¨gle le mÃ©tabolisme.
+â€¢ PancrÃ©as : rÃ¨gle la glycÃ©mie (insuline et glucagon).
+â€¢ Glandes sexuelles : testicules et ovaires.
+
+LA RÃ‰GULATION DE LA GLYCÃ‰MIE
+La glycÃ©mie (taux de sucre dans le sang) est maintenue autour de 1 g/L.
+â€¢ Trop de sucre â†’ le pancrÃ©as libÃ¨re de l''INSULINE (fait baisser la glycÃ©mie).
+â€¢ Pas assez â†’ le pancrÃ©as libÃ¨re du GLUCAGON (fait monter la glycÃ©mie).
+Le diabÃ¨te est un dÃ©faut de cette rÃ©gulation.
+
+NERVEUX vs HORMONAL
+Nerveux : rapide, bref, message Ã©lectrique, voie = nerfs.
+Hormonal : lent, durable, message chimique, voie = sang.',
+  lesson_ar = 'Ø§Ù„ØªÙ†Ø³ÙŠÙ‚ Ø§Ù„Ù‡Ø±Ù…ÙˆÙ†ÙŠ
+
+Ø§Ù„Ù‡Ø±Ù…ÙˆÙ†Ø§Øª
+Ø§Ù„Ù‡Ø±Ù…ÙˆÙ† Ø±Ø³ÙˆÙ„ ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠ ØªØµÙ†Ø¹Ù‡ ØºØ¯Ø©ØŒ ÙŠÙ†Ù‚Ù„Ù‡ Ø§Ù„Ø¯Ù… Ø¥Ù„Ù‰ Ø¹Ø¶Ùˆ Ù…Ø³ØªÙ‡Ø¯Ù. Ø§Ù„ØªÙ†Ø³ÙŠÙ‚ Ø§Ù„Ù‡Ø±Ù…ÙˆÙ†ÙŠ
+Ø£Ø¨Ø·Ø£ Ù…Ù† Ø§Ù„Ø¹ØµØ¨ÙŠ Ù„ÙƒÙ† Ø¢Ø«Ø§Ø±Ù‡ ØªØ¯ÙˆÙ… Ø£Ø·ÙˆÙ„.
+
+Ø§Ù„ØºØ¯Ø¯ Ø§Ù„ØµÙ…Ø§Ø¡
+â€¢ Ø§Ù„Ù†Ø®Ø§Ù…ÙŠØ©: Â«Ù‚Ø§Ø¦Ø¯ Ø§Ù„Ø£ÙˆØ±ÙƒØ³ØªØ±Ø§Â» ÙŠØªØ­ÙƒÙ… ÙÙŠ ØºØ¯Ø¯ Ø£Ø®Ø±Ù‰.
+â€¢ Ø§Ù„Ø¯Ø±Ù‚ÙŠØ©: ØªÙ†Ø¸Ù‘Ù… Ø§Ù„Ø§Ø³ØªÙ‚Ù„Ø§Ø¨.
+â€¢ Ø§Ù„Ø¨Ù†ÙƒØ±ÙŠØ§Ø³: ÙŠÙ†Ø¸Ù‘Ù… Ù†Ø³Ø¨Ø© Ø§Ù„Ø³ÙƒØ± (Ø§Ù„Ø£Ù†Ø³ÙˆÙ„ÙŠÙ† ÙˆØ§Ù„ØºÙ„ÙˆÙƒØ§ØºÙˆÙ†).
+â€¢ Ø§Ù„ØºØ¯Ø¯ Ø§Ù„ØªÙ†Ø§Ø³Ù„ÙŠØ©: Ø§Ù„Ø®ØµÙŠØªØ§Ù† ÙˆØ§Ù„Ù…Ø¨ÙŠØ¶Ø§Ù†.
+
+ØªÙ†Ø¸ÙŠÙ… Ù†Ø³Ø¨Ø© Ø§Ù„Ø³ÙƒØ± (Ø§Ù„ØªØ­Ù„ÙˆÙ†)
+ØªÙØ­ÙØ¸ Ø­ÙˆØ§Ù„ÙŠ 1 Øº/Ù„.
+â€¢ Ø³ÙƒØ± Ø²Ø§Ø¦Ø¯ â† ÙŠÙØ±Ø² Ø§Ù„Ø¨Ù†ÙƒØ±ÙŠØ§Ø³ Ø§Ù„Ø£Ù†Ø³ÙˆÙ„ÙŠÙ† (ÙŠØ®ÙØ¶ Ø§Ù„Ø³ÙƒØ±).
+â€¢ Ø³ÙƒØ± Ù†Ø§Ù‚Øµ â† ÙŠÙØ±Ø² Ø§Ù„ØºÙ„ÙˆÙƒØ§ØºÙˆÙ† (ÙŠØ±ÙØ¹ Ø§Ù„Ø³ÙƒØ±).
+Ø§Ù„Ø³ÙƒØ±ÙŠ Ø®Ù„Ù„ ÙÙŠ Ù‡Ø°Ø§ Ø§Ù„ØªÙ†Ø¸ÙŠÙ….
+
+Ø¹ØµØ¨ÙŠ Ù…Ù‚Ø§Ø¨Ù„ Ù‡Ø±Ù…ÙˆÙ†ÙŠ
+Ø§Ù„Ø¹ØµØ¨ÙŠ: Ø³Ø±ÙŠØ¹ØŒ Ù‚ØµÙŠØ±ØŒ ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØŒ Ø¹Ø¨Ø± Ø§Ù„Ø£Ø¹ØµØ§Ø¨.
+Ø§Ù„Ù‡Ø±Ù…ÙˆÙ†ÙŠ: Ø¨Ø·ÙŠØ¡ØŒ Ø¯Ø§Ø¦Ù…ØŒ ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠØŒ Ø¹Ø¨Ø± Ø§Ù„Ø¯Ù….'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'coordination-hormonale';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Une hormone est transportÃ©e parâ€¦', 'ÙŠÙ†Ù‚Ù„ Ø§Ù„Ù‡Ø±Ù…ÙˆÙ† Ø¨ÙˆØ§Ø³Ø·Ø©â€¦',
+   '["le sang","les nerfs","l''air","la lymphe seulement"]'::jsonb, '["Ø§Ù„Ø¯Ù…","Ø§Ù„Ø£Ø¹ØµØ§Ø¨","Ø§Ù„Ù‡ÙˆØ§Ø¡","Ø§Ù„Ù„Ù…Ù ÙÙ‚Ø·"]'::jsonb,
+   0, 'L''hormone circule dans le sang jusqu''Ã  l''organe cible.', 'Ø§Ù„Ù‡Ø±Ù…ÙˆÙ† ÙŠÙ†ØªÙ‚Ù„ Ø¹Ø¨Ø± Ø§Ù„Ø¯Ù… Ø¥Ù„Ù‰ Ø§Ù„Ø¹Ø¶Ùˆ Ø§Ù„Ù…Ø³ØªÙ‡Ø¯Ù.', 'easy', 1),
+  ('Quelle glande rÃ¨gle la glycÃ©mie ?', 'Ø£ÙŠ ØºØ¯Ø© ØªÙ†Ø¸Ù‘Ù… Ù†Ø³Ø¨Ø© Ø§Ù„Ø³ÙƒØ±ØŸ',
+   '["le pancrÃ©as","la thyroÃ¯de","l''hypophyse","le foie"]'::jsonb, '["Ø§Ù„Ø¨Ù†ÙƒØ±ÙŠØ§Ø³","Ø§Ù„Ø¯Ø±Ù‚ÙŠØ©","Ø§Ù„Ù†Ø®Ø§Ù…ÙŠØ©","Ø§Ù„ÙƒØ¨Ø¯"]'::jsonb,
+   0, 'Le pancrÃ©as sÃ©crÃ¨te insuline et glucagon.', 'Ø§Ù„Ø¨Ù†ÙƒØ±ÙŠØ§Ø³ ÙŠÙØ±Ø² Ø§Ù„Ø£Ù†Ø³ÙˆÙ„ÙŠÙ† ÙˆØ§Ù„ØºÙ„ÙˆÙƒØ§ØºÙˆÙ†.', 'medium', 2),
+  ('L''hormone qui fait BAISSER la glycÃ©mie estâ€¦', 'Ø§Ù„Ù‡Ø±Ù…ÙˆÙ† Ø§Ù„Ø°ÙŠ ÙŠØ®ÙØ¶ Ù†Ø³Ø¨Ø© Ø§Ù„Ø³ÙƒØ± Ù‡Ùˆâ€¦',
+   '["l''insuline","le glucagon","l''adrÃ©naline","la thyroxine"]'::jsonb, '["Ø§Ù„Ø£Ù†Ø³ÙˆÙ„ÙŠÙ†","Ø§Ù„ØºÙ„ÙˆÙƒØ§ØºÙˆÙ†","Ø§Ù„Ø£Ø¯Ø±ÙŠÙ†Ø§Ù„ÙŠÙ†","Ø§Ù„Ø«ÙŠØ±ÙˆÙƒØ³ÙŠÙ†"]'::jsonb,
+   0, 'L''insuline fait baisser la glycÃ©mie.', 'Ø§Ù„Ø£Ù†Ø³ÙˆÙ„ÙŠÙ† ÙŠØ®ÙØ¶ Ù†Ø³Ø¨Ø© Ø§Ù„Ø³ÙƒØ±.', 'medium', 3),
+  ('La coordination hormonale, comparÃ©e Ã  la nerveuse, estâ€¦', 'Ø§Ù„ØªÙ†Ø³ÙŠÙ‚ Ø§Ù„Ù‡Ø±Ù…ÙˆÙ†ÙŠ Ù…Ù‚Ø§Ø±Ù†Ø© Ø¨Ø§Ù„Ø¹ØµØ¨ÙŠâ€¦',
+   '["plus lente et durable","plus rapide et brÃ¨ve","identique","instantanÃ©e"]'::jsonb, '["Ø£Ø¨Ø·Ø£ ÙˆØ£Ø·ÙˆÙ„ Ø£Ø«Ø±Ù‹Ø§","Ø£Ø³Ø±Ø¹ ÙˆØ£Ù‚ØµØ±","Ù…Ù…Ø§Ø«Ù„Ø©","Ù„Ø­Ø¸ÙŠØ©"]'::jsonb,
+   0, 'Hormonal = lent mais durable.', 'Ø§Ù„Ù‡Ø±Ù…ÙˆÙ†ÙŠ Ø¨Ø·ÙŠØ¡ Ù„ÙƒÙ†Ù‡ Ø¯Ø§Ø¦Ù….', 'easy', 4),
+  ('La glycÃ©mie normale est d''environâ€¦', 'Ù†Ø³Ø¨Ø© Ø§Ù„Ø³ÙƒØ± Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ© Ø­ÙˆØ§Ù„ÙŠâ€¦',
+   '["1 g/L","10 g/L","0,1 g/L","5 g/L"]'::jsonb, '["1 Øº/Ù„","10 Øº/Ù„","0.1 Øº/Ù„","5 Øº/Ù„"]'::jsonb,
+   0, 'Environ 1 g/L Ã  jeun.', 'Ø­ÙˆØ§Ù„ÙŠ 1 Øº/Ù„ Ø¹Ù„Ù‰ Ø§Ù„Ø±ÙŠÙ‚.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'coordination-hormonale'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'L''IMMUNITÃ‰
+
+LES DÃ‰FENSES DE L''ORGANISME
+Le corps se dÃ©fend contre les microbes (bactÃ©ries, virus) qui sont des
+ANTIGÃˆNES (Ã©lÃ©ments Ã©trangers = Â« non-soi Â»).
+
+LA DÃ‰FENSE NON SPÃ‰CIFIQUE (immÃ©diate)
+â€¢ La peau et les muqueuses : premiÃ¨re barriÃ¨re.
+â€¢ La PHAGOCYTOSE : les phagocytes (globules blancs) englobent et digÃ¨rent
+  les microbes. Se dÃ©roule en Ã©tapes : adhÃ©sion â†’ absorption â†’ digestion.
+
+LA DÃ‰FENSE SPÃ‰CIFIQUE (plus lente, ciblÃ©e)
+â€¢ RÃ©ponse Ã  MÃ‰DIATION HUMORALE : les lymphocytes B produisent des ANTICORPS
+  qui neutralisent un antigÃ¨ne prÃ©cis (clÃ©-serrure).
+â€¢ RÃ©ponse Ã  MÃ‰DIATION CELLULAIRE : les lymphocytes T dÃ©truisent les cellules
+  infectÃ©es.
+
+LA MÃ‰MOIRE IMMUNITAIRE ET LA VACCINATION
+AprÃ¨s une premiÃ¨re rencontre, l''organisme garde des cellules mÃ©moire.
+La VACCINATION introduit un antigÃ¨ne affaibli pour crÃ©er cette mÃ©moire
+sans tomber malade. La SÃ‰ROTHÃ‰RAPIE injecte directement des anticorps
+(action rapide mais brÃ¨ve).',
+  lesson_ar = 'Ø§Ù„Ù…Ù†Ø§Ø¹Ø©
+
+Ø¯ÙØ§Ø¹Ø§Øª Ø§Ù„Ø¬Ø³Ù…
+ÙŠØ¯Ø§ÙØ¹ Ø§Ù„Ø¬Ø³Ù… Ø¹Ù† Ù†ÙØ³Ù‡ Ø¶Ø¯ Ø§Ù„Ù…ÙŠÙƒØ±ÙˆØ¨Ø§Øª (Ø¨ÙƒØªÙŠØ±ÙŠØ§ØŒ ÙÙŠØ±ÙˆØ³Ø§Øª) ÙˆÙ‡ÙŠ Ù…Ø³ØªØ¶Ø¯Ø§Øª (Ø¹Ù†Ø§ØµØ± ØºØ±ÙŠØ¨Ø© = Ù„Ø§Ø°Ø§Øª).
+
+Ø§Ù„Ø¯ÙØ§Ø¹ Ø§Ù„Ù„Ø§Ù†ÙˆØ¹ÙŠ (ÙÙˆØ±ÙŠ)
+â€¢ Ø§Ù„Ø¬Ù„Ø¯ ÙˆØ§Ù„Ø£ØºØ´ÙŠØ© Ø§Ù„Ù…Ø®Ø§Ø·ÙŠØ©: Ø§Ù„Ø­Ø§Ø¬Ø² Ø§Ù„Ø£ÙˆÙ„.
+â€¢ Ø§Ù„Ø¨Ù„Ø¹Ù…Ø©: ØªØ­ÙŠØ· Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ø¨Ù„Ø¹Ù…ÙŠØ© (ÙƒØ±ÙŠØ§Øª Ø¨ÙŠØ¶Ø§Ø¡) Ø¨Ø§Ù„Ù…ÙŠÙƒØ±ÙˆØ¨ ÙˆØªÙ‡Ø¶Ù…Ù‡:
+  Ø§Ù„ØªØµØ§Ù‚ â† Ø¥Ø­Ø§Ø·Ø© â† Ù‡Ø¶Ù….
+
+Ø§Ù„Ø¯ÙØ§Ø¹ Ø§Ù„Ù†ÙˆØ¹ÙŠ (Ø£Ø¨Ø·Ø£ØŒ Ù…ÙˆØ¬Ù‘Ù‡)
+â€¢ Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ø®Ù„Ø·ÙŠØ©: ØªÙ†ØªØ¬ Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª B Ø£Ø¬Ø³Ø§Ù…Ù‹Ø§ Ù…Ø¶Ø§Ø¯Ø© ØªØ¹Ø§Ø¯Ù„ Ù…Ø³ØªØ¶Ø¯Ù‹Ø§ Ù…Ø­Ø¯Ø¯Ù‹Ø§ (Ù…ÙØªØ§Ø­-Ù‚ÙÙ„).
+â€¢ Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ø®Ù„ÙˆÙŠØ©: ØªØªÙ„Ù Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ù…ØµØ§Ø¨Ø©.
+
+Ø§Ù„Ø°Ø§ÙƒØ±Ø© Ø§Ù„Ù…Ù†Ø§Ø¹ÙŠØ© ÙˆØ§Ù„ØªÙ„Ù‚ÙŠØ­
+ÙŠØ­ØªÙØ¸ Ø§Ù„Ø¬Ø³Ù… Ø¨Ø®Ù„Ø§ÙŠØ§ Ø°Ø§ÙƒØ±Ø©. Ø§Ù„ØªÙ„Ù‚ÙŠØ­ ÙŠÙØ¯Ø®Ù„ Ù…Ø³ØªØ¶Ø¯Ù‹Ø§ Ù…Ø¶Ø¹Ù‘ÙÙ‹Ø§ Ù„Ø¨Ù†Ø§Ø¡ Ø§Ù„Ø°Ø§ÙƒØ±Ø© Ø¯ÙˆÙ† Ù…Ø±Ø¶.
+Ø§Ù„Ø§Ø³ØªÙ…ØµØ§Ù„ ÙŠØ­Ù‚Ù† Ø£Ø¬Ø³Ø§Ù…Ù‹Ø§ Ù…Ø¶Ø§Ø¯Ø© Ù…Ø¨Ø§Ø´Ø±Ø© (Ø£Ø«Ø± Ø³Ø±ÙŠØ¹ Ù„ÙƒÙ† Ù‚ØµÙŠØ±).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'immunite';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Un Ã©lÃ©ment Ã©tranger reconnu par l''organisme s''appelleâ€¦', 'Ø§Ù„Ø¹Ù†ØµØ± Ø§Ù„ØºØ±ÙŠØ¨ Ø§Ù„Ø°ÙŠ ÙŠØªØ¹Ø±ÙÙ‡ Ø§Ù„Ø¬Ø³Ù… ÙŠÙØ³Ù…Ù‰â€¦',
+   '["un antigÃ¨ne","un anticorps","un phagocyte","une hormone"]'::jsonb, '["Ù…Ø³ØªØ¶Ø¯","Ø¬Ø³Ù… Ù…Ø¶Ø§Ø¯","Ø®Ù„ÙŠØ© Ø¨Ù„Ø¹Ù…ÙŠØ©","Ù‡Ø±Ù…ÙˆÙ†"]'::jsonb,
+   0, 'L''antigÃ¨ne est le Â« non-soi Â» qui dÃ©clenche la rÃ©ponse.', 'Ø§Ù„Ù…Ø³ØªØ¶Ø¯ Ù‡Ùˆ Ø§Ù„Ù„Ø§Ø°Ø§Øª Ø§Ù„Ø°ÙŠ ÙŠØ«ÙŠØ± Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø©.', 'easy', 1),
+  ('La phagocytose est rÃ©alisÃ©e parâ€¦', 'Ø§Ù„Ø¨Ù„Ø¹Ù…Ø© ØªÙ‚ÙˆÙ… Ø¨Ù‡Ø§â€¦',
+   '["les phagocytes (globules blancs)","les globules rouges","les plaquettes","les neurones"]'::jsonb, '["Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ø¨Ù„Ø¹Ù…ÙŠØ© (ÙƒØ±ÙŠØ§Øª Ø¨ÙŠØ¶Ø§Ø¡)","Ø§Ù„ÙƒØ±ÙŠØ§Øª Ø§Ù„Ø­Ù…Ø±Ø§Ø¡","Ø§Ù„ØµÙÙŠØ­Ø§Øª","Ø§Ù„Ø¹ØµØ¨ÙˆÙ†Ø§Øª"]'::jsonb,
+   0, 'Les globules blancs phagocytent les microbes.', 'Ø§Ù„ÙƒØ±ÙŠØ§Øª Ø§Ù„Ø¨ÙŠØ¶Ø§Ø¡ ØªØ¨Ù„Ø¹Ù… Ø§Ù„Ù…ÙŠÙƒØ±ÙˆØ¨Ø§Øª.', 'medium', 2),
+  ('Les anticorps sont produits parâ€¦', 'Ø§Ù„Ø£Ø¬Ø³Ø§Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯Ø© ØªÙ†ØªØ¬Ù‡Ø§â€¦',
+   '["les lymphocytes B","les lymphocytes T","les phagocytes","les neurones"]'::jsonb, '["Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª B","Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T","Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ø¨Ù„Ø¹Ù…ÙŠØ©","Ø§Ù„Ø¹ØµØ¨ÙˆÙ†Ø§Øª"]'::jsonb,
+   0, 'Les lymphocytes B produisent les anticorps.', 'Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª B ØªÙ†ØªØ¬ Ø§Ù„Ø£Ø¬Ø³Ø§Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯Ø©.', 'medium', 3),
+  ('La vaccination introduit dans l''organismeâ€¦', 'Ø§Ù„ØªÙ„Ù‚ÙŠØ­ ÙŠÙØ¯Ø®Ù„ Ø¥Ù„Ù‰ Ø§Ù„Ø¬Ø³Ù…â€¦',
+   '["un antigÃ¨ne affaibli","des anticorps prÃªts","un microbe virulent","du sucre"]'::jsonb, '["Ù…Ø³ØªØ¶Ø¯Ù‹Ø§ Ù…Ø¶Ø¹Ù‘ÙÙ‹Ø§","Ø£Ø¬Ø³Ø§Ù…Ù‹Ø§ Ù…Ø¶Ø§Ø¯Ø© Ø¬Ø§Ù‡Ø²Ø©","Ù…ÙŠÙƒØ±ÙˆØ¨Ù‹Ø§ Ø´Ø±Ø³Ù‹Ø§","Ø³ÙƒØ±Ù‹Ø§"]'::jsonb,
+   0, 'Le vaccin = antigÃ¨ne affaibli â†’ crÃ©e une mÃ©moire immunitaire.', 'Ø§Ù„Ù„Ù‚Ø§Ø­ Ù…Ø³ØªØ¶Ø¯ Ù…Ø¶Ø¹Ù‘Ù ÙŠØ¨Ù†ÙŠ Ø§Ù„Ø°Ø§ÙƒØ±Ø© Ø§Ù„Ù…Ù†Ø§Ø¹ÙŠØ©.', 'easy', 4),
+  ('La relation anticorps-antigÃ¨ne est de typeâ€¦', 'Ø§Ù„Ø¹Ù„Ø§Ù‚Ø© Ø¨ÙŠÙ† Ø§Ù„Ø¬Ø³Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯ ÙˆØ§Ù„Ù…Ø³ØªØ¶Ø¯ Ù…Ù† Ù†ÙˆØ¹â€¦',
+   '["spÃ©cifique (clÃ©-serrure)","alÃ©atoire","non spÃ©cifique","impossible"]'::jsonb, '["Ù†ÙˆØ¹ÙŠØ© (Ù…ÙØªØ§Ø­-Ù‚ÙÙ„)","Ø¹Ø´ÙˆØ§Ø¦ÙŠØ©","Ù„Ø§Ù†ÙˆØ¹ÙŠØ©","Ù…Ø³ØªØ­ÙŠÙ„Ø©"]'::jsonb,
+   0, 'Un anticorps neutralise un antigÃ¨ne prÃ©cis.', 'Ø§Ù„Ø¬Ø³Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯ ÙŠØ¹Ø§Ø¯Ù„ Ù…Ø³ØªØ¶Ø¯Ù‹Ø§ Ù…Ø­Ø¯Ø¯Ù‹Ø§.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'immunite'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LA TRANSMISSION DES CARACTÃˆRES (gÃ©nÃ©tique)
+
+LES CARACTÃˆRES HÃ‰RÃ‰DITAIRES
+Un caractÃ¨re hÃ©rÃ©ditaire se transmet des parents aux enfants (couleur des yeux,
+groupe sanguinâ€¦). Il est portÃ© par l''information gÃ©nÃ©tique.
+
+CHROMOSOMES ET GÃˆNES
+â€¢ Le noyau de chaque cellule contient les CHROMOSOMES.
+â€¢ L''espÃ¨ce humaine a 46 chromosomes (23 paires), dont 1 paire sexuelle :
+  XX chez la fille, XY chez le garÃ§on.
+â€¢ Un GÃˆNE est une portion de chromosome responsable d''un caractÃ¨re.
+â€¢ L''ADN est la molÃ©cule qui porte cette information.
+
+CELLULES ET REPRODUCTION
+â€¢ Cellules du corps : 46 chromosomes.
+â€¢ Cellules reproductrices (gamÃ¨tes : ovule, spermatozoÃ¯de) : 23 chromosomes.
+â€¢ Ã€ la fÃ©condation : 23 (ovule) + 23 (spermatozoÃ¯de) = 46 â†’ l''enfant reÃ§oit
+  la moitiÃ© de ses chromosomes de chaque parent.
+
+LE SEXE DE L''ENFANT
+Il est dÃ©terminÃ© par le spermatozoÃ¯de : X â†’ fille (XX), Y â†’ garÃ§on (XY).',
+  lesson_ar = 'Ø§Ù†ØªÙ‚Ø§Ù„ Ø§Ù„ØµÙØ§Øª (Ø§Ù„ÙˆØ±Ø§Ø«Ø©)
+
+Ø§Ù„ØµÙØ§Øª Ø§Ù„ÙˆØ±Ø§Ø«ÙŠØ©
+ØªÙ†ØªÙ‚Ù„ Ø§Ù„ØµÙØ© Ø§Ù„ÙˆØ±Ø§Ø«ÙŠØ© Ù…Ù† Ø§Ù„Ø¢Ø¨Ø§Ø¡ Ø¥Ù„Ù‰ Ø§Ù„Ø£Ø¨Ù†Ø§Ø¡ (Ù„ÙˆÙ† Ø§Ù„Ø¹ÙŠÙ†ÙŠÙ†ØŒ Ø§Ù„Ø²Ù…Ø±Ø© Ø§Ù„Ø¯Ù…ÙˆÙŠØ©â€¦)ØŒ
+ØªØ­Ù…Ù„Ù‡Ø§ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø© Ø§Ù„ÙˆØ±Ø§Ø«ÙŠØ©.
+
+Ø§Ù„ØµØ¨ØºÙŠØ§Øª ÙˆØ§Ù„Ù…ÙˆØ±Ø«Ø§Øª
+â€¢ Ù†ÙˆØ§Ø© ÙƒÙ„ Ø®Ù„ÙŠØ© ØªØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ Ø§Ù„ØµØ¨ØºÙŠØ§Øª (Ø§Ù„ÙƒØ±ÙˆÙ…ÙˆØ²ÙˆÙ…Ø§Øª).
+â€¢ Ù„Ù„Ø¥Ù†Ø³Ø§Ù† 46 ØµØ¨ØºÙŠÙ‹Ø§ (23 Ø²ÙˆØ¬Ù‹Ø§)ØŒ Ù…Ù†Ù‡Ø§ Ø²ÙˆØ¬ Ø¬Ù†Ø³ÙŠ: XX Ù„Ù„Ø£Ù†Ø«Ù‰ ÙˆXY Ù„Ù„Ø°ÙƒØ±.
+â€¢ Ø§Ù„Ù…ÙˆØ±Ø«Ø© Ø¬Ø²Ø¡ Ù…Ù† ØµØ¨ØºÙŠ Ù…Ø³Ø¤ÙˆÙ„ Ø¹Ù† ØµÙØ©.
+â€¢ Ø§Ù„Ù€ ADN Ù‡Ùˆ Ø§Ù„Ø¬Ø²ÙŠØ¡ Ø§Ù„Ø­Ø§Ù…Ù„ Ù„Ù„Ù…Ø¹Ù„ÙˆÙ…Ø©.
+
+Ø§Ù„Ø®Ù„Ø§ÙŠØ§ ÙˆØ§Ù„ØªÙƒØ§Ø«Ø±
+â€¢ Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ø¬Ø³Ù…: 46 ØµØ¨ØºÙŠÙ‹Ø§.
+â€¢ Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„ØªÙ†Ø§Ø³Ù„ÙŠØ© (Ø§Ù„Ø¨ÙŠØ¶Ø©ØŒ Ø§Ù„Ù†Ø·ÙØ©): 23 ØµØ¨ØºÙŠÙ‹Ø§.
+â€¢ Ø¹Ù†Ø¯ Ø§Ù„Ø¥Ø®ØµØ§Ø¨: 23 + 23 = 46.
+
+Ø¬Ù†Ø³ Ø§Ù„Ù…ÙˆÙ„ÙˆØ¯
+ØªØ­Ø¯Ø¯Ù‡ Ø§Ù„Ù†Ø·ÙØ©: X â† Ø£Ù†Ø«Ù‰ (XX)ØŒ Y â† Ø°ÙƒØ± (XY).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'genetique';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Combien de chromosomes possÃ¨de une cellule humaine du corps ?', 'ÙƒÙ… ØµØ¨ØºÙŠÙ‹Ø§ ÙÙŠ Ø®Ù„ÙŠØ© Ø¬Ø³Ù…ÙŠØ© Ø¨Ø´Ø±ÙŠØ©ØŸ',
+   '["46","23","2","92"]'::jsonb, '["46","23","2","92"]'::jsonb,
+   0, '46 chromosomes = 23 paires.', '46 ØµØ¨ØºÙŠÙ‹Ø§ = 23 Ø²ÙˆØ¬Ù‹Ø§.', 'easy', 1),
+  ('Les chromosomes sexuels d''une fille sontâ€¦', 'Ø§Ù„ØµØ¨ØºÙŠØ§Ù† Ø§Ù„Ø¬Ù†Ø³ÙŠØ§Ù† Ù„Ù„Ø£Ù†Ø«Ù‰ Ù‡Ù…Ø§â€¦',
+   '["XX","XY","YY","X seul"]'::jsonb, '["XX","XY","YY","X ÙÙ‚Ø·"]'::jsonb,
+   0, 'Fille = XX, garÃ§on = XY.', 'Ø§Ù„Ø£Ù†Ø«Ù‰ XX ÙˆØ§Ù„Ø°ÙƒØ± XY.', 'medium', 2),
+  ('Un gÃ¨ne estâ€¦', 'Ø§Ù„Ù…ÙˆØ±Ø«Ø© Ù‡ÙŠâ€¦',
+   '["une portion de chromosome","une cellule entiÃ¨re","un organe","une hormone"]'::jsonb, '["Ø¬Ø²Ø¡ Ù…Ù† ØµØ¨ØºÙŠ","Ø®Ù„ÙŠØ© ÙƒØ§Ù…Ù„Ø©","Ø¹Ø¶Ùˆ","Ù‡Ø±Ù…ÙˆÙ†"]'::jsonb,
+   0, 'Le gÃ¨ne porte l''information d''un caractÃ¨re.', 'Ø§Ù„Ù…ÙˆØ±Ø«Ø© ØªØ­Ù…Ù„ Ù…Ø¹Ù„ÙˆÙ…Ø© ØµÙØ©.', 'medium', 3),
+  ('Un gamÃ¨te (ovule ou spermatozoÃ¯de) contientâ€¦ chromosomes', 'Ø§Ù„Ø®Ù„ÙŠØ© Ø§Ù„ØªÙ†Ø§Ø³Ù„ÙŠØ© (Ø¨ÙŠØ¶Ø© Ø£Ùˆ Ù†Ø·ÙØ©) ØªØ­ØªÙˆÙŠâ€¦ ØµØ¨ØºÙŠÙ‹Ø§',
+   '["23","46","92","2"]'::jsonb, '["23","46","92","2"]'::jsonb,
+   0, 'Les gamÃ¨tes ont la moitiÃ© : 23 chromosomes.', 'Ø§Ù„Ø£Ù…Ø´Ø§Ø¬ ØªØ­Ù…Ù„ Ø§Ù„Ù†ØµÙ: 23 ØµØ¨ØºÙŠÙ‹Ø§.', 'easy', 4),
+  ('Le sexe de l''enfant est dÃ©terminÃ© parâ€¦', 'Ø¬Ù†Ø³ Ø§Ù„Ù…ÙˆÙ„ÙˆØ¯ ÙŠØ­Ø¯Ø¯Ù‡â€¦',
+   '["le spermatozoÃ¯de","l''ovule","la mÃ¨re","le hasard total"]'::jsonb, '["Ø§Ù„Ù†Ø·ÙØ©","Ø§Ù„Ø¨ÙŠØ¶Ø©","Ø§Ù„Ø£Ù…","Ø§Ù„ØµØ¯ÙØ© Ø§Ù„ØªØ§Ù…Ø©"]'::jsonb,
+   0, 'Le spermatozoÃ¯de apporte X (fille) ou Y (garÃ§on).', 'Ø§Ù„Ù†Ø·ÙØ© ØªØ­Ù…Ù„ X (Ø£Ù†Ø«Ù‰) Ø£Ùˆ Y (Ø°ÙƒØ±).', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'svt' and c.slug = 'genetique'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- ================= 3AS SVT (BAC) =================
+
+update public.chapters c set
+  lesson_fr = 'DU GÃˆNE Ã€ LA PROTÃ‰INE
+
+L''ADN ET L''INFORMATION GÃ‰NÃ‰TIQUE
+L''ADN porte l''information sous forme d''une SÃ‰QUENCE DE NUCLÃ‰OTIDES (A, T, G, C).
+Un gÃ¨ne = une portion d''ADN qui code une protÃ©ine.
+
+LA TRANSCRIPTION (noyau)
+L''ADN est copiÃ© en ARN messager (ARNm). DiffÃ©rence clÃ© : dans l''ARN, la base
+T (thymine) est remplacÃ©e par U (uracile). L''ARNm sort du noyau vers le cytoplasme.
+
+LA TRADUCTION (ribosomes)
+L''ARNm est lu par CODONS (groupes de 3 nuclÃ©otides). Chaque codon correspond
+Ã  un ACIDE AMINÃ‰ selon le CODE GÃ‰NÃ‰TIQUE. Les acides aminÃ©s s''enchaÃ®nent â†’
+protÃ©ine. Codon Â« start Â» (AUG) et codons Â« stop Â» bornent la lecture.
+
+LE CODE GÃ‰NÃ‰TIQUE
+â€¢ Universel (le mÃªme chez presque tous les Ãªtres vivants).
+â€¢ Redondant (plusieurs codons pour un mÃªme acide aminÃ©).
+â€¢ Non chevauchant, lu dans un seul sens.
+
+DE LA PROTÃ‰INE AU CARACTÃˆRE
+La sÃ©quence des acides aminÃ©s dÃ©termine la forme et la fonction de la protÃ©ine,
+donc le caractÃ¨re (ex. une enzyme, la couleurâ€¦). Une MUTATION de l''ADN peut
+changer la protÃ©ine.',
+  lesson_ar = 'Ù…Ù† Ø§Ù„Ù…ÙˆØ±Ø«Ø© Ø¥Ù„Ù‰ Ø§Ù„Ø¨Ø±ÙˆØªÙŠÙ†
+
+Ø§Ù„Ù€ ADN ÙˆØ§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø© Ø§Ù„ÙˆØ±Ø§Ø«ÙŠØ©
+ÙŠØ­Ù…Ù„ Ø§Ù„Ù€ ADN Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø© Ø¹Ù„Ù‰ Ø´ÙƒÙ„ ØªØ³Ù„Ø³Ù„ Ù†ÙŠÙƒÙ„ÙŠÙˆØªÙŠØ¯Ø§Øª (A, T, G, C). Ø§Ù„Ù…ÙˆØ±Ø«Ø© Ø¬Ø²Ø¡ Ù…Ù† ADN ÙŠØ´ÙÙ‘Ø± Ø¨Ø±ÙˆØªÙŠÙ†Ù‹Ø§.
+
+Ø§Ù„Ø§Ø³ØªÙ†Ø³Ø§Ø® (ÙÙŠ Ø§Ù„Ù†ÙˆØ§Ø©)
+ÙŠÙÙ†Ø³Ø® Ø§Ù„Ù€ ADN Ø¥Ù„Ù‰ ARN Ø±Ø³ÙˆÙ„. Ø§Ù„ÙØ±Ù‚: ÙÙŠ Ø§Ù„Ù€ ARN ØªÙØ³ØªØ¨Ø¯Ù„ Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø© T Ø¨Ù€ U (ÙŠÙˆØ±Ø§Ø³ÙŠÙ„).
+ÙŠØ®Ø±Ø¬ Ø§Ù„Ù€ ARNm Ù…Ù† Ø§Ù„Ù†ÙˆØ§Ø© Ø¥Ù„Ù‰ Ø§Ù„Ù‡ÙŠÙˆÙ„Ù‰.
+
+Ø§Ù„ØªØ±Ø¬Ù…Ø© (ÙÙŠ Ø§Ù„Ø±ÙŠØ¨ÙˆØ²ÙˆÙ…Ø§Øª)
+ÙŠÙÙ‚Ø±Ø£ Ø§Ù„Ù€ ARNm Ø¨Ø±Ø§Ù…Ø²Ø§Øª (ÙƒÙ„ 3 Ù†ÙŠÙƒÙ„ÙŠÙˆØªÙŠØ¯Ø§Øª). ÙƒÙ„ Ø±Ø§Ù…Ø²Ø© ØªÙˆØ§ÙÙ‚ Ø­Ù…Ø¶Ù‹Ø§ Ø£Ù…ÙŠÙ†ÙŠÙ‹Ø§ Ø­Ø³Ø¨ Ø§Ù„Ø´ÙŠÙØ±Ø© Ø§Ù„ÙˆØ±Ø§Ø«ÙŠØ©.
+ØªØªØ³Ù„Ø³Ù„ Ø§Ù„Ø£Ø­Ù…Ø§Ø¶ Ø§Ù„Ø£Ù…ÙŠÙ†ÙŠØ© â† Ø¨Ø±ÙˆØªÙŠÙ†. Ø±Ø§Ù…Ø²Ø© Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© AUG ÙˆØ±Ø§Ù…Ø²Ø§Øª Ø§Ù„ØªÙˆÙ‚Ù ØªØ­Ø¯Ù‘Ø¯ Ø§Ù„Ù‚Ø±Ø§Ø¡Ø©.
+
+Ø§Ù„Ø´ÙŠÙØ±Ø© Ø§Ù„ÙˆØ±Ø§Ø«ÙŠØ©
+â€¢ Ø¹Ø§Ù„Ù…ÙŠØ©ØŒ Ù…ÙƒØ±Ø±Ø© (Ø¹Ø¯Ø© Ø±Ø§Ù…Ø²Ø§Øª Ù„Ø­Ù…Ø¶ ÙˆØ§Ø­Ø¯)ØŒ ØºÙŠØ± Ù…ØªØ¯Ø§Ø®Ù„Ø©ØŒ ØªÙÙ‚Ø±Ø£ ÙÙŠ Ø§ØªØ¬Ø§Ù‡ ÙˆØ§Ø­Ø¯.
+
+Ù…Ù† Ø§Ù„Ø¨Ø±ÙˆØªÙŠÙ† Ø¥Ù„Ù‰ Ø§Ù„ØµÙØ©
+ØªØ³Ù„Ø³Ù„ Ø§Ù„Ø£Ø­Ù…Ø§Ø¶ Ø§Ù„Ø£Ù…ÙŠÙ†ÙŠØ© ÙŠØ­Ø¯Ø¯ Ø´ÙƒÙ„ ÙˆÙˆØ¸ÙŠÙØ© Ø§Ù„Ø¨Ø±ÙˆØªÙŠÙ† ÙˆÙ…Ù†Ù‡ Ø§Ù„ØµÙØ©. Ø§Ù„Ø·ÙØ±Ø© Ù‚Ø¯ ØªØºÙŠÙ‘Ø± Ø§Ù„Ø¨Ø±ÙˆØªÙŠÙ†.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'gene-proteine';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans l''ARN, la base T de l''ADN est remplacÃ©e parâ€¦', 'ÙÙŠ Ø§Ù„Ù€ ARN ØªÙØ³ØªØ¨Ø¯Ù„ Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø© T Ø¨Ù€â€¦',
+   '["U (uracile)","G","C","A"]'::jsonb, '["U (ÙŠÙˆØ±Ø§Ø³ÙŠÙ„)","G","C","A"]'::jsonb,
+   0, 'ARN : U remplace T.', 'ÙÙŠ Ø§Ù„Ù€ ARN ØªØ­Ù„ U Ù…Ø­Ù„ T.', 'easy', 1),
+  ('La transcription se dÃ©rouleâ€¦', 'ÙŠØ­Ø¯Ø« Ø§Ù„Ø§Ø³ØªÙ†Ø³Ø§Ø® ÙÙŠâ€¦',
+   '["dans le noyau","dans les ribosomes","dans la membrane","dans le sang"]'::jsonb, '["Ø§Ù„Ù†ÙˆØ§Ø©","Ø§Ù„Ø±ÙŠØ¨ÙˆØ²ÙˆÙ…Ø§Øª","Ø§Ù„ØºØ´Ø§Ø¡","Ø§Ù„Ø¯Ù…"]'::jsonb,
+   0, 'La transcription (ADNâ†’ARNm) a lieu dans le noyau.', 'Ø§Ù„Ø§Ø³ØªÙ†Ø³Ø§Ø® ÙŠØ­Ø¯Ø« ÙÙŠ Ø§Ù„Ù†ÙˆØ§Ø©.', 'medium', 2),
+  ('Un codon est formÃ© deâ€¦ nuclÃ©otides', 'Ø§Ù„Ø±Ø§Ù…Ø²Ø© ØªØªÙƒÙˆÙ† Ù…Ù†â€¦ Ù†ÙŠÙƒÙ„ÙŠÙˆØªÙŠØ¯Ø§Øª',
+   '["3","1","2","4"]'::jsonb, '["3","1","2","4"]'::jsonb,
+   0, 'Un codon = 3 nuclÃ©otides = 1 acide aminÃ©.', 'Ø§Ù„Ø±Ø§Ù…Ø²Ø© = 3 Ù†ÙŠÙƒÙ„ÙŠÙˆØªÙŠØ¯Ø§Øª = Ø­Ù…Ø¶ Ø£Ù…ÙŠÙ†ÙŠ ÙˆØ§Ø­Ø¯.', 'medium', 3),
+  ('La traduction a lieu au niveauâ€¦', 'ØªØ­Ø¯Ø« Ø§Ù„ØªØ±Ø¬Ù…Ø© Ø¹Ù„Ù‰ Ù…Ø³ØªÙˆÙ‰â€¦',
+   '["des ribosomes","du noyau","des mitochondries seulement","de la membrane"]'::jsonb, '["Ø§Ù„Ø±ÙŠØ¨ÙˆØ²ÙˆÙ…Ø§Øª","Ø§Ù„Ù†ÙˆØ§Ø©","Ø§Ù„Ù…ÙŠØªÙˆÙƒÙ†Ø¯Ø±ÙŠ ÙÙ‚Ø·","Ø§Ù„ØºØ´Ø§Ø¡"]'::jsonb,
+   0, 'Les ribosomes lisent l''ARNm et assemblent la protÃ©ine.', 'Ø§Ù„Ø±ÙŠØ¨ÙˆØ²ÙˆÙ…Ø§Øª ØªÙ‚Ø±Ø£ Ø§Ù„Ù€ ARNm ÙˆØªØ±ÙƒÙ‘Ø¨ Ø§Ù„Ø¨Ø±ÙˆØªÙŠÙ†.', 'easy', 4),
+  ('Le code gÃ©nÃ©tique est dit Â« universel Â» carâ€¦', 'Ø§Ù„Ø´ÙŠÙØ±Ø© Ø§Ù„ÙˆØ±Ø§Ø«ÙŠØ© Â«Ø¹Ø§Ù„Ù…ÙŠØ©Â» Ù„Ø£Ù†Ù‡Ø§â€¦',
+   '["le mÃªme chez presque tous les Ãªtres vivants","diffÃ©rent pour chaque espÃ¨ce","propre Ã  l''humain","change chaque jour"]'::jsonb, '["Ù†ÙØ³Ù‡Ø§ Ø¹Ù†Ø¯ Ù…Ø¹Ø¸Ù… Ø§Ù„ÙƒØ§Ø¦Ù†Ø§Øª","Ù…Ø®ØªÙ„ÙØ© Ù„ÙƒÙ„ Ù†ÙˆØ¹","Ø®Ø§ØµØ© Ø¨Ø§Ù„Ø¥Ù†Ø³Ø§Ù†","ØªØªØºÙŠØ± ÙŠÙˆÙ…ÙŠÙ‹Ø§"]'::jsonb,
+   0, 'Un mÃªme codon code le mÃªme acide aminÃ© dans le vivant.', 'Ù†ÙØ³ Ø§Ù„Ø±Ø§Ù…Ø²Ø© ØªØ´ÙÙ‘Ø± Ù†ÙØ³ Ø§Ù„Ø­Ù…Ø¶ Ø¹Ù†Ø¯ Ø§Ù„ÙƒØ§Ø¦Ù†Ø§Øª.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'gene-proteine'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'L''ACTIVITÃ‰ ENZYMATIQUE
+
+QU''EST-CE QU''UNE ENZYME ?
+Une enzyme est une protÃ©ine qui accÃ©lÃ¨re une rÃ©action chimique (BIOCATALYSEUR)
+sans Ãªtre consommÃ©e. Ex. l''amylase digÃ¨re l''amidon.
+
+LA SPÃ‰CIFICITÃ‰
+â€¢ SpÃ©cificitÃ© de SUBSTRAT : une enzyme n''agit que sur un substrat donnÃ©.
+â€¢ SpÃ©cificitÃ© d''ACTION : elle ne catalyse qu''un seul type de rÃ©action.
+Cette double spÃ©cificitÃ© s''explique par la complÃ©mentaritÃ© de forme entre
+le SITE ACTIF de l''enzyme et le substrat (modÃ¨le clÃ©-serrure).
+
+LE COMPLEXE ENZYME-SUBSTRAT
+Enzyme + Substrat â†’ complexe E-S â†’ Enzyme + Produit.
+L''enzyme est intacte Ã  la fin et peut recommencer.
+
+LES FACTEURS QUI INFLUENCENT L''ACTIVITÃ‰
+â€¢ La TEMPÃ‰RATURE : une activitÃ© optimale (â‰ˆ 37 Â°C chez l''humain) ; trop chaud
+  â†’ l''enzyme se dÃ©nature (perd sa forme, donc son activitÃ©).
+â€¢ Le pH : chaque enzyme a un pH optimal (la pepsine agit en milieu acide).
+â€¢ La concentration en substrat et en enzyme.',
+  lesson_ar = 'Ø§Ù„Ù†Ø´Ø§Ø· Ø§Ù„Ø£Ù†Ø²ÙŠÙ…ÙŠ
+
+Ù…Ø§ Ù‡Ùˆ Ø§Ù„Ø£Ù†Ø²ÙŠÙ…ØŸ
+Ø§Ù„Ø£Ù†Ø²ÙŠÙ… Ø¨Ø±ÙˆØªÙŠÙ† ÙŠØ³Ø±Ù‘Ø¹ ØªÙØ§Ø¹Ù„Ø§Ù‹ ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠÙ‹Ø§ (ÙˆØ³ÙŠØ· Ø­ÙŠÙˆÙŠ) Ø¯ÙˆÙ† Ø£Ù† ÙŠÙØ³ØªÙ‡Ù„Ùƒ. Ù…Ø«Ø§Ù„: Ø§Ù„Ø£Ù…ÙŠÙ„Ø§Ø² ÙŠÙ‡Ø¶Ù… Ø§Ù„Ù†Ø´Ø§.
+
+Ø§Ù„Ù†ÙˆØ¹ÙŠØ©
+â€¢ Ù†ÙˆØ¹ÙŠØ© Ø§Ù„Ø±ÙƒÙŠØ²Ø©: ÙŠØ¤Ø«Ø± Ø§Ù„Ø£Ù†Ø²ÙŠÙ… Ø¹Ù„Ù‰ Ø±ÙƒÙŠØ²Ø© Ù…Ø¹ÙŠÙ†Ø© ÙÙ‚Ø·.
+â€¢ Ù†ÙˆØ¹ÙŠØ© Ø§Ù„ÙØ¹Ù„: ÙŠØ­ÙÙ‘Ø² Ù†ÙˆØ¹Ù‹Ø§ ÙˆØ§Ø­Ø¯Ù‹Ø§ Ù…Ù† Ø§Ù„ØªÙØ§Ø¹Ù„.
+ØªÙØ³Ù‘Ø± Ù‡Ø°Ù‡ Ø§Ù„Ù†ÙˆØ¹ÙŠØ© Ø¨Ø§Ù„ØªÙƒØ§Ù…Ù„ Ø¨ÙŠÙ† Ø§Ù„Ù…ÙˆÙ‚Ø¹ Ø§Ù„ÙØ¹Ù‘Ø§Ù„ Ù„Ù„Ø£Ù†Ø²ÙŠÙ… ÙˆØ§Ù„Ø±ÙƒÙŠØ²Ø© (Ù†Ù…ÙˆØ°Ø¬ Ù…ÙØªØ§Ø­-Ù‚ÙÙ„).
+
+Ø§Ù„Ù…Ø¹Ù‚Ù‘Ø¯ Ø£Ù†Ø²ÙŠÙ…-Ø±ÙƒÙŠØ²Ø©
+Ø£Ù†Ø²ÙŠÙ… + Ø±ÙƒÙŠØ²Ø© â† Ù…Ø¹Ù‚Ù‘Ø¯ â† Ø£Ù†Ø²ÙŠÙ… + Ù†Ø§ØªØ¬. ÙŠØ¨Ù‚Ù‰ Ø§Ù„Ø£Ù†Ø²ÙŠÙ… Ø³Ù„ÙŠÙ…Ù‹Ø§ ÙˆÙŠØ¹ÙŠØ¯ Ø§Ù„ÙƒØ±Ù‘Ø©.
+
+Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ Ø§Ù„Ù…Ø¤Ø«Ø±Ø©
+â€¢ Ø§Ù„Ø­Ø±Ø§Ø±Ø©: Ù†Ø´Ø§Ø· Ø£Ø¹Ø¸Ù…ÙŠ (â‰ˆ 37 Â°Ù… Ø¹Ù†Ø¯ Ø§Ù„Ø¥Ù†Ø³Ø§Ù†)Ø› Ø§Ù„Ø­Ø±Ø§Ø±Ø© Ø§Ù„Ø²Ø§Ø¦Ø¯Ø© ØªÙØ³Ø¯ Ø§Ù„Ø£Ù†Ø²ÙŠÙ….
+â€¢ Ø§Ù„Ù€ pH: Ù„ÙƒÙ„ Ø£Ù†Ø²ÙŠÙ… pH Ø£Ù…Ø«Ù„ (Ø§Ù„Ø¨Ø¨Ø³ÙŠÙ† ÙŠØ¹Ù…Ù„ ÙÙŠ ÙˆØ³Ø· Ø­Ù…Ø¶ÙŠ).
+â€¢ ØªØ±ÙƒÙŠØ² Ø§Ù„Ø±ÙƒÙŠØ²Ø© ÙˆØ§Ù„Ø£Ù†Ø²ÙŠÙ….'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'enzymes';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Une enzyme est de natureâ€¦', 'Ø§Ù„Ø£Ù†Ø²ÙŠÙ… Ø°Ùˆ Ø·Ø¨ÙŠØ¹Ø©â€¦',
+   '["protÃ©ique","lipidique","glucidique","minÃ©rale"]'::jsonb, '["Ø¨Ø±ÙˆØªÙŠÙ†ÙŠØ©","Ø¯Ù‡Ù†ÙŠØ©","Ø³ÙƒØ±ÙŠØ©","Ù…Ø¹Ø¯Ù†ÙŠØ©"]'::jsonb,
+   0, 'Les enzymes sont des protÃ©ines.', 'Ø§Ù„Ø£Ù†Ø²ÙŠÙ…Ø§Øª Ø¨Ø±ÙˆØªÙŠÙ†Ø§Øª.', 'easy', 1),
+  ('La partie de l''enzyme qui fixe le substrat s''appelleâ€¦', 'Ø§Ù„Ø¬Ø²Ø¡ Ù…Ù† Ø§Ù„Ø£Ù†Ø²ÙŠÙ… Ø§Ù„Ø°ÙŠ ÙŠØ«Ø¨Ù‘Øª Ø§Ù„Ø±ÙƒÙŠØ²Ø© ÙŠÙØ³Ù…Ù‰â€¦',
+   '["le site actif","le noyau","la membrane","le codon"]'::jsonb, '["Ø§Ù„Ù…ÙˆÙ‚Ø¹ Ø§Ù„ÙØ¹Ù‘Ø§Ù„","Ø§Ù„Ù†ÙˆØ§Ø©","Ø§Ù„ØºØ´Ø§Ø¡","Ø§Ù„Ø±Ø§Ù…Ø²Ø©"]'::jsonb,
+   0, 'Le site actif reÃ§oit le substrat (clÃ©-serrure).', 'Ø§Ù„Ù…ÙˆÙ‚Ø¹ Ø§Ù„ÙØ¹Ù‘Ø§Ù„ ÙŠØ³ØªÙ‚Ø¨Ù„ Ø§Ù„Ø±ÙƒÙŠØ²Ø© (Ù…ÙØªØ§Ø­-Ù‚ÙÙ„).', 'medium', 2),
+  ('Ã€ la fin de la rÃ©action, l''enzyme estâ€¦', 'ÙÙŠ Ù†Ù‡Ø§ÙŠØ© Ø§Ù„ØªÙØ§Ø¹Ù„ ÙŠÙƒÙˆÙ† Ø§Ù„Ø£Ù†Ø²ÙŠÙ…â€¦',
+   '["intacte et rÃ©utilisable","dÃ©truite","consommÃ©e","transformÃ©e en substrat"]'::jsonb, '["Ø³Ù„ÙŠÙ…Ù‹Ø§ ÙˆÙ‚Ø§Ø¨Ù„Ø§Ù‹ Ù„Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ø§Ø³ØªØ¹Ù…Ø§Ù„","Ù…ØªÙ„ÙÙ‹Ø§","Ù…Ø³ØªÙ‡Ù„ÙƒÙ‹Ø§","Ù…Ø­ÙˆÙ‘Ù„Ø§Ù‹ Ø¥Ù„Ù‰ Ø±ÙƒÙŠØ²Ø©"]'::jsonb,
+   0, 'Un catalyseur n''est pas consommÃ©.', 'Ø§Ù„ÙˆØ³ÙŠØ· Ù„Ø§ ÙŠÙØ³ØªÙ‡Ù„Ùƒ.', 'medium', 3),
+  ('Une tempÃ©rature trop Ã©levÃ©e provoqueâ€¦ de l''enzyme', 'Ø§Ù„Ø­Ø±Ø§Ø±Ø© Ø§Ù„Ù…Ø±ØªÙØ¹Ø© Ø¬Ø¯Ù‹Ø§ ØªØ³Ø¨Ø¨â€¦ Ù„Ù„Ø£Ù†Ø²ÙŠÙ…',
+   '["la dÃ©naturation","l''activation permanente","la duplication","la coloration"]'::jsonb, '["Ø§Ù„ØªÙ…Ø³Ù‘Ø® (ÙÙ‚Ø¯Ø§Ù† Ø§Ù„Ø¨Ù†ÙŠØ©)","ØªÙ†Ø´ÙŠØ·Ù‹Ø§ Ø¯Ø§Ø¦Ù…Ù‹Ø§","Ø§Ù„ØªØ¶Ø§Ø¹Ù","Ø§Ù„ØªÙ„ÙˆÙŠÙ†"]'::jsonb,
+   0, 'La chaleur excessive dÃ©nature l''enzyme (perte de forme).', 'Ø§Ù„Ø­Ø±Ø§Ø±Ø© Ø§Ù„Ø²Ø§Ø¦Ø¯Ø© ØªÙ…Ø³Ù‘Ø® Ø§Ù„Ø£Ù†Ø²ÙŠÙ….', 'easy', 4),
+  ('La Â« spÃ©cificitÃ© de substrat Â» signifie qu''une enzymeâ€¦', 'Â«Ù†ÙˆØ¹ÙŠØ© Ø§Ù„Ø±ÙƒÙŠØ²Ø©Â» ØªØ¹Ù†ÙŠ Ø£Ù† Ø§Ù„Ø£Ù†Ø²ÙŠÙ…â€¦',
+   '["n''agit que sur un substrat donnÃ©","agit sur tout","change de forme","produit de l''ADN"]'::jsonb, '["ÙŠØ¤Ø«Ø± Ø¹Ù„Ù‰ Ø±ÙƒÙŠØ²Ø© Ù…Ø¹ÙŠÙ†Ø© ÙÙ‚Ø·","ÙŠØ¤Ø«Ø± Ø¹Ù„Ù‰ ÙƒÙ„ Ø´ÙŠØ¡","ÙŠØºÙŠÙ‘Ø± Ø´ÙƒÙ„Ù‡","ÙŠÙ†ØªØ¬ ADN"]'::jsonb,
+   0, 'Chaque enzyme reconnaÃ®t un substrat prÃ©cis.', 'ÙƒÙ„ Ø£Ù†Ø²ÙŠÙ… ÙŠØªØ¹Ø±Ù Ø±ÙƒÙŠØ²Ø© Ù…Ø­Ø¯Ø¯Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'enzymes'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LA CONVERSION DE L''Ã‰NERGIE
+
+L''ATP â€” LA MONNAIE Ã‰NERGÃ‰TIQUE
+L''ATP (adÃ©nosine triphosphate) stocke et libÃ¨re l''Ã©nergie de la cellule.
+ATP â†’ ADP + Pi + Ã©nergie (utilisable pour le travail cellulaire).
+
+LA RESPIRATION CELLULAIRE
+Se dÃ©roule dans les MITOCHONDRIES, en prÃ©sence de dioxygÃ¨ne (aÃ©robie).
+Glucose + Oâ‚‚ â†’ COâ‚‚ + Hâ‚‚O + beaucoup d''ATP.
+C''est le mode le plus rentable de production d''Ã©nergie.
+
+LA FERMENTATION
+Sans dioxygÃ¨ne (anaÃ©robie), dans le cytoplasme. Rendement faible.
+â€¢ Fermentation lactique (muscle en effort) â†’ acide lactique + peu d''ATP.
+â€¢ Fermentation alcoolique (levures) â†’ Ã©thanol + COâ‚‚ + peu d''ATP.
+
+LA PHOTOSYNTHÃˆSE
+Chez les vÃ©gÃ©taux chlorophylliens, dans les CHLOROPLASTES, Ã  la lumiÃ¨re :
+COâ‚‚ + Hâ‚‚O â†’ glucose + Oâ‚‚ (matiÃ¨re organique produite Ã  partir de minÃ©ral).
+
+BILAN : la respiration LIBÃˆRE l''Ã©nergie contenue dans le glucose ;
+la photosynthÃ¨se la STOCKE dans le glucose grÃ¢ce Ã  la lumiÃ¨re.',
+  lesson_ar = 'ØªØ­ÙˆÙŠÙ„ Ø§Ù„Ø·Ø§Ù‚Ø©
+
+Ø§Ù„Ù€ ATP â€” Ø§Ù„Ø¹Ù…Ù„Ø© Ø§Ù„Ø·Ø§Ù‚ÙˆÙŠØ©
+ÙŠØ®Ø²Ù‘Ù† Ø§Ù„Ù€ ATP (Ø«Ù„Ø§Ø«ÙŠ ÙÙˆØ³ÙØ§Øª Ø§Ù„Ø£Ø¯ÙŠÙ†ÙˆØ²ÙŠÙ†) Ø§Ù„Ø·Ø§Ù‚Ø© ÙˆÙŠØ­Ø±Ø±Ù‡Ø§.
+ATP â† ADP + Pi + Ø·Ø§Ù‚Ø© ØªÙØ³ØªØ¹Ù…Ù„ ÙÙŠ Ø§Ù„Ø¹Ù…Ù„ Ø§Ù„Ø®Ù„ÙˆÙŠ.
+
+Ø§Ù„ØªÙ†ÙØ³ Ø§Ù„Ø®Ù„ÙˆÙŠ
+ÙŠØ­Ø¯Ø« ÙÙŠ Ø§Ù„Ù…ÙŠØªÙˆÙƒÙ†Ø¯Ø±ÙŠ Ø¨ÙˆØ¬ÙˆØ¯ Ø§Ù„Ø£ÙƒØ³Ø¬ÙŠÙ† (Ù‡ÙˆØ§Ø¦ÙŠ).
+ØºÙ„ÙˆÙƒÙˆØ² + Oâ‚‚ â† COâ‚‚ + Hâ‚‚O + ÙƒÙ…ÙŠØ© ÙƒØ¨ÙŠØ±Ø© Ù…Ù† ATP. Ø£ÙƒØ«Ø± Ø§Ù„Ø·Ø±Ù‚ Ù…Ø±Ø¯ÙˆØ¯ÙŠØ©.
+
+Ø§Ù„ØªØ®Ù…Ø±
+Ø¯ÙˆÙ† Ø£ÙƒØ³Ø¬ÙŠÙ† (Ù„Ø§Ù‡ÙˆØ§Ø¦ÙŠ) ÙÙŠ Ø§Ù„Ù‡ÙŠÙˆÙ„Ù‰ØŒ Ù…Ø±Ø¯ÙˆØ¯Ù‡ Ø¶Ø¹ÙŠÙ.
+â€¢ ØªØ®Ù…Ø± Ù„Ø¨Ù†ÙŠ (Ø§Ù„Ø¹Ø¶Ù„Ø© Ø£Ø«Ù†Ø§Ø¡ Ø§Ù„Ø¬Ù‡Ø¯) â† Ø­Ù…Ø¶ Ù„Ø¨Ù†ÙŠ + Ù‚Ù„ÙŠÙ„ Ù…Ù† ATP.
+â€¢ ØªØ®Ù…Ø± ÙƒØ­ÙˆÙ„ÙŠ (Ø§Ù„Ø®Ù…Ø§Ø¦Ø±) â† Ø¥ÙŠØ«Ø§Ù†ÙˆÙ„ + COâ‚‚ + Ù‚Ù„ÙŠÙ„ Ù…Ù† ATP.
+
+Ø§Ù„ØªØ±ÙƒÙŠØ¨ Ø§Ù„Ø¶ÙˆØ¦ÙŠ
+Ø¹Ù†Ø¯ Ø§Ù„Ù†Ø¨Ø§ØªØ§Øª Ø§Ù„Ø®Ø¶Ø±Ø§Ø¡ ÙÙŠ Ø§Ù„ØµØ§Ù†Ø¹Ø§Øª Ø§Ù„Ø®Ø¶Ø±Ø§Ø¡ ÙˆØ¨ÙˆØ¬ÙˆØ¯ Ø§Ù„Ø¶ÙˆØ¡:
+COâ‚‚ + Hâ‚‚O â† ØºÙ„ÙˆÙƒÙˆØ² + Oâ‚‚.
+
+Ø§Ù„Ø­ÙˆØµÙ„Ø©: Ø§Ù„ØªÙ†ÙØ³ ÙŠØ­Ø±Ø± Ø§Ù„Ø·Ø§Ù‚Ø©ØŒ ÙˆØ§Ù„ØªØ±ÙƒÙŠØ¨ Ø§Ù„Ø¶ÙˆØ¦ÙŠ ÙŠØ®Ø²Ù‘Ù†Ù‡Ø§ ÙÙŠ Ø§Ù„ØºÙ„ÙˆÙƒÙˆØ² Ø¨ÙØ¶Ù„ Ø§Ù„Ø¶ÙˆØ¡.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'energie';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('La molÃ©cule qui stocke l''Ã©nergie utilisable par la cellule estâ€¦', 'Ø§Ù„Ø¬Ø²ÙŠØ¡ Ø§Ù„Ø°ÙŠ ÙŠØ®Ø²Ù‘Ù† Ø§Ù„Ø·Ø§Ù‚Ø© Ø§Ù„Ù‚Ø§Ø¨Ù„Ø© Ù„Ù„Ø§Ø³ØªØ¹Ù…Ø§Ù„ Ù‡Ùˆâ€¦',
+   '["l''ATP","l''ADN","le glucose seul","l''oxygÃ¨ne"]'::jsonb, '["Ø§Ù„Ù€ ATP","Ø§Ù„Ù€ ADN","Ø§Ù„ØºÙ„ÙˆÙƒÙˆØ² ÙˆØ­Ø¯Ù‡","Ø§Ù„Ø£ÙƒØ³Ø¬ÙŠÙ†"]'::jsonb,
+   0, 'L''ATP est la Â« monnaie Ã©nergÃ©tique Â».', 'Ø§Ù„Ù€ ATP Ù‡Ùˆ Ø§Ù„Ø¹Ù…Ù„Ø© Ø§Ù„Ø·Ø§Ù‚ÙˆÙŠØ©.', 'easy', 1),
+  ('La respiration cellulaire se dÃ©roule dansâ€¦', 'ÙŠØ­Ø¯Ø« Ø§Ù„ØªÙ†ÙØ³ Ø§Ù„Ø®Ù„ÙˆÙŠ ÙÙŠâ€¦',
+   '["les mitochondries","les chloroplastes","le noyau","les ribosomes"]'::jsonb, '["Ø§Ù„Ù…ÙŠØªÙˆÙƒÙ†Ø¯Ø±ÙŠ","Ø§Ù„ØµØ§Ù†Ø¹Ø§Øª Ø§Ù„Ø®Ø¶Ø±Ø§Ø¡","Ø§Ù„Ù†ÙˆØ§Ø©","Ø§Ù„Ø±ÙŠØ¨ÙˆØ²ÙˆÙ…Ø§Øª"]'::jsonb,
+   0, 'La respiration a lieu dans les mitochondries.', 'Ø§Ù„ØªÙ†ÙØ³ ÙŠØ­Ø¯Ø« ÙÙŠ Ø§Ù„Ù…ÙŠØªÙˆÙƒÙ†Ø¯Ø±ÙŠ.', 'medium', 2),
+  ('La photosynthÃ¨se produitâ€¦', 'ÙŠÙ†ØªØ¬ Ø§Ù„ØªØ±ÙƒÙŠØ¨ Ø§Ù„Ø¶ÙˆØ¦ÙŠâ€¦',
+   '["du glucose et de l''Oâ‚‚","du COâ‚‚ seulement","de l''ATP uniquement","de l''acide lactique"]'::jsonb, '["Ø§Ù„ØºÙ„ÙˆÙƒÙˆØ² ÙˆØ§Ù„Ø£ÙƒØ³Ø¬ÙŠÙ†","COâ‚‚ ÙÙ‚Ø·","ATP ÙÙ‚Ø·","Ø­Ù…Ø¶Ù‹Ø§ Ù„Ø¨Ù†ÙŠÙ‹Ø§"]'::jsonb,
+   0, 'COâ‚‚ + Hâ‚‚O + lumiÃ¨re â†’ glucose + Oâ‚‚.', 'COâ‚‚ + Hâ‚‚O + Ø¶ÙˆØ¡ â† ØºÙ„ÙˆÙƒÙˆØ² + Oâ‚‚.', 'medium', 3),
+  ('La fermentation se produitâ€¦', 'ÙŠØ­Ø¯Ø« Ø§Ù„ØªØ®Ù…Ø±â€¦',
+   '["en absence de dioxygÃ¨ne","seulement avec Oâ‚‚","dans le noyau","Ã  la lumiÃ¨re"]'::jsonb, '["ÙÙŠ ØºÙŠØ§Ø¨ Ø§Ù„Ø£ÙƒØ³Ø¬ÙŠÙ†","ÙÙ‚Ø· Ø¨ÙˆØ¬ÙˆØ¯ Oâ‚‚","ÙÙŠ Ø§Ù„Ù†ÙˆØ§Ø©","ÙÙŠ Ø§Ù„Ø¶ÙˆØ¡"]'::jsonb,
+   0, 'La fermentation est anaÃ©robie (sans Oâ‚‚).', 'Ø§Ù„ØªØ®Ù…Ø± Ù„Ø§Ù‡ÙˆØ§Ø¦ÙŠ (Ø¯ÙˆÙ† Ø£ÙƒØ³Ø¬ÙŠÙ†).', 'easy', 4),
+  ('ComparÃ©e Ã  la fermentation, la respiration produitâ€¦', 'Ù…Ù‚Ø§Ø±Ù†Ø© Ø¨Ø§Ù„ØªØ®Ù…Ø± ÙŠÙ†ØªØ¬ Ø§Ù„ØªÙ†ÙØ³â€¦',
+   '["beaucoup plus d''ATP","moins d''ATP","autant d''ATP","aucun ATP"]'::jsonb, '["ÙƒÙ…ÙŠØ© Ø£ÙƒØ¨Ø± Ù…Ù† ATP","Ø£Ù‚Ù„ ATP","Ù†ÙØ³ Ø§Ù„ÙƒÙ…ÙŠØ©","Ù„Ø§ ATP"]'::jsonb,
+   0, 'La respiration est bien plus rentable en ATP.', 'Ø§Ù„ØªÙ†ÙØ³ Ø£ÙƒØ«Ø± Ù…Ø±Ø¯ÙˆØ¯ÙŠØ© Ø¨ÙƒØ«ÙŠØ± ÙÙŠ ATP.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'energie'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LA COMMUNICATION NERVEUSE
+
+LE MESSAGE NERVEUX
+Le long d''un neurone, le message est un signal Ã‰LECTRIQUE appelÃ© POTENTIEL
+D''ACTION (PA). Au repos, la membrane est polarisÃ©e (potentiel de repos â‰ˆ âˆ’70 mV).
+Une stimulation suffisante (seuil) dÃ©clenche un PA qui se propage.
+
+LA LOI DU TOUT OU RIEN
+Si la stimulation atteint le seuil, le PA apparaÃ®t toujours avec la mÃªme
+amplitude. En dessous du seuil : rien. L''intensitÃ© du stimulus est codÃ©e
+par la FRÃ‰QUENCE des PA, pas leur amplitude.
+
+LA SYNAPSE
+Zone de communication entre deux neurones (ou neurone-muscle). Le message
+y devient CHIMIQUE : le neurone libÃ¨re un NEUROTRANSMETTEUR dans la fente
+synaptique, captÃ© par des rÃ©cepteurs du neurone suivant. La transmission
+est donc Ã  sens unique.
+
+L''INTÃ‰GRATION
+Un neurone reÃ§oit de nombreux messages (excitateurs et inhibiteurs) et fait
+la somme : il Ã©met un PA seulement si le bilan atteint le seuil.
+
+SUBSTANCES ET DANGERS : drogues et alcool perturbent les synapses.',
+  lesson_ar = 'Ø§Ù„Ø§ØªØµØ§Ù„ Ø§Ù„Ø¹ØµØ¨ÙŠ
+
+Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø§Ù„Ø¹ØµØ¨ÙŠØ©
+Ø¹Ù„Ù‰ Ø·ÙˆÙ„ Ø§Ù„Ø¹ØµØ¨ÙˆÙ†ØŒ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø¥Ø´Ø§Ø±Ø© ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ© ØªÙØ³Ù…Ù‰ ÙƒÙ…ÙˆÙ† Ø§Ù„Ø¹Ù…Ù„ (PA). ÙÙŠ Ø§Ù„Ø±Ø§Ø­Ø© ÙŠÙƒÙˆÙ†
+Ø§Ù„ØºØ´Ø§Ø¡ Ù…Ø³ØªÙ‚Ø·Ø¨Ù‹Ø§ (ÙƒÙ…ÙˆÙ† Ø§Ù„Ø±Ø§Ø­Ø© â‰ˆ âˆ’70 Ù…Ù„ÙŠ ÙÙˆÙ„Ø·). ØªÙ†Ø¨ÙŠÙ‡ ÙƒØ§ÙÙ (Ø§Ù„Ø¹ØªØ¨Ø©) ÙŠÙˆÙ„Ù‘Ø¯ ÙƒÙ…ÙˆÙ† Ø¹Ù…Ù„ ÙŠÙ†ØªØ´Ø±.
+
+Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„ÙƒÙ„ Ø£Ùˆ Ø§Ù„Ù„Ø§Ø´ÙŠØ¡
+Ø¥Ø°Ø§ Ø¨Ù„Øº Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡ Ø§Ù„Ø¹ØªØ¨Ø© ÙŠØ¸Ù‡Ø± PA Ø¨Ù†ÙØ³ Ø§Ù„Ø§ØªØ³Ø§Ø¹ Ø¯Ø§Ø¦Ù…Ù‹Ø§. ØªØ­Øª Ø§Ù„Ø¹ØªØ¨Ø©: Ù„Ø§ Ø´ÙŠØ¡.
+ØªÙØ±Ù…Ù‘Ø² Ø´Ø¯Ø© Ø§Ù„Ù…Ù†Ø¨Ù‡ Ø¨ØªÙˆØ§ØªØ± ÙƒÙ…ÙˆÙ†Ø§Øª Ø§Ù„Ø¹Ù…Ù„ Ù„Ø§ Ø¨Ø§ØªØ³Ø§Ø¹Ù‡Ø§.
+
+Ø§Ù„Ù…Ø´Ø¨Ùƒ
+Ù…Ù†Ø·Ù‚Ø© Ø§Ù„ØªÙˆØ§ØµÙ„ Ø¨ÙŠÙ† Ø¹ØµØ¨ÙˆÙ†ÙŠÙ† (Ø£Ùˆ Ø¹ØµØ¨ÙˆÙ†-Ø¹Ø¶Ù„Ø©). ØªØµØ¨Ø­ Ø§Ù„Ø±Ø³Ø§Ù„Ø© ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠØ©: ÙŠØ­Ø±Ø± Ø§Ù„Ø¹ØµØ¨ÙˆÙ†
+Ù…Ø¨Ù„Ù‘ØºÙ‹Ø§ Ø¹ØµØ¨ÙŠÙ‹Ø§ ÙÙŠ Ø§Ù„Ø´Ù‚ Ø§Ù„Ù…Ø´Ø¨ÙƒÙŠ ØªÙ„ØªÙ‚Ø·Ù‡ Ù…Ø³ØªÙ‚Ø¨Ù„Ø§Øª Ø§Ù„Ø¹ØµØ¨ÙˆÙ† Ø§Ù„ØªØ§Ù„ÙŠ. Ø§Ù„Ù†Ù‚Ù„ Ø¨Ø§ØªØ¬Ø§Ù‡ ÙˆØ§Ø­Ø¯.
+
+Ø§Ù„ØªÙƒØ§Ù…Ù„
+ÙŠØ³ØªÙ‚Ø¨Ù„ Ø§Ù„Ø¹ØµØ¨ÙˆÙ† Ø±Ø³Ø§Ø¦Ù„ Ø¹Ø¯ÙŠØ¯Ø© (Ù…Ù†Ø¨Ù‘Ù‡Ø© ÙˆÙ…Ø«Ø¨Ù‘Ø·Ø©) ÙˆÙŠØ¬Ù…Ø¹Ù‡Ø§: ÙŠØµØ¯Ø± PA ÙÙ‚Ø· Ø¥Ø°Ø§ Ø¨Ù„ØºØª Ø§Ù„Ø­ØµÙŠÙ„Ø© Ø§Ù„Ø¹ØªØ¨Ø©.
+
+Ù…ÙˆØ§Ø¯ ÙˆØ£Ø®Ø·Ø§Ø±: Ø§Ù„Ù…Ø®Ø¯Ø±Ø§Øª ÙˆØ§Ù„ÙƒØ­ÙˆÙ„ ØªØ¹ÙŠÙ‚ Ø¹Ù…Ù„ Ø§Ù„Ù…Ø´Ø§Ø¨Ùƒ.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'communication-nerveuse';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Le signal qui se propage le long d''un neurone estâ€¦', 'Ø§Ù„Ø¥Ø´Ø§Ø±Ø© Ø§Ù„ØªÙŠ ØªÙ†ØªØ´Ø± Ø¹Ù„Ù‰ Ø·ÙˆÙ„ Ø§Ù„Ø¹ØµØ¨ÙˆÙ† Ù‡ÙŠâ€¦',
+   '["le potentiel d''action","une hormone","un anticorps","une enzyme"]'::jsonb, '["ÙƒÙ…ÙˆÙ† Ø§Ù„Ø¹Ù…Ù„","Ù‡Ø±Ù…ÙˆÙ†","Ø¬Ø³Ù… Ù…Ø¶Ø§Ø¯","Ø£Ù†Ø²ÙŠÙ…"]'::jsonb,
+   0, 'Le PA est le message Ã©lectrique du neurone.', 'ÙƒÙ…ÙˆÙ† Ø§Ù„Ø¹Ù…Ù„ Ù‡Ùˆ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø§Ù„ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ© Ù„Ù„Ø¹ØµØ¨ÙˆÙ†.', 'easy', 1),
+  ('Au niveau de la synapse, le message devientâ€¦', 'Ø¹Ù„Ù‰ Ù…Ø³ØªÙˆÙ‰ Ø§Ù„Ù…Ø´Ø¨Ùƒ ØªØµØ¨Ø­ Ø§Ù„Ø±Ø³Ø§Ù„Ø©â€¦',
+   '["chimique","Ã©lectrique","lumineuse","mÃ©canique"]'::jsonb, '["ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠØ©","ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠØ©","Ø¶ÙˆØ¦ÙŠØ©","Ù…ÙŠÙƒØ§Ù†ÙŠÙƒÙŠØ©"]'::jsonb,
+   0, 'La synapse transmet via un neurotransmetteur (chimique).', 'Ø§Ù„Ù…Ø´Ø¨Ùƒ ÙŠÙ†Ù‚Ù„ Ø¹Ø¨Ø± Ù…Ø¨Ù„Ù‘Øº Ø¹ØµØ¨ÙŠ (ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠ).', 'medium', 2),
+  ('L''intensitÃ© d''un stimulus est codÃ©e parâ€¦', 'ØªÙØ±Ù…Ù‘Ø² Ø´Ø¯Ø© Ø§Ù„Ù…Ù†Ø¨Ù‡ Ø¨Ù€â€¦',
+   '["la frÃ©quence des PA","l''amplitude des PA","la couleur","la taille du neurone"]'::jsonb, '["ØªÙˆØ§ØªØ± ÙƒÙ…ÙˆÙ†Ø§Øª Ø§Ù„Ø¹Ù…Ù„","Ø§ØªØ³Ø§Ø¹ ÙƒÙ…ÙˆÙ†Ø§Øª Ø§Ù„Ø¹Ù…Ù„","Ø§Ù„Ù„ÙˆÙ†","Ø­Ø¬Ù… Ø§Ù„Ø¹ØµØ¨ÙˆÙ†"]'::jsonb,
+   0, 'Loi du tout ou rien : c''est la frÃ©quence qui code l''intensitÃ©.', 'Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„ÙƒÙ„ Ø£Ùˆ Ø§Ù„Ù„Ø§Ø´ÙŠØ¡: Ø§Ù„ØªÙˆØ§ØªØ± ÙŠØ±Ù…Ù‘Ø² Ø§Ù„Ø´Ø¯Ø©.', 'medium', 3),
+  ('La transmission synaptique se faitâ€¦', 'Ø§Ù„Ù†Ù‚Ù„ Ø§Ù„Ù…Ø´Ø¨ÙƒÙŠ ÙŠØªÙ…â€¦',
+   '["dans un seul sens","dans les deux sens","au hasard","sans rÃ©cepteurs"]'::jsonb, '["ÙÙŠ Ø§ØªØ¬Ø§Ù‡ ÙˆØ§Ø­Ø¯","ÙÙŠ Ø§Ù„Ø§ØªØ¬Ø§Ù‡ÙŠÙ†","Ø¹Ø´ÙˆØ§Ø¦ÙŠÙ‹Ø§","Ø¯ÙˆÙ† Ù…Ø³ØªÙ‚Ø¨Ù„Ø§Øª"]'::jsonb,
+   0, 'Le neurotransmetteur va du neurone Ã©metteur au rÃ©cepteur : sens unique.', 'ÙŠØ°Ù‡Ø¨ Ø§Ù„Ù…Ø¨Ù„Ù‘Øº Ù…Ù† Ø§Ù„Ø¹ØµØ¨ÙˆÙ† Ø§Ù„Ù…Ø±Ø³Ù„ Ø¥Ù„Ù‰ Ø§Ù„Ù…Ø³ØªÙ‚Ø¨Ù„: Ø§ØªØ¬Ø§Ù‡ ÙˆØ§Ø­Ø¯.', 'easy', 4),
+  ('Le potentiel de repos de la membrane est d''environâ€¦', 'ÙƒÙ…ÙˆÙ† Ø±Ø§Ø­Ø© Ø§Ù„ØºØ´Ø§Ø¡ Ø­ÙˆØ§Ù„ÙŠâ€¦',
+   '["âˆ’70 mV","+70 mV","0 mV","âˆ’700 mV"]'::jsonb, '["âˆ’70 mV","+70 mV","0 mV","âˆ’700 mV"]'::jsonb,
+   0, 'Environ âˆ’70 mV au repos.', 'Ø­ÙˆØ§Ù„ÙŠ âˆ’70 Ù…Ù„ÙŠ ÙÙˆÙ„Ø· ÙÙŠ Ø§Ù„Ø±Ø§Ø­Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'communication-nerveuse'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'L''IMMUNITÃ‰ â€” SOI ET NON-SOI
+
+LE SOI ET LE NON-SOI
+Le SOI = les molÃ©cules propres Ã  l''organisme (marqueurs CMH sur les cellules).
+Le NON-SOI = tout Ã©lÃ©ment Ã©tranger (microbe, greffe, cellule anormale).
+Le systÃ¨me immunitaire tolÃ¨re le soi et attaque le non-soi.
+
+LES CELLULES DE L''IMMUNITÃ‰
+â€¢ Lymphocytes B (LB) : produisent les ANTICORPS (immunitÃ© humorale).
+â€¢ Lymphocytes T4 (LT auxiliaires) : Â« chefs d''orchestre Â», activent les autres.
+â€¢ Lymphocytes T8 (LT cytotoxiques) : dÃ©truisent les cellules infectÃ©es
+  (immunitÃ© cellulaire).
+â€¢ Macrophages : phagocytent et prÃ©sentent l''antigÃ¨ne.
+
+LA RÃ‰PONSE IMMUNITAIRE
+1. Reconnaissance de l''antigÃ¨ne.
+2. SÃ©lection et multiplication des lymphocytes spÃ©cifiques.
+3. DiffÃ©renciation : plasmocytes (anticorps) et cellules mÃ©moire.
+4. Ã‰limination de l''antigÃ¨ne.
+
+LE VIH ET LE SIDA
+Le VIH dÃ©truit les LT4, Â« chefs d''orchestre Â» de la rÃ©ponse. Sans eux, le
+systÃ¨me s''effondre â†’ SIDA (immunodÃ©ficience). D''oÃ¹ l''importance de la
+prÃ©vention.',
+  lesson_ar = 'Ø§Ù„Ù…Ù†Ø§Ø¹Ø© â€” Ø§Ù„Ø°Ø§Øª ÙˆØ§Ù„Ù„Ø§Ø°Ø§Øª
+
+Ø§Ù„Ø°Ø§Øª ÙˆØ§Ù„Ù„Ø§Ø°Ø§Øª
+Ø§Ù„Ø°Ø§Øª = Ø¬Ø²ÙŠØ¦Ø§Øª Ø§Ù„Ø¬Ø³Ù… Ø§Ù„Ø®Ø§ØµØ© (Ù…Ø¤Ø´Ø±Ø§Øª CMH Ø¹Ù„Ù‰ Ø§Ù„Ø®Ù„Ø§ÙŠØ§).
+Ø§Ù„Ù„Ø§Ø°Ø§Øª = ÙƒÙ„ Ø¹Ù†ØµØ± ØºØ±ÙŠØ¨ (Ù…ÙŠÙƒØ±ÙˆØ¨ØŒ Ø·Ø¹Ù…ØŒ Ø®Ù„ÙŠØ© Ø´Ø§Ø°Ø©).
+ÙŠØªØ­Ù…Ù„ Ø§Ù„Ø¬Ù‡Ø§Ø² Ø§Ù„Ù…Ù†Ø§Ø¹ÙŠ Ø§Ù„Ø°Ø§Øª ÙˆÙŠÙ‡Ø§Ø¬Ù… Ø§Ù„Ù„Ø§Ø°Ø§Øª.
+
+Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ù…Ù†Ø§Ø¹Ø©
+â€¢ Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª B: ØªÙ†ØªØ¬ Ø§Ù„Ø£Ø¬Ø³Ø§Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯Ø© (Ù…Ù†Ø§Ø¹Ø© Ø®Ù„Ø·ÙŠØ©).
+â€¢ Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T4 (Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯Ø©): Â«Ù‚Ø§Ø¦Ø¯Ø© Ø§Ù„Ø£ÙˆØ±ÙƒØ³ØªØ±Ø§Â» ØªÙ†Ø´Ù‘Ø· Ø§Ù„Ø¨Ù‚ÙŠØ©.
+â€¢ Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T8 (Ø§Ù„Ø³Ø§Ù…Ø©): ØªØªÙ„Ù Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ù…ØµØ§Ø¨Ø© (Ù…Ù†Ø§Ø¹Ø© Ø®Ù„ÙˆÙŠØ©).
+â€¢ Ø§Ù„Ø¨Ù„Ø¹Ù…ÙŠØ§Øª: ØªØ¨Ù„Ø¹Ù… ÙˆØªØ¹Ø±Ø¶ Ø§Ù„Ù…Ø³ØªØ¶Ø¯.
+
+Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ø§Ù„Ù…Ù†Ø§Ø¹ÙŠØ©
+1. Ø§Ù„ØªØ¹Ø±Ù Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³ØªØ¶Ø¯. 2. Ø§Ù†ØªÙ‚Ø§Ø¡ ÙˆØªÙƒØ§Ø«Ø± Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª Ø§Ù„Ù†ÙˆØ¹ÙŠØ©.
+3. Ø§Ù„ØªÙ…Ø§ÙŠØ²: Ø®Ù„Ø§ÙŠØ§ Ø¨Ù„Ø§Ø²Ù…ÙŠØ© (Ø£Ø¬Ø³Ø§Ù… Ù…Ø¶Ø§Ø¯Ø©) ÙˆØ®Ù„Ø§ÙŠØ§ Ø°Ø§ÙƒØ±Ø©. 4. Ø§Ù„Ù‚Ø¶Ø§Ø¡ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³ØªØ¶Ø¯.
+
+Ø§Ù„Ù€ VIH ÙˆØ§Ù„Ø³ÙŠØ¯Ø§
+ÙŠØªÙ„Ù Ø§Ù„Ù€ VIH Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T4 Ù‚Ø§Ø¦Ø¯Ø© Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø©ØŒ ÙÙŠÙ†Ù‡Ø§Ø± Ø§Ù„Ø¬Ù‡Ø§Ø² â† Ø§Ù„Ø³ÙŠØ¯Ø§ (Ø¹ÙˆØ² Ù…Ù†Ø§Ø¹ÙŠ).
+Ù„Ø°Ù„Ùƒ ØªÙØ¹Ø¯Ù‘ Ø§Ù„ÙˆÙ‚Ø§ÙŠØ© Ø£Ø³Ø§Ø³ÙŠØ©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'immunite';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Les marqueurs du Â« soi Â» portÃ©s par nos cellules sontâ€¦', 'Ù…Ø¤Ø´Ø±Ø§Øª Â«Ø§Ù„Ø°Ø§ØªÂ» Ø¹Ù„Ù‰ Ø®Ù„Ø§ÙŠØ§Ù†Ø§ Ù‡ÙŠâ€¦',
+   '["les molÃ©cules du CMH","les anticorps","les virus","les hormones"]'::jsonb, '["Ø¬Ø²ÙŠØ¦Ø§Øª Ø§Ù„Ù€ CMH","Ø§Ù„Ø£Ø¬Ø³Ø§Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯Ø©","Ø§Ù„ÙÙŠØ±ÙˆØ³Ø§Øª","Ø§Ù„Ù‡Ø±Ù…ÙˆÙ†Ø§Øª"]'::jsonb,
+   0, 'Le CMH marque les cellules du soi.', 'Ø§Ù„Ù€ CMH ÙŠÙ…ÙŠÙ‘Ø² Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ø°Ø§Øª.', 'easy', 1),
+  ('Les lymphocytes T8 cytotoxiquesâ€¦', 'Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T8 Ø§Ù„Ø³Ø§Ù…Ø©â€¦',
+   '["dÃ©truisent les cellules infectÃ©es","produisent des anticorps","fabriquent des hormones","digÃ¨rent le glucose"]'::jsonb, '["ØªØªÙ„Ù Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ù…ØµØ§Ø¨Ø©","ØªÙ†ØªØ¬ Ø£Ø¬Ø³Ø§Ù…Ù‹Ø§ Ù…Ø¶Ø§Ø¯Ø©","ØªØµÙ†Ø¹ Ù‡Ø±Ù…ÙˆÙ†Ø§Øª","ØªÙ‡Ø¶Ù… Ø§Ù„ØºÙ„ÙˆÙƒÙˆØ²"]'::jsonb,
+   0, 'Les LT8 assurent l''immunitÃ© cellulaire.', 'Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T8 ØªØ¤Ù…Ù‘Ù† Ø§Ù„Ù…Ù†Ø§Ø¹Ø© Ø§Ù„Ø®Ù„ÙˆÙŠØ©.', 'medium', 2),
+  ('Le VIH dÃ©truit principalementâ€¦', 'ÙŠØªÙ„Ù Ø§Ù„Ù€ VIH Ø¨Ø´ÙƒÙ„ Ø±Ø¦ÙŠØ³ÙŠâ€¦',
+   '["les lymphocytes T4","les globules rouges","les neurones","les os"]'::jsonb, '["Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T4","Ø§Ù„ÙƒØ±ÙŠØ§Øª Ø§Ù„Ø­Ù…Ø±Ø§Ø¡","Ø§Ù„Ø¹ØµØ¨ÙˆÙ†Ø§Øª","Ø§Ù„Ø¹Ø¸Ø§Ù…"]'::jsonb,
+   0, 'Le VIH dÃ©truit les LT4 â†’ effondrement immunitaire.', 'Ø§Ù„Ù€ VIH ÙŠØªÙ„Ù Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T4 â† Ø§Ù†Ù‡ÙŠØ§Ø± Ù…Ù†Ø§Ø¹ÙŠ.', 'medium', 3),
+  ('Les anticorps sont produits par les plasmocytes issus desâ€¦', 'ØªÙ†ØªØ¬ Ø§Ù„Ø£Ø¬Ø³Ø§Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯Ø© Ù…Ù† Ø®Ù„Ø§ÙŠØ§ Ø¨Ù„Ø§Ø²Ù…ÙŠØ© Ù…ØµØ¯Ø±Ù‡Ø§â€¦',
+   '["lymphocytes B","lymphocytes T8","macrophages","hÃ©maties"]'::jsonb, '["Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª B","Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª T8","Ø§Ù„Ø¨Ù„Ø¹Ù…ÙŠØ§Øª","Ø§Ù„ÙƒØ±ÙŠØ§Øª Ø§Ù„Ø­Ù…Ø±Ø§Ø¡"]'::jsonb,
+   0, 'Les LB se diffÃ©rencient en plasmocytes producteurs d''anticorps.', 'Ø§Ù„Ù„Ù…ÙØ§ÙˆÙŠØ§Øª B ØªØªÙ…Ø§ÙŠØ² Ø¥Ù„Ù‰ Ø®Ù„Ø§ÙŠØ§ Ø¨Ù„Ø§Ø²Ù…ÙŠØ© Ù…Ù†ØªØ¬Ø© Ù„Ù„Ø£Ø¬Ø³Ø§Ù… Ø§Ù„Ù…Ø¶Ø§Ø¯Ø©.', 'easy', 4),
+  ('AprÃ¨s une infection, les cellules qui assurent une rÃ©ponse plus rapide la 2áµ‰ fois sontâ€¦', 'Ø¨Ø¹Ø¯ Ø§Ù„Ø¹Ø¯ÙˆÙ‰ØŒ Ø§Ù„Ø®Ù„Ø§ÙŠØ§ Ø§Ù„ØªÙŠ ØªØ¤Ù…Ù‘Ù† Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ø£Ø³Ø±Ø¹ ÙÙŠ Ø§Ù„Ù…Ø±Ø© Ø§Ù„Ø«Ø§Ù†ÙŠØ© Ù‡ÙŠâ€¦',
+   '["les cellules mÃ©moire","les globules rouges","les plaquettes","les neurones"]'::jsonb, '["Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ø°Ø§ÙƒØ±Ø©","Ø§Ù„ÙƒØ±ÙŠØ§Øª Ø§Ù„Ø­Ù…Ø±Ø§Ø¡","Ø§Ù„ØµÙÙŠØ­Ø§Øª","Ø§Ù„Ø¹ØµØ¨ÙˆÙ†Ø§Øª"]'::jsonb,
+   0, 'Les cellules mÃ©moire accÃ©lÃ¨rent la rÃ©ponse secondaire.', 'Ø®Ù„Ø§ÙŠØ§ Ø§Ù„Ø°Ø§ÙƒØ±Ø© ØªØ³Ø±Ù‘Ø¹ Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ø§Ù„Ø«Ø§Ù†ÙˆÙŠØ©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'svt' and c.slug = 'immunite'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- ================= 3AS PHYSIQUE (BAC) â€” flagship chapters =================
+
+update public.chapters c set
+  lesson_fr = 'SUIVI TEMPOREL D''UNE TRANSFORMATION CHIMIQUE (cinÃ©tique)
+
+VITESSE D''UNE RÃ‰ACTION
+Certaines rÃ©actions sont lentes, d''autres rapides. La CINÃ‰TIQUE Ã©tudie leur
+Ã©volution dans le temps. On suit une grandeur (concentration, volume de gaz,
+conductivitÃ©â€¦) au cours du temps.
+
+LA VITESSE VOLUMIQUE
+v = (1/V) Ã— (dx/dt), oÃ¹ x est l''avancement. La vitesse est MAXIMALE au dÃ©but
+(rÃ©actifs abondants) puis DIMINUE et tend vers zÃ©ro quand la rÃ©action s''achÃ¨ve.
+
+LE TEMPS DE DEMI-RÃ‰ACTION tÂ½
+C''est la durÃ©e au bout de laquelle l''avancement atteint la MOITIÃ‰ de sa valeur
+finale (x = x_max/2). Il sert Ã  comparer la rapiditÃ© des rÃ©actions.
+
+LES FACTEURS CINÃ‰TIQUES (qui accÃ©lÃ¨rent une rÃ©action)
+â€¢ La TEMPÃ‰RATURE : plus il fait chaud, plus la rÃ©action est rapide.
+â€¢ La CONCENTRATION des rÃ©actifs : plus elle est grande, plus c''est rapide.
+â€¢ Le CATALYSEUR : accÃ©lÃ¨re sans Ãªtre consommÃ© (ex. enzymes, ions mÃ©talliques).
+â€¢ La surface de contact (Ã©tat de division du solide).
+
+Ã€ RETENIR : la vitesse dÃ©croÃ®t au cours du temps car les rÃ©actifs se rarÃ©fient.',
+  lesson_ar = 'Ø§Ù„Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„Ø²Ù…Ù†ÙŠØ© Ù„ØªØ­ÙˆÙ„ ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠ (Ø§Ù„Ø­Ø±ÙƒÙŠØ©)
+
+Ø³Ø±Ø¹Ø© Ø§Ù„ØªÙØ§Ø¹Ù„
+Ø¨Ø¹Ø¶ Ø§Ù„ØªÙØ§Ø¹Ù„Ø§Øª Ø¨Ø·ÙŠØ¦Ø© ÙˆØ£Ø®Ø±Ù‰ Ø³Ø±ÙŠØ¹Ø©. ØªØ¯Ø±Ø³ Ø§Ù„Ø­Ø±ÙƒÙŠØ© ØªØ·ÙˆØ±Ù‡Ø§ ÙÙŠ Ø§Ù„Ø²Ù…Ù† Ø¨Ù…ØªØ§Ø¨Ø¹Ø© Ù…Ù‚Ø¯Ø§Ø±
+(ØªØ±ÙƒÙŠØ²ØŒ Ø­Ø¬Ù… ØºØ§Ø²ØŒ Ù†Ø§Ù‚Ù„ÙŠØ©â€¦) Ø¹Ø¨Ø± Ø§Ù„Ø²Ù…Ù†.
+
+Ø§Ù„Ø³Ø±Ø¹Ø© Ø§Ù„Ø­Ø¬Ù…ÙŠØ©
+v = (1/V) Ã— (dx/dt) Ø­ÙŠØ« x Ø§Ù„ØªÙ‚Ø¯Ù‘Ù…. Ø§Ù„Ø³Ø±Ø¹Ø© Ø£Ø¹Ø¸Ù…ÙŠØ© ÙÙŠ Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© (ÙˆÙØ±Ø© Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª)
+Ø«Ù… ØªØªÙ†Ø§Ù‚Øµ ÙˆØªØ¤ÙˆÙ„ Ø¥Ù„Ù‰ Ø§Ù„ØµÙØ± Ø¹Ù†Ø¯ Ø§Ù†ØªÙ‡Ø§Ø¡ Ø§Ù„ØªÙØ§Ø¹Ù„.
+
+Ø²Ù…Ù† Ù†ØµÙ Ø§Ù„ØªÙØ§Ø¹Ù„ tÂ½
+Ø§Ù„Ù…Ø¯Ø© Ø§Ù„ØªÙŠ ÙŠØ¨Ù„Øº Ø¹Ù†Ø¯Ù‡Ø§ Ø§Ù„ØªÙ‚Ø¯Ù‘Ù… Ù†ØµÙ Ù‚ÙŠÙ…ØªÙ‡ Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠØ© (x = x_max/2)ØŒ ØªÙØ³ØªØ¹Ù…Ù„ Ù„Ù…Ù‚Ø§Ø±Ù†Ø© Ø§Ù„Ø³Ø±Ø¹Ø§Øª.
+
+Ø§Ù„Ø¹ÙˆØ§Ù…Ù„ Ø§Ù„Ø­Ø±ÙƒÙŠØ© (ØªØ³Ø±Ù‘Ø¹ Ø§Ù„ØªÙØ§Ø¹Ù„)
+â€¢ Ø§Ù„Ø­Ø±Ø§Ø±Ø©: ÙƒÙ„Ù…Ø§ Ø§Ø±ØªÙØ¹Øª Ø²Ø§Ø¯Øª Ø§Ù„Ø³Ø±Ø¹Ø©.
+â€¢ ØªØ±ÙƒÙŠØ² Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª: ÙƒÙ„Ù…Ø§ Ø²Ø§Ø¯ Ø²Ø§Ø¯Øª Ø§Ù„Ø³Ø±Ø¹Ø©.
+â€¢ Ø§Ù„ÙˆØ³ÙŠØ·: ÙŠØ³Ø±Ù‘Ø¹ Ø¯ÙˆÙ† Ø£Ù† ÙŠÙØ³ØªÙ‡Ù„Ùƒ (Ø£Ù†Ø²ÙŠÙ…Ø§ØªØŒ Ø´ÙˆØ§Ø±Ø¯ Ù…Ø¹Ø¯Ù†ÙŠØ©).
+â€¢ Ø³Ø·Ø­ Ø§Ù„ØªÙ…Ø§Ø³ (Ø¯Ø±Ø¬Ø© ØªØ¬Ø²Ø¦Ø© Ø§Ù„ØµÙ„Ø¨).
+
+ØªØ°ÙƒØ±: ØªØªÙ†Ø§Ù‚Øµ Ø§Ù„Ø³Ø±Ø¹Ø© Ù…Ø¹ Ø§Ù„Ø²Ù…Ù† Ù„Ø£Ù† Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª ØªÙ†Ø¯Ø±.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'physique' and c.slug = 'cinetique';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('La vitesse d''une rÃ©action chimique est gÃ©nÃ©ralementâ€¦ au dÃ©but', 'Ø³Ø±Ø¹Ø© Ø§Ù„ØªÙØ§Ø¹Ù„ Ø§Ù„ÙƒÙŠÙ…ÙŠØ§Ø¦ÙŠ Ø¹Ù…ÙˆÙ…Ù‹Ø§â€¦ ÙÙŠ Ø§Ù„Ø¨Ø¯Ø§ÙŠØ©',
+   '["maximale","nulle","minimale","nÃ©gative"]'::jsonb, '["Ø£Ø¹Ø¸Ù…ÙŠØ©","Ù…Ø¹Ø¯ÙˆÙ…Ø©","Ø£ØµØºØ±ÙŠØ©","Ø³Ø§Ù„Ø¨Ø©"]'::jsonb,
+   0, 'Au dÃ©but les rÃ©actifs sont abondants â†’ vitesse maximale.', 'ÙÙŠ Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª ÙˆÙÙŠØ±Ø© â† Ø³Ø±Ø¹Ø© Ø£Ø¹Ø¸Ù…ÙŠØ©.', 'easy', 1),
+  ('Le temps de demi-rÃ©action tÂ½ correspond Ã  un avancement Ã©gal Ã â€¦', 'Ø²Ù…Ù† Ù†ØµÙ Ø§Ù„ØªÙØ§Ø¹Ù„ ÙŠÙˆØ§ÙÙ‚ ØªÙ‚Ø¯Ù‘Ù…Ù‹Ø§ ÙŠØ³Ø§ÙˆÙŠâ€¦',
+   '["la moitiÃ© de l''avancement final","l''avancement final","le double","zÃ©ro"]'::jsonb, '["Ù†ØµÙ Ø§Ù„ØªÙ‚Ø¯Ù‘Ù… Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ","Ø§Ù„ØªÙ‚Ø¯Ù‘Ù… Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ","Ø§Ù„Ø¶Ø¹Ù","ØµÙØ±"]'::jsonb,
+   0, 'x = x_max / 2 au temps tÂ½.', 'x = x_max / 2 Ø¹Ù†Ø¯ tÂ½.', 'medium', 2),
+  ('Lequel N''EST PAS un facteur cinÃ©tique ?', 'Ø£ÙŠ Ù…Ù…Ø§ ÙŠÙ„ÙŠ Ù„ÙŠØ³ Ø¹Ø§Ù…Ù„Ø§Ù‹ Ø­Ø±ÙƒÙŠÙ‹Ø§ØŸ',
+   '["la couleur du rÃ©cipient","la tempÃ©rature","la concentration","le catalyseur"]'::jsonb, '["Ù„ÙˆÙ† Ø§Ù„Ø¥Ù†Ø§Ø¡","Ø§Ù„Ø­Ø±Ø§Ø±Ø©","Ø§Ù„ØªØ±ÙƒÙŠØ²","Ø§Ù„ÙˆØ³ÙŠØ·"]'::jsonb,
+   0, 'La couleur du rÃ©cipient n''influence pas la vitesse.', 'Ù„ÙˆÙ† Ø§Ù„Ø¥Ù†Ø§Ø¡ Ù„Ø§ ÙŠØ¤Ø«Ø± ÙÙŠ Ø§Ù„Ø³Ø±Ø¹Ø©.', 'medium', 3),
+  ('Un catalyseurâ€¦', 'Ø§Ù„ÙˆØ³ÙŠØ·â€¦',
+   '["accÃ©lÃ¨re sans Ãªtre consommÃ©","ralentit la rÃ©action","est un rÃ©actif","change les produits"]'::jsonb, '["ÙŠØ³Ø±Ù‘Ø¹ Ø¯ÙˆÙ† Ø£Ù† ÙŠÙØ³ØªÙ‡Ù„Ùƒ","ÙŠØ¨Ø·Ø¦ Ø§Ù„ØªÙØ§Ø¹Ù„","Ù…ØªÙØ§Ø¹Ù„","ÙŠØºÙŠÙ‘Ø± Ø§Ù„Ù†ÙˆØ§ØªØ¬"]'::jsonb,
+   0, 'Le catalyseur accÃ©lÃ¨re et se retrouve intact.', 'Ø§Ù„ÙˆØ³ÙŠØ· ÙŠØ³Ø±Ù‘Ø¹ ÙˆÙŠØ¨Ù‚Ù‰ Ø³Ù„ÙŠÙ…Ù‹Ø§.', 'easy', 4),
+  ('Au cours du temps, la vitesse de rÃ©actionâ€¦', 'Ù…Ø¹ Ù…Ø±ÙˆØ± Ø§Ù„Ø²Ù…Ù†ØŒ Ø³Ø±Ø¹Ø© Ø§Ù„ØªÙØ§Ø¹Ù„â€¦',
+   '["diminue","augmente","reste constante","devient infinie"]'::jsonb, '["ØªØªÙ†Ø§Ù‚Øµ","ØªØªØ²Ø§ÙŠØ¯","ØªØ¨Ù‚Ù‰ Ø«Ø§Ø¨ØªØ©","ØªØµØ¨Ø­ Ù„Ø§Ù†Ù‡Ø§Ø¦ÙŠØ©"]'::jsonb,
+   0, 'Les rÃ©actifs se rarÃ©fient â†’ la vitesse diminue.', 'Ø§Ù„Ù…ØªÙØ§Ø¹Ù„Ø§Øª ØªÙ†Ø¯Ø± â† Ø§Ù„Ø³Ø±Ø¹Ø© ØªØªÙ†Ø§Ù‚Øµ.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'physique' and c.slug = 'cinetique'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'Ã‰VOLUTION D''UN SYSTÃˆME MÃ‰CANIQUE
+
+LES TROIS LOIS DE NEWTON
+â€¢ 1Ê³áµ‰ loi (inertie) : un corps isolÃ© (ou pseudo-isolÃ©) garde une vitesse
+  constante en ligne droite, ou reste immobile.
+â€¢ 2áµ‰ loi : Î£F = mÂ·a. La somme des forces Ã©gale masse Ã— accÃ©lÃ©ration.
+â€¢ 3áµ‰ loi (action-rÃ©action) : si A exerce une force sur B, B exerce sur A une
+  force de mÃªme intensitÃ©, mÃªme direction, sens opposÃ©.
+
+LA CHUTE LIBRE
+Un corps en chute libre n''est soumis qu''Ã  son poids. Son accÃ©lÃ©ration est g
+(â‰ˆ 9,8 m/sÂ²), INDÃ‰PENDANTE de la masse : une plume et une bille tombent
+de la mÃªme faÃ§on dans le vide.
+
+MOUVEMENTS DANS UN CHAMP UNIFORME
+â€¢ Champ de pesanteur : trajectoire parabolique d''un projectile.
+â€¢ Champ Ã©lectrique uniforme (entre deux plaques) : dÃ©viation d''une particule
+  chargÃ©e.
+
+REPÃˆRES ET Ã‰QUATIONS HORAIRES
+On projette la 2áµ‰ loi sur les axes pour obtenir a, puis v(t) et x(t) par
+intÃ©grations successives, Ã  partir des conditions initiales.',
+  lesson_ar = 'ØªØ·ÙˆØ± Ø¬Ù…Ù„Ø© Ù…ÙŠÙƒØ§Ù†ÙŠÙƒÙŠØ©
+
+Ù‚ÙˆØ§Ù†ÙŠÙ† Ù†ÙŠÙˆØªÙ† Ø§Ù„Ø«Ù„Ø§Ø«Ø©
+â€¢ Ø§Ù„Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„Ø£ÙˆÙ„ (Ø§Ù„Ø¹Ø·Ø§Ù„Ø©): Ø¬Ø³Ù… Ù…Ø¹Ø²ÙˆÙ„ ÙŠØ­Ø§ÙØ¸ Ø¹Ù„Ù‰ Ø³Ø±Ø¹Ø© Ø«Ø§Ø¨ØªØ© ÙÙŠ Ø®Ø· Ù…Ø³ØªÙ‚ÙŠÙ… Ø£Ùˆ ÙŠØ¨Ù‚Ù‰ Ø³Ø§ÙƒÙ†Ù‹Ø§.
+â€¢ Ø§Ù„Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„Ø«Ø§Ù†ÙŠ: Î£F = mÂ·a (Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„Ù‚ÙˆÙ‰ = Ø§Ù„ÙƒØªÙ„Ø© Ã— Ø§Ù„ØªØ³Ø§Ø±Ø¹).
+â€¢ Ø§Ù„Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„Ø«Ø§Ù„Ø« (Ø§Ù„ÙØ¹Ù„ ÙˆØ±Ø¯ Ø§Ù„ÙØ¹Ù„): Ø¥Ø°Ø§ Ø£Ø«Ù‘Ø± A Ø¹Ù„Ù‰ B Ø¨Ù‚ÙˆØ©ØŒ Ø£Ø«Ù‘Ø± B Ø¹Ù„Ù‰ A Ø¨Ù‚ÙˆØ© Ù…Ø³Ø§ÙˆÙŠØ© ÙˆÙ…Ø¹Ø§ÙƒØ³Ø©.
+
+Ø§Ù„Ø³Ù‚ÙˆØ· Ø§Ù„Ø­Ø±
+Ø§Ù„Ø¬Ø³Ù… ÙÙŠ Ø³Ù‚ÙˆØ· Ø­Ø± Ù„Ø§ ÙŠØ®Ø¶Ø¹ Ø¥Ù„Ø§ Ù„Ø«Ù‚Ù„Ù‡ØŒ ÙˆØªØ³Ø§Ø±Ø¹Ù‡ g (â‰ˆ 9.8 Ù…/Ø«Ø§Â²) Ù…Ø³ØªÙ‚Ù„ Ø¹Ù† Ø§Ù„ÙƒØªÙ„Ø©:
+Ø§Ù„Ø±ÙŠØ´Ø© ÙˆØ§Ù„ÙƒØ±ÙŠØ© ØªØ³Ù‚Ø·Ø§Ù† Ø¨Ù†ÙØ³ Ø§Ù„Ø·Ø±ÙŠÙ‚Ø© ÙÙŠ Ø§Ù„Ø®Ù„Ø§Ø¡.
+
+Ø§Ù„Ø­Ø±ÙƒØ§Øª ÙÙŠ Ø­Ù‚Ù„ Ù…Ù†ØªØ¸Ù…
+â€¢ Ø­Ù‚Ù„ Ø§Ù„Ø«Ù‚Ø§Ù„Ø©: Ù…Ø³Ø§Ø± Ù‚Ø°ÙŠÙØ© Ø¹Ù„Ù‰ Ø´ÙƒÙ„ Ù‚Ø·Ø¹ Ù…ÙƒØ§ÙØ¦.
+â€¢ Ø­Ù‚Ù„ ÙƒÙ‡Ø±Ø¨Ø§Ø¦ÙŠ Ù…Ù†ØªØ¸Ù… (Ø¨ÙŠÙ† ØµÙÙŠØ­ØªÙŠÙ†): Ø§Ù†Ø­Ø±Ø§Ù Ø¬Ø³ÙŠÙ… Ù…Ø´Ø­ÙˆÙ†.
+
+Ø§Ù„Ù…Ø¹Ø§Ù„Ù… ÙˆØ§Ù„Ù…Ø¹Ø§Ø¯Ù„Ø§Øª Ø§Ù„Ø²Ù…Ù†ÙŠØ©
+Ù†ÙØ³Ù‚Ø· Ø§Ù„Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„Ø«Ø§Ù†ÙŠ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆØ± Ù„Ø¥ÙŠØ¬Ø§Ø¯ a Ø«Ù… v(t) Ùˆx(t) Ø¨Ø§Ù„ØªÙƒØ§Ù…Ù„ Ø§Ù†Ø·Ù„Ø§Ù‚Ù‹Ø§ Ù…Ù† Ø§Ù„Ø´Ø±ÙˆØ· Ø§Ù„Ø§Ø¨ØªØ¯Ø§Ø¦ÙŠØ©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'physique' and c.slug = 'mecanique';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('La deuxiÃ¨me loi de Newton s''Ã©critâ€¦', 'ÙŠÙÙƒØªØ¨ Ù‚Ø§Ù†ÙˆÙ† Ù†ÙŠÙˆØªÙ† Ø§Ù„Ø«Ø§Ù†ÙŠâ€¦',
+   '["Î£F = mÂ·a","F = m/a","Î£F = a/m","F = m + a"]'::jsonb, '["Î£F = mÂ·a","F = m/a","Î£F = a/m","F = m + a"]'::jsonb,
+   0, 'Somme des forces = masse Ã— accÃ©lÃ©ration.', 'Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„Ù‚ÙˆÙ‰ = Ø§Ù„ÙƒØªÙ„Ø© Ã— Ø§Ù„ØªØ³Ø§Ø±Ø¹.', 'easy', 1),
+  ('En chute libre, l''accÃ©lÃ©ration d''un corpsâ€¦', 'ÙÙŠ Ø§Ù„Ø³Ù‚ÙˆØ· Ø§Ù„Ø­Ø±ØŒ ØªØ³Ø§Ø±Ø¹ Ø§Ù„Ø¬Ø³Ù…â€¦',
+   '["ne dÃ©pend pas de sa masse","augmente avec la masse","est nulle","dÃ©pend de la couleur"]'::jsonb, '["Ù„Ø§ ÙŠØªØ¹Ù„Ù‚ Ø¨ÙƒØªÙ„ØªÙ‡","ÙŠØ²ÙŠØ¯ Ù…Ø¹ Ø§Ù„ÙƒØªÙ„Ø©","Ù…Ø¹Ø¯ÙˆÙ…","ÙŠØªØ¹Ù„Ù‚ Ø¨Ø§Ù„Ù„ÙˆÙ†"]'::jsonb,
+   0, 'a = g, indÃ©pendante de la masse.', 'a = g Ù…Ø³ØªÙ‚Ù„ Ø¹Ù† Ø§Ù„ÙƒØªÙ„Ø©.', 'medium', 2),
+  ('La trajectoire d''un projectile dans le champ de pesanteur estâ€¦', 'Ù…Ø³Ø§Ø± Ù‚Ø°ÙŠÙØ© ÙÙŠ Ø­Ù‚Ù„ Ø§Ù„Ø«Ù‚Ø§Ù„Ø©â€¦',
+   '["parabolique","circulaire","rectiligne verticale toujours","hÃ©licoÃ¯dale"]'::jsonb, '["Ù‚Ø·Ø¹ Ù…ÙƒØ§ÙØ¦","Ø¯Ø§Ø¦Ø±ÙŠ","Ù…Ø³ØªÙ‚ÙŠÙ… Ø´Ø§Ù‚ÙˆÙ„ÙŠ Ø¯Ø§Ø¦Ù…Ù‹Ø§","Ø­Ù„Ø²ÙˆÙ†ÙŠ"]'::jsonb,
+   0, 'Mouvement parabolique dans un champ uniforme.', 'Ø­Ø±ÙƒØ© Ø¹Ù„Ù‰ Ø´ÙƒÙ„ Ù‚Ø·Ø¹ Ù…ÙƒØ§ÙØ¦ ÙÙŠ Ø­Ù‚Ù„ Ù…Ù†ØªØ¸Ù….', 'medium', 3),
+  ('Â« Action-rÃ©action Â» est laâ€¦ loi de Newton', 'Â«Ø§Ù„ÙØ¹Ù„ ÙˆØ±Ø¯ Ø§Ù„ÙØ¹Ù„Â» Ù‡Ùˆ Ø§Ù„Ù‚Ø§Ù†ÙˆÙ†â€¦ Ù„Ù†ÙŠÙˆØªÙ†',
+   '["troisiÃ¨me","premiÃ¨re","deuxiÃ¨me","quatriÃ¨me"]'::jsonb, '["Ø§Ù„Ø«Ø§Ù„Ø«","Ø§Ù„Ø£ÙˆÙ„","Ø§Ù„Ø«Ø§Ù†ÙŠ","Ø§Ù„Ø±Ø§Ø¨Ø¹"]'::jsonb,
+   0, '3áµ‰ loi : forces opposÃ©es entre A et B.', 'Ø§Ù„Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„Ø«Ø§Ù„Ø«: Ù‚ÙˆØªØ§Ù† Ù…ØªØ¹Ø§ÙƒØ³ØªØ§Ù† Ø¨ÙŠÙ† A ÙˆB.', 'easy', 4),
+  ('Un corps Â« pseudo-isolÃ© Â» a un mouvementâ€¦', 'Ø¬Ø³Ù… Ø´Ø¨Ù‡ Ù…Ø¹Ø²ÙˆÙ„ Ù„Ù‡ Ø­Ø±ÙƒØ©â€¦',
+   '["rectiligne uniforme ou immobile","accÃ©lÃ©rÃ©","circulaire","imprÃ©visible"]'::jsonb, '["Ù…Ø³ØªÙ‚ÙŠÙ…Ø© Ù…Ù†ØªØ¸Ù…Ø© Ø£Ùˆ Ø³Ø§ÙƒÙ†","Ù…ØªØ³Ø§Ø±Ø¹Ø©","Ø¯Ø§Ø¦Ø±ÙŠØ©","ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹Ø©"]'::jsonb,
+   0, '1Ê³áµ‰ loi : vitesse constante ou repos.', 'Ø§Ù„Ù‚Ø§Ù†ÙˆÙ† Ø§Ù„Ø£ÙˆÙ„: Ø³Ø±Ø¹Ø© Ø«Ø§Ø¨ØªØ© Ø£Ùˆ Ø³ÙƒÙˆÙ†.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'physique' and c.slug = 'mecanique'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'TRANSFORMATIONS NUCLÃ‰AIRES
+
+LE NOYAU ATOMIQUE
+NotÃ© á´¬_Z X : Z = nombre de protons (numÃ©ro atomique), A = nombre de nuclÃ©ons
+(protons + neutrons). Des isotopes ont le mÃªme Z mais des A diffÃ©rents.
+
+LA RADIOACTIVITÃ‰
+Certains noyaux instables se dÃ©sintÃ¨grent spontanÃ©ment en Ã©mettant un rayonnement :
+â€¢ RadioactivitÃ© Î± : Ã©mission d''un noyau d''hÃ©lium â´â‚‚He.
+â€¢ RadioactivitÃ© Î²â» : un neutron â†’ proton + Ã©lectron Ã©mis.
+â€¢ RadioactivitÃ© Î²âº : un proton â†’ neutron + positon Ã©mis.
+â€¢ Rayonnement Î³ : photon trÃ¨s Ã©nergÃ©tique accompagnant les prÃ©cÃ©dentes.
+
+LOIS DE CONSERVATION (lois de Soddy)
+Dans une rÃ©action nuclÃ©aire, on conserve A (nuclÃ©ons) et Z (charge) :
+la somme des A et la somme des Z sont identiques avant et aprÃ¨s.
+
+LA DÃ‰CROISSANCE RADIOACTIVE
+N(t) = Nâ‚€ Â· e^(âˆ’Î»t), oÃ¹ Î» est la constante radioactive.
+La DEMI-VIE tÂ½ = ln2 / Î» : durÃ©e au bout de laquelle la moitiÃ© des noyaux
+s''est dÃ©sintÃ©grÃ©e. Application : datation (carbone 14).
+
+Ã‰NERGIE : E = mÂ·cÂ² (Ã©quivalence masse-Ã©nergie d''Einstein). Fission et fusion
+libÃ¨rent d''Ã©normes Ã©nergies.',
+  lesson_ar = 'Ø§Ù„ØªØ­ÙˆÙ„Ø§Øª Ø§Ù„Ù†ÙˆÙˆÙŠØ©
+
+Ø§Ù„Ù†ÙˆØ§Ø© Ø§Ù„Ø°Ø±ÙŠØ©
+ØªÙØ±Ù…Ø² á´¬_Z X: Z Ø¹Ø¯Ø¯ Ø§Ù„Ø¨Ø±ÙˆØªÙˆÙ†Ø§Øª (Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø°Ø±ÙŠ)ØŒ A Ø¹Ø¯Ø¯ Ø§Ù„Ù†ÙˆÙŠØ§Øª (Ø¨Ø±ÙˆØªÙˆÙ†Ø§Øª + Ù†ÙŠÙˆØªØ±ÙˆÙ†Ø§Øª).
+Ø§Ù„Ù†Ø¸Ø§Ø¦Ø± Ù„Ù‡Ø§ Ù†ÙØ³ Z ÙˆØ£Ø¹Ø¯Ø§Ø¯ A Ù…Ø®ØªÙ„ÙØ©.
+
+Ø§Ù„Ù†Ø´Ø§Ø· Ø§Ù„Ø¥Ø´Ø¹Ø§Ø¹ÙŠ
+ØªØªÙÙƒÙƒ Ø¨Ø¹Ø¶ Ø§Ù„Ù†ÙˆÙ‰ ØºÙŠØ± Ø§Ù„Ù…Ø³ØªÙ‚Ø±Ø© ØªÙ„Ù‚Ø§Ø¦ÙŠÙ‹Ø§ Ø¨Ø¥ØµØ¯Ø§Ø± Ø¥Ø´Ø¹Ø§Ø¹:
+â€¢ Ø¥Ø´Ø¹Ø§Ø¹ Î±: Ø¥ØµØ¯Ø§Ø± Ù†ÙˆØ§Ø© Ù‡ÙŠÙ„ÙŠÙˆÙ… â´â‚‚He.
+â€¢ Ø¥Ø´Ø¹Ø§Ø¹ Î²â»: Ù†ÙŠÙˆØªØ±ÙˆÙ† â† Ø¨Ø±ÙˆØªÙˆÙ† + Ø¥Ù„ÙƒØªØ±ÙˆÙ†.
+â€¢ Ø¥Ø´Ø¹Ø§Ø¹ Î²âº: Ø¨Ø±ÙˆØªÙˆÙ† â† Ù†ÙŠÙˆØªØ±ÙˆÙ† + Ø¨ÙˆØ²ÙŠØªØ±ÙˆÙ†.
+â€¢ Ø¥Ø´Ø¹Ø§Ø¹ Î³: ÙÙˆØªÙˆÙ† Ø¹Ø§Ù„ÙŠ Ø§Ù„Ø·Ø§Ù‚Ø© ÙŠØ±Ø§ÙÙ‚ Ø§Ù„Ø³Ø§Ø¨Ù‚Ø©.
+
+Ù‚ÙˆØ§Ù†ÙŠÙ† Ø§Ù„Ø§Ù†Ø­ÙØ§Ø¸ (Ù‚ÙˆØ§Ù†ÙŠÙ† ØµÙˆØ¯ÙŠ)
+ÙŠÙ†Ø­ÙØ¸ A (Ø§Ù„Ù†ÙˆÙŠØ§Øª) ÙˆZ (Ø§Ù„Ø´Ø­Ù†Ø©) Ù‚Ø¨Ù„ Ø§Ù„ØªÙØ§Ø¹Ù„ ÙˆØ¨Ø¹Ø¯Ù‡.
+
+Ø§Ù„ØªÙ†Ø§Ù‚Øµ Ø§Ù„Ø¥Ø´Ø¹Ø§Ø¹ÙŠ
+N(t) = Nâ‚€ Â· e^(âˆ’Î»t) Ø­ÙŠØ« Î» Ø§Ù„Ø«Ø§Ø¨Øª Ø§Ù„Ø¥Ø´Ø¹Ø§Ø¹ÙŠ.
+Ø¹Ù…Ø± Ø§Ù„Ù†ØµÙ tÂ½ = ln2 / Î». ØªØ·Ø¨ÙŠÙ‚: Ø§Ù„ØªØ£Ø±ÙŠØ® (Ø§Ù„ÙƒØ±Ø¨ÙˆÙ† 14).
+
+Ø§Ù„Ø·Ø§Ù‚Ø©: E = mÂ·cÂ² (ØªÙƒØ§ÙØ¤ Ø§Ù„ÙƒØªÙ„Ø© ÙˆØ§Ù„Ø·Ø§Ù‚Ø©). Ø§Ù„Ø§Ù†Ø´Ø·Ø§Ø± ÙˆØ§Ù„Ø§Ù†Ø¯Ù…Ø§Ø¬ ÙŠØ­Ø±Ø±Ø§Ù† Ø·Ø§Ù‚Ø© Ù‡Ø§Ø¦Ù„Ø©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'physique' and c.slug = 'nucleaire';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans la notation á´¬_Z X, Z reprÃ©senteâ€¦', 'ÙÙŠ Ø§Ù„Ø±Ù…Ø² á´¬_Z XØŒ ÙŠÙ…Ø«Ù„ Zâ€¦',
+   '["le nombre de protons","le nombre de neutrons","le nombre de nuclÃ©ons","la masse"]'::jsonb, '["Ø¹Ø¯Ø¯ Ø§Ù„Ø¨Ø±ÙˆØªÙˆÙ†Ø§Øª","Ø¹Ø¯Ø¯ Ø§Ù„Ù†ÙŠÙˆØªØ±ÙˆÙ†Ø§Øª","Ø¹Ø¯Ø¯ Ø§Ù„Ù†ÙˆÙŠØ§Øª","Ø§Ù„ÙƒØªÙ„Ø©"]'::jsonb,
+   0, 'Z = numÃ©ro atomique = nombre de protons.', 'Z Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø°Ø±ÙŠ = Ø¹Ø¯Ø¯ Ø§Ù„Ø¨Ø±ÙˆØªÙˆÙ†Ø§Øª.', 'easy', 1),
+  ('La radioactivitÃ© Î± correspond Ã  l''Ã©mission d''unâ€¦', 'ÙŠÙˆØ§ÙÙ‚ Ø§Ù„Ù†Ø´Ø§Ø· Î± Ø¥ØµØ¯Ø§Ø±â€¦',
+   '["noyau d''hÃ©lium","Ã©lectron","photon seul","proton isolÃ©"]'::jsonb, '["Ù†ÙˆØ§Ø© Ù‡ÙŠÙ„ÙŠÙˆÙ…","Ø¥Ù„ÙƒØªØ±ÙˆÙ†","ÙÙˆØªÙˆÙ† ÙÙ‚Ø·","Ø¨Ø±ÙˆØªÙˆÙ† Ù…Ù†ÙØ±Ø¯"]'::jsonb,
+   0, 'Particule Î± = noyau d''hÃ©lium â´â‚‚He.', 'Ø§Ù„Ø¬Ø³ÙŠÙ… Î± Ù†ÙˆØ§Ø© Ù‡ÙŠÙ„ÙŠÙˆÙ….', 'medium', 2),
+  ('Lors d''une rÃ©action nuclÃ©aire, on conserveâ€¦', 'Ø£Ø«Ù†Ø§Ø¡ ØªÙØ§Ø¹Ù„ Ù†ÙˆÙˆÙŠØŒ ÙŠÙ†Ø­ÙØ¸â€¦',
+   '["A et Z","la couleur","la tempÃ©rature","le volume"]'::jsonb, '["A Ùˆ Z","Ø§Ù„Ù„ÙˆÙ†","Ø§Ù„Ø­Ø±Ø§Ø±Ø©","Ø§Ù„Ø­Ø¬Ù…"]'::jsonb,
+   0, 'Lois de Soddy : conservation de A et de Z.', 'Ù‚ÙˆØ§Ù†ÙŠÙ† ØµÙˆØ¯ÙŠ: Ø§Ù†Ø­ÙØ§Ø¸ A ÙˆZ.', 'medium', 3),
+  ('La demi-vie tÂ½ est la durÃ©e pour dÃ©sintÃ©grerâ€¦ des noyaux', 'Ø¹Ù…Ø± Ø§Ù„Ù†ØµÙ tÂ½ Ù‡Ùˆ Ù…Ø¯Ø© ØªÙÙƒÙƒâ€¦ Ù…Ù† Ø§Ù„Ù†ÙˆÙ‰',
+   '["la moitiÃ©","le quart","la totalitÃ©","le dixiÃ¨me"]'::jsonb, '["Ø§Ù„Ù†ØµÙ","Ø§Ù„Ø±Ø¨Ø¹","Ø§Ù„ÙƒÙ„","Ø§Ù„Ø¹ÙØ´Ø±"]'::jsonb,
+   0, 'Ã€ tÂ½, la moitiÃ© des noyaux s''est dÃ©sintÃ©grÃ©e.', 'Ø¹Ù†Ø¯ tÂ½ ÙŠØªÙÙƒÙƒ Ù†ØµÙ Ø§Ù„Ù†ÙˆÙ‰.', 'easy', 4),
+  ('La relation d''Einstein masse-Ã©nergie estâ€¦', 'Ø¹Ù„Ø§Ù‚Ø© Ø£ÙŠÙ†Ø´ØªØ§ÙŠÙ† Ø¨ÙŠÙ† Ø§Ù„ÙƒØªÙ„Ø© ÙˆØ§Ù„Ø·Ø§Ù‚Ø© Ù‡ÙŠâ€¦',
+   '["E = mcÂ²","E = mc","E = m/cÂ²","E = mÂ²c"]'::jsonb, '["E = mcÂ²","E = mc","E = m/cÂ²","E = mÂ²c"]'::jsonb,
+   0, 'E = mcÂ² relie masse et Ã©nergie.', 'E = mcÂ² ØªØ±Ø¨Ø· Ø§Ù„ÙƒØªÙ„Ø© Ø¨Ø§Ù„Ø·Ø§Ù‚Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'physique' and c.slug = 'nucleaire'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+
+-- ===============================================================
+-- Migration: 20260722_021_languages_lessons_quizzes
+--
+-- Bilingual lessons + quiz banks for the language chapters of the exam
+-- years: 4AM FranÃ§ais + Anglais (BEM), 3AS FranÃ§ais + Anglais (BAC).
+-- Idempotent: guarded UPDATEs and NOT EXISTS inserts.
+-- ===============================================================
+
+-- ================= 4AM FRANÃ‡AIS =================
+
+update public.chapters c set
+  lesson_fr = 'LE TEXTE ARGUMENTATIF
+
+BUT : convaincre le lecteur d''une opinion (la THÃˆSE) Ã  l''aide d''ARGUMENTS
+appuyÃ©s par des EXEMPLES.
+
+LA STRUCTURE
+1. Introduction : on prÃ©sente le thÃ¨me et la thÃ¨se (ce qu''on dÃ©fend).
+2. DÃ©veloppement : un argument par paragraphe + un exemple concret.
+3. Conclusion : on reformule la thÃ¨se et on Ã©largit.
+
+LES CONNECTEURS LOGIQUES (essentiels au BEM)
+â€¢ Addition : de plus, en outre, par ailleurs.
+â€¢ Cause : car, parce que, puisque, en effet.
+â€¢ ConsÃ©quence : donc, ainsi, c''est pourquoi, par consÃ©quent.
+â€¢ Opposition : mais, cependant, pourtant, en revanche.
+â€¢ Conclusion : enfin, en somme, pour conclure.
+
+LE VOCABULAIRE DE L''OPINION
+Je pense que, Ã  mon avis, il est certain que, il me semble queâ€¦
+
+CONSEIL : chaque argument doit Ãªtre clair et suivi d''un exemple. Les
+connecteurs guident le lecteur d''une idÃ©e Ã  l''autre.',
+  lesson_ar = 'Ø§Ù„Ù†Øµ Ø§Ù„Ø­Ø¬Ø§Ø¬ÙŠ (Ø§Ù„Ø¥Ù‚Ù†Ø§Ø¹ÙŠ)
+
+Ø§Ù„Ù‡Ø¯Ù: Ø¥Ù‚Ù†Ø§Ø¹ Ø§Ù„Ù‚Ø§Ø±Ø¦ Ø¨Ø±Ø£ÙŠ (Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø©) Ø¨ÙˆØ§Ø³Ø·Ø© Ø­Ø¬Ø¬ Ù…Ø¯Ø¹ÙˆÙ…Ø© Ø¨Ø£Ù…Ø«Ù„Ø©.
+
+Ø§Ù„Ø¨Ù†ÙŠØ©
+1. Ø§Ù„Ù…Ù‚Ø¯Ù…Ø©: Ø¹Ø±Ø¶ Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ ÙˆØ§Ù„Ø£Ø·Ø±ÙˆØ­Ø©.
+2. Ø§Ù„Ø¹Ø±Ø¶: Ø­Ø¬Ø© ÙÙŠ ÙƒÙ„ ÙÙ‚Ø±Ø© + Ù…Ø«Ø§Ù„ Ù…Ù„Ù…ÙˆØ³.
+3. Ø§Ù„Ø®Ø§ØªÙ…Ø©: Ø¥Ø¹Ø§Ø¯Ø© ØµÙŠØ§ØºØ© Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø© ÙˆØ§Ù„ØªÙˆØ³Ù‘Ø¹.
+
+Ø§Ù„Ø±ÙˆØ§Ø¨Ø· Ø§Ù„Ù…Ù†Ø·Ù‚ÙŠØ© (Ø£Ø³Ø§Ø³ÙŠØ© ÙÙŠ Ø§Ù„Ø¨ÙŠÙ…)
+â€¢ Ø§Ù„Ø¥Ø¶Ø§ÙØ©: de plus, en outre.
+â€¢ Ø§Ù„Ø³Ø¨Ø¨: car, parce que, puisque.
+â€¢ Ø§Ù„Ù†ØªÙŠØ¬Ø©: donc, ainsi, par consÃ©quent.
+â€¢ Ø§Ù„Ù…Ø¹Ø§Ø±Ø¶Ø©: mais, cependant, pourtant.
+â€¢ Ø§Ù„Ø®Ø§ØªÙ…Ø©: enfin, pour conclure.
+
+Ù…ÙØ±Ø¯Ø§Øª Ø§Ù„Ø±Ø£ÙŠ
+Je pense que, Ã  mon avis, il me semble queâ€¦
+
+Ù†ØµÙŠØ­Ø©: ÙƒÙ„ Ø­Ø¬Ø© ÙˆØ§Ø¶Ø­Ø© ÙŠØªØ¨Ø¹Ù‡Ø§ Ù…Ø«Ø§Ù„ØŒ ÙˆØ§Ù„Ø±ÙˆØ§Ø¨Ø· ØªÙˆØ¬Ù‘Ù‡ Ø§Ù„Ù‚Ø§Ø±Ø¦.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'francais' and c.slug = 'texte-argumentatif';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans un texte argumentatif, la Â« thÃ¨se Â» estâ€¦', 'ÙÙŠ Ø§Ù„Ù†Øµ Ø§Ù„Ø­Ø¬Ø§Ø¬ÙŠØŒ Â«Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø©Â» Ù‡ÙŠâ€¦',
+   '["l''opinion dÃ©fendue","un exemple","un personnage","le titre"]'::jsonb, '["Ø§Ù„Ø±Ø£ÙŠ Ø§Ù„Ù…Ø¯Ø§ÙØ¹ Ø¹Ù†Ù‡","Ù…Ø«Ø§Ù„","Ø´Ø®ØµÙŠØ©","Ø§Ù„Ø¹Ù†ÙˆØ§Ù†"]'::jsonb,
+   0, 'La thÃ¨se est l''idÃ©e que l''auteur veut faire admettre.', 'Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø© Ù‡ÙŠ Ø§Ù„ÙÙƒØ±Ø© Ø§Ù„ØªÙŠ ÙŠØ±ÙŠØ¯ Ø§Ù„ÙƒØ§ØªØ¨ Ø¥Ø«Ø¨Ø§ØªÙ‡Ø§.', 'easy', 1),
+  ('Quel connecteur exprime la CONSÃ‰QUENCE ?', 'Ø£ÙŠ Ø±Ø§Ø¨Ø· ÙŠØ¹Ø¨Ù‘Ø± Ø¹Ù† Ø§Ù„Ù†ØªÙŠØ¬Ø©ØŸ',
+   '["donc","mais","car","de plus"]'::jsonb, '["donc","mais","car","de plus"]'::jsonb,
+   0, 'Â« Donc Â» introduit une consÃ©quence.', 'Â«doncÂ» ÙŠÙ‚Ø¯Ù‘Ù… Ù†ØªÙŠØ¬Ø©.', 'medium', 2),
+  ('Quel connecteur exprime l''OPPOSITION ?', 'Ø£ÙŠ Ø±Ø§Ø¨Ø· ÙŠØ¹Ø¨Ù‘Ø± Ø¹Ù† Ø§Ù„Ù…Ø¹Ø§Ø±Ø¶Ø©ØŸ',
+   '["cependant","donc","ainsi","enfin"]'::jsonb, '["cependant","donc","ainsi","enfin"]'::jsonb,
+   0, 'Â« Cependant Â» marque l''opposition.', 'Â«cependantÂ» ÙŠØ¯Ù„ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø¹Ø§Ø±Ø¶Ø©.', 'medium', 3),
+  ('Â« Ã€ mon avis, la lecture est essentielle Â» exprimeâ€¦', 'Â«Ã  mon avis, la lecture est essentielleÂ» ØªØ¹Ø¨Ù‘Ø± Ø¹Ù†â€¦',
+   '["une opinion","un fait scientifique","une description","un dialogue"]'::jsonb, '["Ø±Ø£ÙŠ","Ø­Ù‚ÙŠÙ‚Ø© Ø¹Ù„Ù…ÙŠØ©","ÙˆØµÙ","Ø­ÙˆØ§Ø±"]'::jsonb,
+   0, 'Â« Ã€ mon avis Â» introduit un point de vue.', 'Â«Ã  mon avisÂ» ØªÙ‚Ø¯Ù‘Ù… ÙˆØ¬Ù‡Ø© Ù†Ø¸Ø±.', 'easy', 4),
+  ('Un bon argument doit Ãªtre suiviâ€¦', 'Ø§Ù„Ø­Ø¬Ø© Ø§Ù„Ø¬ÙŠØ¯Ø© ÙŠØ¬Ø¨ Ø£Ù† ÙŠØªØ¨Ø¹Ù‡Ø§â€¦',
+   '["d''un exemple","d''une question","d''un titre","de rien"]'::jsonb, '["Ù…Ø«Ø§Ù„","Ø³Ø¤Ø§Ù„","Ø¹Ù†ÙˆØ§Ù†","Ù„Ø§ Ø´ÙŠØ¡"]'::jsonb,
+   0, 'L''exemple concret renforce l''argument.', 'Ø§Ù„Ù…Ø«Ø§Ù„ Ø§Ù„Ù…Ù„Ù…ÙˆØ³ ÙŠÙ‚ÙˆÙ‘ÙŠ Ø§Ù„Ø­Ø¬Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'francais' and c.slug = 'texte-argumentatif'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'CONJUGAISON â€” LES TEMPS CLÃ‰S DU BEM
+
+LE PRÃ‰SENT DE L''INDICATIF
+Actions actuelles ou vÃ©ritÃ©s gÃ©nÃ©rales. Terminaisons du 1áµ‰Ê³ groupe :
+-e, -es, -e, -ons, -ez, -ent (je parle, tu parles, il parleâ€¦).
+
+LE PASSÃ‰ COMPOSÃ‰
+Auxiliaire (Ãªtre ou avoir) au prÃ©sent + participe passÃ©.
+Â« J''ai mangÃ© Â», Â« Il est parti Â».
+Accord : avec Ãªtre â†’ accord avec le sujet (elle est partie).
+
+L''IMPARFAIT
+DÃ©cor, habitude, action qui dure dans le passÃ©.
+Terminaisons : -ais, -ais, -ait, -ions, -iez, -aient (je parlaisâ€¦).
+
+LE FUTUR SIMPLE
+Action Ã  venir. -ai, -as, -a, -ons, -ez, -ont (je parleraiâ€¦).
+
+LE CONDITIONNEL PRÃ‰SENT
+Radical du futur + terminaisons de l''imparfait (je parleraisâ€¦).
+Exprime le souhait, la politesse, l''hypothÃ¨se.
+
+RÃˆGLE UTILE : imparfait pour le dÃ©cor, passÃ© composÃ© pour les actions
+principales d''un rÃ©cit au passÃ©.',
+  lesson_ar = 'Ø§Ù„ØªØµØ±ÙŠÙ â€” Ø£Ø²Ù…Ù†Ø© Ø£Ø³Ø§Ø³ÙŠØ© Ù„Ù„Ø¨ÙŠÙ…
+
+Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ (le prÃ©sent)
+Ø£ÙØ¹Ø§Ù„ Ø­Ø§Ù„ÙŠØ© Ø£Ùˆ Ø­Ù‚Ø§Ø¦Ù‚ Ø¹Ø§Ù…Ø©. Ù†Ù‡Ø§ÙŠØ§Øª Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø© Ø§Ù„Ø£ÙˆÙ„Ù‰: -e, -es, -e, -ons, -ez, -ent.
+
+Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨ (passÃ© composÃ©)
+Ù…Ø³Ø§Ø¹Ø¯ (Ãªtre Ø£Ùˆ avoir) ÙÙŠ Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ + Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¹ÙˆÙ„. Â«J''ai mangÃ©Â»ØŒ Â«Il est partiÂ».
+Ø§Ù„Ù…Ø·Ø§Ø¨Ù‚Ø© Ù…Ø¹ Ãªtre ØªÙƒÙˆÙ† Ù…Ø¹ Ø§Ù„ÙØ§Ø¹Ù„ (elle est partie).
+
+Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù†Ø§Ù‚Øµ (imparfait)
+Ø§Ù„ÙˆØµÙ ÙˆØ§Ù„Ø¹Ø§Ø¯Ø© ÙˆØ§Ù„ÙØ¹Ù„ Ø§Ù„Ù…Ø³ØªÙ…Ø± ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ: -ais, -ais, -ait, -ions, -iez, -aient.
+
+Ø§Ù„Ù…Ø³ØªÙ‚Ø¨Ù„ Ø§Ù„Ø¨Ø³ÙŠØ· (futur simple)
+ÙØ¹Ù„ Ù‚Ø§Ø¯Ù…: -ai, -as, -a, -ons, -ez, -ont.
+
+Ø§Ù„Ø´Ø±Ø·ÙŠ Ø§Ù„Ø­Ø§Ø¶Ø± (conditionnel)
+Ø¬Ø°Ø± Ø§Ù„Ù…Ø³ØªÙ‚Ø¨Ù„ + Ù†Ù‡Ø§ÙŠØ§Øª Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù†Ø§Ù‚Øµ. ÙŠØ¹Ø¨Ù‘Ø± Ø¹Ù† Ø§Ù„Ø±ØºØ¨Ø© ÙˆØ§Ù„ØªØ£Ø¯Ø¨ ÙˆØ§Ù„Ø§ÙØªØ±Ø§Ø¶.
+
+Ù‚Ø§Ø¹Ø¯Ø©: Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù†Ø§Ù‚Øµ Ù„Ù„ÙˆØµÙØŒ ÙˆØ§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨ Ù„Ù„Ø£ÙØ¹Ø§Ù„ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© ÙÙŠ Ø§Ù„Ø³Ø±Ø¯.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'francais' and c.slug = 'conjugaison';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Â« Hier, il ___ au marchÃ©. Â» (aller, passÃ© composÃ©)', 'Â«Hier, il ___ au marchÃ©.Â» (aller ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨)',
+   '["est allÃ©","va","allait","ira"]'::jsonb, '["est allÃ©","va","allait","ira"]'::jsonb,
+   0, 'PassÃ© composÃ© de aller : est allÃ© (auxiliaire Ãªtre).', 'Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨ Ù„Ù€ aller: est allÃ©.', 'medium', 1),
+  ('Quelle phrase est Ã  l''IMPARFAIT ?', 'Ø£ÙŠ Ø¬Ù…Ù„Ø© ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù†Ø§Ù‚ØµØŸ',
+   '["Je jouais dans le jardin","J''ai jouÃ© hier","Je jouerai demain","Je joue maintenant"]'::jsonb, '["Je jouais dans le jardin","J''ai jouÃ© hier","Je jouerai demain","Je joue maintenant"]'::jsonb,
+   0, 'Â« Jouais Â» est de l''imparfait.', 'Â«jouaisÂ» ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù†Ø§Ù‚Øµ.', 'medium', 2),
+  ('Â« Demain, nous ___ le musÃ©e. Â» (visiter, futur)', 'Â«Demain, nous ___ le musÃ©e.Â» (visiter ÙÙŠ Ø§Ù„Ù…Ø³ØªÙ‚Ø¨Ù„)',
+   '["visiterons","visitons","visitions","avons visitÃ©"]'::jsonb, '["visiterons","visitons","visitions","avons visitÃ©"]'::jsonb,
+   0, 'Futur simple : nous visiterons.', 'Ø§Ù„Ù…Ø³ØªÙ‚Ø¨Ù„ Ø§Ù„Ø¨Ø³ÙŠØ·: nous visiterons.', 'easy', 3),
+  ('Au passÃ© composÃ© avec Â« Ãªtre Â», le participe s''accorde avecâ€¦', 'ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ù…Ø±ÙƒÙ‘Ø¨ Ù…Ø¹ ÃªtreØŒ ÙŠØ·Ø§Ø¨Ù‚ Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¹ÙˆÙ„â€¦',
+   '["le sujet","le complÃ©ment","le verbe","rien"]'::jsonb, '["Ø§Ù„ÙØ§Ø¹Ù„","Ø§Ù„Ù…ÙØ¹ÙˆÙ„","Ø§Ù„ÙØ¹Ù„","Ù„Ø§ Ø´ÙŠØ¡"]'::jsonb,
+   0, 'Avec Ãªtre : accord avec le sujet (elle est venue).', 'Ù…Ø¹ Ãªtre: Ø§Ù„Ù…Ø·Ø§Ø¨Ù‚Ø© Ù…Ø¹ Ø§Ù„ÙØ§Ø¹Ù„.', 'easy', 4),
+  ('Â« Je ___ un cafÃ©, s''il vous plaÃ®t. Â» (vouloir, politesse)', 'Â«Je ___ un cafÃ©, s''il vous plaÃ®t.Â» (vouloir Ù„Ù„ØªØ£Ø¯Ø¨)',
+   '["voudrais","veux","voulais","voudrai"]'::jsonb, '["voudrais","veux","voulais","voudrai"]'::jsonb,
+   0, 'Conditionnel de politesse : je voudrais.', 'Ø§Ù„Ø´Ø±Ø·ÙŠ Ù„Ù„ØªØ£Ø¯Ø¨: je voudrais.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'francais' and c.slug = 'conjugaison'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- ================= 4AM ANGLAIS =================
+
+update public.chapters c set
+  lesson_fr = 'PEOPLE AND EXPERIENCES â€” talking about the past
+
+THE SIMPLE PAST
+Used for finished actions in the past.
+â€¢ Regular verbs: add -ed â†’ work â†’ worked, play â†’ played.
+â€¢ Irregular verbs must be memorised: go â†’ went, see â†’ saw, have â†’ had,
+  make â†’ made, take â†’ took, write â†’ wrote.
+Negative: didn''t + base verb (She didn''t go).
+Question: Did + subject + base verb? (Did you see it?)
+
+TIME MARKERS
+yesterday, last week, in 2010, two days ago, when I was young.
+
+BIOGRAPHIES
+To tell someone''s life story we use the simple past:
+"He was born in 1930. He studied medicine. He became a doctor. He died in 2001."
+
+PRONUNCIATION OF -ED
+â€¢ /t/ after voiceless sounds: worked, watched.
+â€¢ /d/ after voiced sounds: played, opened.
+â€¢ /Éªd/ after t or d: wanted, needed.
+
+REMEMBER: in questions and negatives, the past is carried by "did", so the
+main verb goes back to its base form (NOT "Did you saw" but "Did you see").',
+  lesson_ar = 'Ø§Ù„Ø£Ø´Ø®Ø§Øµ ÙˆØ§Ù„ØªØ¬Ø§Ø±Ø¨ â€” Ø§Ù„Ø­Ø¯ÙŠØ« Ø¹Ù† Ø§Ù„Ù…Ø§Ø¶ÙŠ
+
+Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ø¨Ø³ÙŠØ· (Simple Past)
+Ù„Ù„Ø£ÙØ¹Ø§Ù„ Ø§Ù„Ù…Ù†ØªÙ‡ÙŠØ© ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ.
+â€¢ Ø§Ù„Ø£ÙØ¹Ø§Ù„ Ø§Ù„Ù…Ù†ØªØ¸Ù…Ø©: Ù†Ø¶ÙŠÙ -ed â† work â†’ worked.
+â€¢ Ø§Ù„Ø£ÙØ¹Ø§Ù„ Ø§Ù„Ø´Ø§Ø°Ø© ØªÙØ­ÙØ¸: go â†’ went, see â†’ saw, have â†’ had, take â†’ took.
+Ø§Ù„Ù†ÙÙŠ: didn''t + Ø§Ù„ÙØ¹Ù„ Ø§Ù„Ù…Ø¬Ø±Ø¯. Ø§Ù„Ø³Ø¤Ø§Ù„: Did + Ø§Ù„ÙØ§Ø¹Ù„ + Ø§Ù„ÙØ¹Ù„ Ø§Ù„Ù…Ø¬Ø±Ø¯ØŸ
+
+Ø¸Ø±ÙˆÙ Ø§Ù„Ø²Ù…Ù†: yesterday, last week, in 2010, two days ago.
+
+Ø§Ù„Ø³ÙŠØ± Ø§Ù„Ø°Ø§ØªÙŠØ©: Ù†Ø³ØªØ¹Ù…Ù„ Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ø¨Ø³ÙŠØ·:
+"He was born in 1930. He studied medicine. He died in 2001."
+
+Ù„ÙØ¸ -ed: /t/ Ø¨Ø¹Ø¯ Ø§Ù„Ø£ØµÙˆØ§Øª Ø§Ù„Ù…Ù‡Ù…ÙˆØ³Ø©ØŒ /d/ Ø¨Ø¹Ø¯ Ø§Ù„Ù…Ø¬Ù‡ÙˆØ±Ø©ØŒ /Éªd/ Ø¨Ø¹Ø¯ t Ø£Ùˆ d.
+
+ØªØ°ÙƒÙ‘Ø±: ÙÙŠ Ø§Ù„Ø³Ø¤Ø§Ù„ ÙˆØ§Ù„Ù†ÙÙŠ ÙŠØ­Ù…Ù„ "did" Ø§Ù„Ø²Ù…Ù† ÙÙŠØ¹ÙˆØ¯ Ø§Ù„ÙØ¹Ù„ Ø¥Ù„Ù‰ ØµÙŠØºØªÙ‡ Ø§Ù„Ù…Ø¬Ø±Ø¯Ø©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'anglais' and c.slug = 'people-experiences';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Choose the past simple: "She ___ to school yesterday."', 'Ø§Ø®ØªØ± Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ø¨Ø³ÙŠØ·: "She ___ to school yesterday."',
+   '["went","goes","go","going"]'::jsonb, '["went","goes","go","going"]'::jsonb,
+   0, '"Go" is irregular: past = went.', 'Ø§Ù„ÙØ¹Ù„ go Ø´Ø§Ø° ÙˆÙ…Ø§Ø¶ÙŠÙ‡ went.', 'easy', 1),
+  ('Negative past: "They ___ finish the work."', 'Ø§Ù„Ù†ÙÙŠ ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ: "They ___ finish the work."',
+   '["didn''t","don''t","weren''t","haven''t"]'::jsonb, '["didn''t","don''t","weren''t","haven''t"]'::jsonb,
+   0, 'Negative past = didn''t + base verb.', 'Ù†ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ = didn''t + Ø§Ù„ÙØ¹Ù„ Ø§Ù„Ù…Ø¬Ø±Ø¯.', 'medium', 2),
+  ('Which is correct?', 'Ø£ÙŠ Ø¬Ù…Ù„Ø© ØµØ­ÙŠØ­Ø©ØŸ',
+   '["Did you see the film?","Did you saw the film?","Do you saw the film?","You did see?"]'::jsonb, '["Did you see the film?","Did you saw the film?","Do you saw the film?","You did see?"]'::jsonb,
+   0, 'After "did", the verb stays in base form: see.', 'Ø¨Ø¹Ø¯ did ÙŠØ¨Ù‚Ù‰ Ø§Ù„ÙØ¹Ù„ Ù…Ø¬Ø±Ø¯Ù‹Ø§: see.', 'medium', 3),
+  ('Past of "write":', 'Ù…Ø§Ø¶ÙŠ Ø§Ù„ÙØ¹Ù„ write:',
+   '["wrote","writed","written","writes"]'::jsonb, '["wrote","writed","written","writes"]'::jsonb,
+   0, 'write â†’ wrote (irregular).', 'write â† wrote (Ø´Ø§Ø°).', 'easy', 4),
+  ('The -ed in "wanted" is pronouncedâ€¦', 'ÙŠÙ†Ø·Ù‚ -ed ÙÙŠ "wanted"â€¦',
+   '["/Éªd/","/t/","/d/","silent"]'::jsonb, '["/Éªd/","/t/","/d/","ØµØ§Ù…Øª"]'::jsonb,
+   0, 'After t/d, -ed = /Éªd/.', 'Ø¨Ø¹Ø¯ t Ø£Ùˆ d ÙŠÙ†Ø·Ù‚ -ed Ù…Ø«Ù„ /Éªd/.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'anglais' and c.slug = 'people-experiences'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'GRAMMAR ESSENTIALS FOR THE BEM
+
+PRESENT SIMPLE vs PRESENT CONTINUOUS
+â€¢ Present simple: habits and facts. "She works every day." (add -s for he/she/it)
+â€¢ Present continuous: action happening now. "She is working right now."
+
+COMPARATIVES AND SUPERLATIVES
+â€¢ Short adjectives: big â†’ bigger â†’ the biggest; tall â†’ taller â†’ the tallest.
+â€¢ Long adjectives: important â†’ more important â†’ the most important.
+â€¢ Irregular: good â†’ better â†’ the best; bad â†’ worse â†’ the worst.
+
+CONDITIONAL TYPE 1 (real future)
+If + present simple, â€¦ will + base verb.
+"If it rains, we will stay home."
+
+THE PASSIVE VOICE (introduction)
+be + past participle. "Tea is grown in Asia." "The house was built in 1990."
+
+MODALS
+can (ability), must (obligation), should (advice), mustn''t (prohibition).
+"You should revise." "You mustn''t cheat."
+
+TIP: for comparatives, count the syllables â€” one syllable usually takes
+-er/-est, long adjectives take more/most.',
+  lesson_ar = 'Ø£Ø³Ø§Ø³ÙŠØ§Øª Ø§Ù„Ù‚ÙˆØ§Ø¹Ø¯ Ù„Ù„Ø¨ÙŠÙ…
+
+Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ Ø§Ù„Ø¨Ø³ÙŠØ· ÙˆØ§Ù„Ù…Ø¶Ø§Ø±Ø¹ Ø§Ù„Ù…Ø³ØªÙ…Ø±
+â€¢ Ø§Ù„Ø¨Ø³ÙŠØ·: Ø§Ù„Ø¹Ø§Ø¯Ø§Øª ÙˆØ§Ù„Ø­Ù‚Ø§Ø¦Ù‚ "She works every day" (Ù†Ø¶ÙŠÙ -s Ù„Ù„ØºØ§Ø¦Ø¨ Ø§Ù„Ù…ÙØ±Ø¯).
+â€¢ Ø§Ù„Ù…Ø³ØªÙ…Ø±: ÙØ¹Ù„ ÙŠØ­Ø¯Ø« Ø§Ù„Ø¢Ù† "She is working right now".
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø© ÙˆØ§Ù„ØªÙØ¶ÙŠÙ„
+â€¢ Ø§Ù„ØµÙØ§Øª Ø§Ù„Ù‚ØµÙŠØ±Ø©: big â†’ bigger â†’ the biggest.
+â€¢ Ø§Ù„ØµÙØ§Øª Ø§Ù„Ø·ÙˆÙŠÙ„Ø©: important â†’ more important â†’ the most important.
+â€¢ Ø§Ù„Ø´Ø§Ø°Ø©: good â†’ better â†’ the best Ø› bad â†’ worse â†’ the worst.
+
+Ø§Ù„Ø´Ø±Ø· Ø§Ù„Ù†ÙˆØ¹ Ø§Ù„Ø£ÙˆÙ„ (Ù…Ø³ØªÙ‚Ø¨Ù„ ÙˆØ§Ù‚Ø¹ÙŠ)
+If + Ù…Ø¶Ø§Ø±Ø¹ Ø¨Ø³ÙŠØ·ØŒ â€¦ will + ÙØ¹Ù„ Ù…Ø¬Ø±Ø¯.
+"If it rains, we will stay home."
+
+Ø§Ù„Ù…Ø¨Ù†ÙŠ Ù„Ù„Ù…Ø¬Ù‡ÙˆÙ„: be + Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¹ÙˆÙ„. "The house was built in 1990."
+
+Ø§Ù„Ø£ÙØ¹Ø§Ù„ Ø§Ù„Ù†Ø§Ù‚ØµØ©: can (Ù‚Ø¯Ø±Ø©)ØŒ must (ÙˆØ¬ÙˆØ¨)ØŒ should (Ù†ØµØ­)ØŒ mustn''t (Ù…Ù†Ø¹).
+
+Ù†ØµÙŠØ­Ø©: Ù„Ù„Ù…Ù‚Ø§Ø±Ù†Ø© Ø¹ÙØ¯Ù‘ Ø§Ù„Ù…Ù‚Ø§Ø·Ø¹ â€” Ø§Ù„Ù…Ù‚Ø·Ø¹ Ø§Ù„ÙˆØ§Ø­Ø¯ ÙŠØ£Ø®Ø° -er/-est ÙˆØ§Ù„Ø·ÙˆÙŠÙ„Ø© more/most.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AM' and s.slug = 'anglais' and c.slug = 'grammar';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Comparative of "big":', 'ØµÙŠØºØ© Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø© Ù„Ù€ "big":',
+   '["bigger","more big","biggest","biger"]'::jsonb, '["bigger","more big","biggest","biger"]'::jsonb,
+   0, 'Short adjective: double the g â†’ bigger.', 'ØµÙØ© Ù‚ØµÙŠØ±Ø©: Ù†Ø¶Ø§Ø¹Ù g â† bigger.', 'easy', 1),
+  ('"If it rains, we ___ at home." (conditional type 1)', '"If it rains, we ___ at home." (Ø´Ø±Ø· Ù†ÙˆØ¹ 1)',
+   '["will stay","stayed","would stay","stay"]'::jsonb, '["will stay","stayed","would stay","stay"]'::jsonb,
+   0, 'Type 1: if + present, will + base verb.', 'Ø§Ù„Ù†ÙˆØ¹ 1: if + Ù…Ø¶Ø§Ø±Ø¹ØŒ will + ÙØ¹Ù„ Ù…Ø¬Ø±Ø¯.', 'medium', 2),
+  ('Choose the present continuous: "Look! The baby ___."', 'Ø§Ø®ØªØ± Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ Ø§Ù„Ù…Ø³ØªÙ…Ø±: "Look! The baby ___."',
+   '["is sleeping","sleeps","slept","sleep"]'::jsonb, '["is sleeping","sleeps","slept","sleep"]'::jsonb,
+   0, 'Action now â†’ is + verb-ing.', 'ÙØ¹Ù„ ÙŠØ­Ø¯Ø« Ø§Ù„Ø¢Ù† â† is + Ø§Ù„ÙØ¹Ù„-ing.', 'medium', 3),
+  ('Superlative of "good":', 'ØµÙŠØºØ© Ø§Ù„ØªÙØ¶ÙŠÙ„ Ù„Ù€ "good":',
+   '["the best","the goodest","the better","the most good"]'::jsonb, '["the best","the goodest","the better","the most good"]'::jsonb,
+   0, 'Irregular: good â†’ better â†’ the best.', 'Ø´Ø§Ø°: good â†’ better â†’ the best.', 'easy', 4),
+  ('Passive: "The house ___ in 1990."', 'Ø§Ù„Ù…Ø¨Ù†ÙŠ Ù„Ù„Ù…Ø¬Ù‡ÙˆÙ„: "The house ___ in 1990."',
+   '["was built","built","is building","builds"]'::jsonb, '["was built","built","is building","builds"]'::jsonb,
+   0, 'Passive past = was + past participle (built).', 'Ø§Ù„Ù…Ø¬Ù‡ÙˆÙ„ ÙÙŠ Ø§Ù„Ù…Ø§Ø¶ÙŠ = was + Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¹ÙˆÙ„.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AM' and s.slug = 'anglais' and c.slug = 'grammar'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- ================= 3AS FRANÃ‡AIS (BAC) =================
+
+update public.chapters c set
+  lesson_fr = 'LE DÃ‰BAT D''IDÃ‰ES (argumentation au BAC)
+
+LE PRINCIPE
+Deux thÃ¨ses s''opposent sur une question. L''auteur dÃ©fend l''une (la THÃˆSE)
+et rÃ©fute l''autre (l''ANTITHÃˆSE), souvent en concÃ©dant un point avant de
+mieux le dÃ©passer.
+
+THÃˆSE, ANTITHÃˆSE, SYNTHÃˆSE
+â€¢ ThÃ¨se : l''opinion dÃ©fendue.
+â€¢ AntithÃ¨se : l''opinion adverse.
+â€¢ SynthÃ¨se : un dÃ©passement qui articule les deux (plan dialectique).
+
+LA CONCESSION ET LA RÃ‰FUTATION
+â€¢ ConcÃ©der : reconnaÃ®tre une part de vÃ©ritÃ© Ã  l''adversaire
+  (Â« Certesâ€¦, il est vrai queâ€¦ Â»).
+â€¢ RÃ©futer : montrer ensuite les limites de cette thÃ¨se
+  (Â« â€¦ mais, cependant, en rÃ©alitÃ©â€¦ Â»).
+
+LES OUTILS DE L''ARGUMENTATION
+â€¢ Connecteurs logiques (cause, consÃ©quence, opposition, concession).
+â€¢ Modalisateurs : marques du jugement (il est indÃ©niable, sans doute,
+  peut-Ãªtre, il semble queâ€¦).
+â€¢ Types d''arguments : logique, d''autoritÃ© (citation d''expert), par
+  l''exemple, par analogie.
+
+MÃ‰THODE BAC : dÃ©gager la thÃ¨se dÃ©fendue, repÃ©rer les arguments et les
+connecteurs, distinguer concession et rÃ©futation.',
+  lesson_ar = 'Ù…Ù†Ø§Ù‚Ø´Ø© Ø§Ù„Ø£ÙÙƒØ§Ø± (Ø§Ù„Ø­Ø¬Ø§Ø¬ ÙÙŠ Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§)
+
+Ø§Ù„Ù…Ø¨Ø¯Ø£
+ØªØªØ¹Ø§Ø±Ø¶ Ø£Ø·Ø±ÙˆØ­ØªØ§Ù† Ø­ÙˆÙ„ Ù…Ø³Ø£Ù„Ø©. ÙŠØ¯Ø§ÙØ¹ Ø§Ù„ÙƒØ§ØªØ¨ Ø¹Ù† Ø¥Ø­Ø¯Ø§Ù‡Ù…Ø§ (Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø©) ÙˆÙŠØ¯Ø­Ø¶ Ø§Ù„Ø£Ø®Ø±Ù‰
+(Ù†Ù‚ÙŠØ¶ Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø©)ØŒ ØºØ§Ù„Ø¨Ù‹Ø§ Ø¨Ø§Ù„ØªØ³Ù„ÙŠÙ… Ø¨Ù†Ù‚Ø·Ø© Ù‚Ø¨Ù„ ØªØ¬Ø§ÙˆØ²Ù‡Ø§.
+
+Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø©ØŒ Ù†Ù‚ÙŠØ¶Ù‡Ø§ØŒ Ø§Ù„ØªØ±ÙƒÙŠØ¨
+â€¢ Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø©: Ø§Ù„Ø±Ø£ÙŠ Ø§Ù„Ù…Ø¯Ø§ÙØ¹ Ø¹Ù†Ù‡.
+â€¢ Ø§Ù„Ù†Ù‚ÙŠØ¶: Ø§Ù„Ø±Ø£ÙŠ Ø§Ù„Ù…Ø¶Ø§Ø¯.
+â€¢ Ø§Ù„ØªØ±ÙƒÙŠØ¨: ØªØ¬Ø§ÙˆØ² ÙŠØ¬Ù…Ø¹ Ø¨ÙŠÙ†Ù‡Ù…Ø§ (Ø§Ù„Ø®Ø·Ø© Ø§Ù„Ø¬Ø¯Ù„ÙŠØ©).
+
+Ø§Ù„ØªØ³Ù„ÙŠÙ… ÙˆØ§Ù„Ø¯Ø­Ø¶
+â€¢ Ø§Ù„ØªØ³Ù„ÙŠÙ…: Ø§Ù„Ø§Ø¹ØªØ±Ø§Ù Ø¨Ø¬Ø²Ø¡ Ù…Ù† Ø§Ù„Ø­Ù‚ Ù„Ù„Ø®ØµÙ… (Certesâ€¦, il est vrai queâ€¦).
+â€¢ Ø§Ù„Ø¯Ø­Ø¶: Ø¥Ø¸Ù‡Ø§Ø± Ø­Ø¯ÙˆØ¯ ØªÙ„Ùƒ Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø© (mais, cependant, en rÃ©alitÃ©â€¦).
+
+Ø£Ø¯ÙˆØ§Øª Ø§Ù„Ø­Ø¬Ø§Ø¬
+â€¢ Ø§Ù„Ø±ÙˆØ§Ø¨Ø· Ø§Ù„Ù…Ù†Ø·Ù‚ÙŠØ©. â€¢ Ø§Ù„Ù…ÙØ­ÙŠÙ‘Ù†Ø§Øª (dites modalisateurs): Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„Ø­ÙƒÙ….
+â€¢ Ø£Ù†ÙˆØ§Ø¹ Ø§Ù„Ø­Ø¬Ø¬: Ù…Ù†Ø·Ù‚ÙŠØ©ØŒ Ø­Ø¬Ø© Ø§Ù„Ø³Ù„Ø·Ø© (Ø§Ù‚ØªØ¨Ø§Ø³ Ø®Ø¨ÙŠØ±)ØŒ Ø¨Ø§Ù„Ù…Ø«Ø§Ù„ØŒ Ø¨Ø§Ù„Ù…Ù…Ø§Ø«Ù„Ø©.
+
+Ù…Ù†Ù‡Ø¬ÙŠØ© Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§: Ø§Ø³ØªØ®Ø±Ø§Ø¬ Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø©ØŒ ØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ø­Ø¬Ø¬ ÙˆØ§Ù„Ø±ÙˆØ§Ø¨Ø·ØŒ Ø§Ù„ØªÙ…ÙŠÙŠØ² Ø¨ÙŠÙ† Ø§Ù„ØªØ³Ù„ÙŠÙ… ÙˆØ§Ù„Ø¯Ø­Ø¶.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'francais' and c.slug = 'debat-idees';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans un dÃ©bat d''idÃ©es, l''antithÃ¨se estâ€¦', 'ÙÙŠ Ù…Ù†Ø§Ù‚Ø´Ø© Ø§Ù„Ø£ÙÙƒØ§Ø±ØŒ Ù†Ù‚ÙŠØ¶ Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø© Ù‡Ùˆâ€¦',
+   '["l''opinion adverse","l''opinion dÃ©fendue","un exemple","la conclusion"]'::jsonb, '["Ø§Ù„Ø±Ø£ÙŠ Ø§Ù„Ù…Ø¶Ø§Ø¯","Ø§Ù„Ø±Ø£ÙŠ Ø§Ù„Ù…Ø¯Ø§ÙØ¹ Ø¹Ù†Ù‡","Ù…Ø«Ø§Ù„","Ø§Ù„Ø®Ø§ØªÙ…Ø©"]'::jsonb,
+   0, 'L''antithÃ¨se est la thÃ¨se opposÃ©e.', 'Ø§Ù„Ù†Ù‚ÙŠØ¶ Ù‡Ùˆ Ø§Ù„Ø£Ø·Ø±ÙˆØ­Ø© Ø§Ù„Ù…Ø¶Ø§Ø¯Ø©.', 'easy', 1),
+  ('Â« Certesâ€¦, il est vrai queâ€¦ Â» introduitâ€¦', 'Â«Certesâ€¦, il est vrai queâ€¦Â» ØªÙ‚Ø¯Ù‘Ù…â€¦',
+   '["une concession","une rÃ©futation totale","un exemple","une description"]'::jsonb, '["ØªØ³Ù„ÙŠÙ…Ù‹Ø§","Ø¯Ø­Ø¶Ù‹Ø§ ÙƒØ§Ù…Ù„Ø§Ù‹","Ù…Ø«Ø§Ù„Ø§Ù‹","ÙˆØµÙÙ‹Ø§"]'::jsonb,
+   0, 'On concÃ¨de avant de nuancer.', 'Ù†ÙØ³Ù„Ù‘Ù… Ù‚Ø¨Ù„ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„.', 'medium', 2),
+  ('Citer un expert reconnu est un argumentâ€¦', 'Ø§Ù‚ØªØ¨Ø§Ø³ Ø®Ø¨ÙŠØ± Ù…Ø¹ØªØ±Ù Ø¨Ù‡ Ø­Ø¬Ø©â€¦',
+   '["d''autoritÃ©","par l''exemple","logique","par analogie"]'::jsonb, '["Ø§Ù„Ø³Ù„Ø·Ø©","Ø¨Ø§Ù„Ù…Ø«Ø§Ù„","Ù…Ù†Ø·Ù‚ÙŠØ©","Ø¨Ø§Ù„Ù…Ù…Ø§Ø«Ù„Ø©"]'::jsonb,
+   0, 'Argument d''autoritÃ© = appui sur une rÃ©fÃ©rence.', 'Ø­Ø¬Ø© Ø§Ù„Ø³Ù„Ø·Ø© = Ø§Ù„Ø§Ø³ØªÙ†Ø§Ø¯ Ø¥Ù„Ù‰ Ù…Ø±Ø¬Ø¹.', 'medium', 3),
+  ('Â« Cependant Â» et Â« en revanche Â» exprimentâ€¦', 'Â«cependantÂ» ÙˆÂ«en revancheÂ» ØªØ¹Ø¨Ù‘Ø±Ø§Ù† Ø¹Ù†â€¦',
+   '["l''opposition","l''addition","la cause","le temps"]'::jsonb, '["Ø§Ù„Ù…Ø¹Ø§Ø±Ø¶Ø©","Ø§Ù„Ø¥Ø¶Ø§ÙØ©","Ø§Ù„Ø³Ø¨Ø¨","Ø§Ù„Ø²Ù…Ù†"]'::jsonb,
+   0, 'Connecteurs d''opposition.', 'Ø±ÙˆØ§Ø¨Ø· Ø§Ù„Ù…Ø¹Ø§Ø±Ø¶Ø©.', 'easy', 4),
+  ('Le plan Â« thÃ¨se / antithÃ¨se / synthÃ¨se Â» est ditâ€¦', 'Ø®Ø·Ø© Â«Ø£Ø·Ø±ÙˆØ­Ø© / Ù†Ù‚ÙŠØ¶ / ØªØ±ÙƒÙŠØ¨Â» ØªÙØ³Ù…Ù‰â€¦',
+   '["dialectique","chronologique","descriptif","narratif"]'::jsonb, '["Ø¬Ø¯Ù„ÙŠØ©","Ø²Ù…Ù†ÙŠØ©","ÙˆØµÙÙŠØ©","Ø³Ø±Ø¯ÙŠØ©"]'::jsonb,
+   0, 'C''est le plan dialectique.', 'Ø¥Ù†Ù‡Ø§ Ø§Ù„Ø®Ø·Ø© Ø§Ù„Ø¬Ø¯Ù„ÙŠØ©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'francais' and c.slug = 'debat-idees'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- ================= 3AS ANGLAIS (BAC) =================
+
+update public.chapters c set
+  lesson_fr = 'ETHICS IN BUSINESS (BAC unit)
+
+KEY VOCABULARY
+corruption, bribery (soudoyer), fraud, counterfeiting (contrefaÃ§on),
+embezzlement (dÃ©tournement), transparency, accountability, honesty, integrity.
+
+REPORTED SPEECH (a BAC favourite)
+Direct: He said, "I work hard."
+Reported: He said (that) he worked hard. (present â†’ past)
+â€¢ "will" â†’ "would", "can" â†’ "could", "must" â†’ "had to".
+â€¢ Time words shift: now â†’ then, today â†’ that day, tomorrow â†’ the next day.
+
+THE PASSIVE (formal, common in reports)
+"Bribes were offered." "New laws have been introduced to fight corruption."
+
+EXPRESSING OBLIGATION AND PROHIBITION
+â€¢ must / have to â†’ obligation. "Companies must respect the law."
+â€¢ mustn''t â†’ prohibition. "Employees mustn''t accept bribes."
+â€¢ should / ought to â†’ advice.
+
+LINKING WORDS FOR ESSAYS
+however, therefore, moreover, on the other hand, as a result, in conclusion.
+
+EXAM TIP: in reported speech, move the tense "one step back" and change the
+pronouns and time markers accordingly.',
+  lesson_ar = 'Ø£Ø®Ù„Ø§Ù‚ÙŠØ§Øª Ø§Ù„Ø£Ø¹Ù…Ø§Ù„ (ÙˆØ­Ø¯Ø© Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§)
+
+Ù…ÙØ±Ø¯Ø§Øª Ø£Ø³Ø§Ø³ÙŠØ©
+corruption (ÙØ³Ø§Ø¯)ØŒ bribery (Ø±Ø´ÙˆØ©)ØŒ fraud (Ø§Ø­ØªÙŠØ§Ù„)ØŒ counterfeiting (ØªØ²ÙˆÙŠØ±)ØŒ
+transparency (Ø´ÙØ§ÙÙŠØ©)ØŒ accountability (Ù…Ø³Ø§Ø¡Ù„Ø©)ØŒ integrity (Ù†Ø²Ø§Ù‡Ø©).
+
+Ø§Ù„ÙƒÙ„Ø§Ù… Ø§Ù„Ù…Ù†Ù‚ÙˆÙ„ (Reported Speech) â€” Ù…ÙØ¶Ù‘Ù„ ÙÙŠ Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§
+Ù…Ø¨Ø§Ø´Ø±: He said, "I work hard."
+Ù…Ù†Ù‚ÙˆÙ„: He said that he worked hard (Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ â† Ø§Ù„Ù…Ø§Ø¶ÙŠ).
+â€¢ will â† would Ø› can â† could Ø› must â† had to.
+â€¢ Ø¸Ø±ÙˆÙ Ø§Ù„Ø²Ù…Ù† ØªØªØºÙŠØ±: now â† then, tomorrow â† the next day.
+
+Ø§Ù„Ù…Ø¨Ù†ÙŠ Ù„Ù„Ù…Ø¬Ù‡ÙˆÙ„ (Ø±Ø³Ù…ÙŠØŒ Ø´Ø§Ø¦Ø¹ ÙÙŠ Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ±)
+"Bribes were offered." "New laws have been introduced."
+
+Ø§Ù„ÙˆØ¬ÙˆØ¨ ÙˆØ§Ù„Ù…Ù†Ø¹
+â€¢ must / have to (ÙˆØ¬ÙˆØ¨) Ø› mustn''t (Ù…Ù†Ø¹) Ø› should (Ù†ØµØ­).
+
+Ø±ÙˆØ§Ø¨Ø· Ù„Ù„Ù…Ù‚Ø§Ù„: however, therefore, moreover, on the other hand, in conclusion.
+
+Ù†ØµÙŠØ­Ø© Ø§Ù„Ø§Ù…ØªØ­Ø§Ù†: ÙÙŠ Ø§Ù„ÙƒÙ„Ø§Ù… Ø§Ù„Ù…Ù†Ù‚ÙˆÙ„ Ø£Ø±Ø¬Ø¹ Ø§Ù„Ø²Ù…Ù† Ø®Ø·ÙˆØ© Ù„Ù„ÙˆØ±Ø§Ø¡ ÙˆØºÙŠÙ‘Ø± Ø§Ù„Ø¶Ù…Ø§Ø¦Ø± ÙˆØ¸Ø±ÙˆÙ Ø§Ù„Ø²Ù…Ù†.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'anglais' and c.slug = 'ethics';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Reported speech: He said, "I am tired." â†’', 'Ø§Ù„ÙƒÙ„Ø§Ù… Ø§Ù„Ù…Ù†Ù‚ÙˆÙ„: He said, "I am tired." â†',
+   '["He said he was tired.","He said he is tired.","He says he was tired.","He said I am tired."]'::jsonb, '["He said he was tired.","He said he is tired.","He says he was tired.","He said I am tired."]'::jsonb,
+   0, 'Present "am" â†’ past "was".', 'Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ am â† Ø§Ù„Ù…Ø§Ø¶ÙŠ was.', 'medium', 1),
+  ('"Employees ___ accept bribes." (prohibition)', '"Employees ___ accept bribes." (Ù…Ù†Ø¹)',
+   '["mustn''t","must","should","can"]'::jsonb, '["mustn''t","must","should","can"]'::jsonb,
+   0, '"mustn''t" expresses prohibition.', 'Â«mustn''tÂ» ØªØ¹Ø¨Ù‘Ø± Ø¹Ù† Ø§Ù„Ù…Ù†Ø¹.', 'medium', 2),
+  ('Which word means "contrefaÃ§on"?', 'Ø£ÙŠ ÙƒÙ„Ù…Ø© ØªØ¹Ù†ÙŠ Â«Ø§Ù„ØªØ²ÙˆÙŠØ±/Ø§Ù„ØªÙ‚Ù„ÙŠØ¯Â»ØŸ',
+   '["counterfeiting","transparency","honesty","accountability"]'::jsonb, '["counterfeiting","transparency","honesty","accountability"]'::jsonb,
+   0, 'Counterfeiting = faire de fausses copies.', 'counterfeiting = ØµÙ†Ø¹ Ù†Ø³Ø® Ù…Ø²ÙŠÙ‘ÙØ©.', 'easy', 3),
+  ('In reported speech, "will" becomesâ€¦', 'ÙÙŠ Ø§Ù„ÙƒÙ„Ø§Ù… Ø§Ù„Ù…Ù†Ù‚ÙˆÙ„ ØªØµØ¨Ø­ "will"â€¦',
+   '["would","would have","will","can"]'::jsonb, '["would","would have","will","can"]'::jsonb,
+   0, '"will" â†’ "would".', 'Â«willÂ» â† Â«wouldÂ».', 'easy', 4),
+  ('Passive: "New laws ___ to fight corruption."', 'Ø§Ù„Ù…Ø¬Ù‡ÙˆÙ„: "New laws ___ to fight corruption."',
+   '["have been introduced","have introduced","introduces","are introducing"]'::jsonb, '["have been introduced","have introduced","introduces","are introducing"]'::jsonb,
+   0, 'Passive present perfect = have been + past participle.', 'Ø§Ù„Ù…Ø¬Ù‡ÙˆÙ„ ÙÙŠ Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ Ø§Ù„ØªØ§Ù… = have been + Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¹ÙˆÙ„.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'anglais' and c.slug = 'ethics'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'ASTRONOMY AND THE SOLAR SYSTEM (BAC unit)
+
+KEY VOCABULARY
+the solar system, planet, orbit, gravity, satellite, telescope, galaxy,
+astronaut, spacecraft, to explore, to launch, to orbit, weightlessness.
+
+THE FUTURE AND PREDICTIONS
+â€¢ will + base verb: predictions. "Humans will live on Mars one day."
+â€¢ be going to: plans/evidence. "They are going to launch a rocket."
+â€¢ may / might: possibility. "Life might exist on other planets."
+
+THE PRESENT PERFECT (experience and results)
+have/has + past participle. "Scientists have discovered new planets."
+Used with: ever, never, already, yet, just, since, for.
+"Humans have explored space since 1961."
+
+RELATIVE CLAUSES (to define things)
+who (people), which/that (things), where (places).
+"The telescope which was launched in 1990 sent amazing images."
+
+CONDITIONALS FOR HYPOTHESES (type 2)
+If + past, would + base verb.
+"If we found water, life would be possible."
+
+EXAM TIP: present perfect links the past to now (result), simple past is a
+finished moment. "Has landed" (result) vs "landed in 1969" (finished date).',
+  lesson_ar = 'Ø¹Ù„Ù… Ø§Ù„ÙÙ„Ùƒ ÙˆØ§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø© Ø§Ù„Ø´Ù…Ø³ÙŠØ© (ÙˆØ­Ø¯Ø© Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§)
+
+Ù…ÙØ±Ø¯Ø§Øª Ø£Ø³Ø§Ø³ÙŠØ©
+the solar system (Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø© Ø§Ù„Ø´Ù…Ø³ÙŠØ©)ØŒ planet (ÙƒÙˆÙƒØ¨)ØŒ orbit (Ù…Ø¯Ø§Ø±)ØŒ
+gravity (Ø¬Ø§Ø°Ø¨ÙŠØ©)ØŒ galaxy (Ù…Ø¬Ø±Ù‘Ø©)ØŒ astronaut (Ø±Ø§Ø¦Ø¯ ÙØ¶Ø§Ø¡)ØŒ to launch (ÙŠØ·Ù„Ù‚).
+
+Ø§Ù„Ù…Ø³ØªÙ‚Ø¨Ù„ ÙˆØ§Ù„ØªÙ†Ø¨Ø¤Ø§Øª
+â€¢ will + ÙØ¹Ù„ Ù…Ø¬Ø±Ø¯: ØªÙ†Ø¨Ø¤. "Humans will live on Mars."
+â€¢ be going to: Ø®Ø·Ø©/Ø¯Ù„ÙŠÙ„. "They are going to launch a rocket."
+â€¢ may / might: Ø§Ø­ØªÙ…Ø§Ù„. "Life might exist on other planets."
+
+Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ Ø§Ù„ØªØ§Ù… (ØªØ¬Ø±Ø¨Ø© ÙˆÙ†ØªÙŠØ¬Ø©)
+have/has + Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¹ÙˆÙ„. "Scientists have discovered new planets."
+Ù…Ø¹: ever, never, already, yet, just, since, for.
+
+Ø§Ù„Ø¬Ù…Ù„ Ø§Ù„ÙˆØµÙ„ÙŠØ©
+who (Ø£Ø´Ø®Ø§Øµ)ØŒ which/that (Ø£Ø´ÙŠØ§Ø¡)ØŒ where (Ø£Ù…Ø§ÙƒÙ†).
+
+Ø§Ù„Ø´Ø±Ø· Ø§Ù„Ù†ÙˆØ¹ Ø§Ù„Ø«Ø§Ù†ÙŠ (Ø§ÙØªØ±Ø§Ø¶)
+If + Ù…Ø§Ø¶ÙØŒ would + ÙØ¹Ù„ Ù…Ø¬Ø±Ø¯. "If we found water, life would be possible."
+
+Ù†ØµÙŠØ­Ø©: Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ Ø§Ù„ØªØ§Ù… ÙŠØ±Ø¨Ø· Ø§Ù„Ù…Ø§Ø¶ÙŠ Ø¨Ø§Ù„Ø­Ø§Ø¶Ø± (Ù†ØªÙŠØ¬Ø©)ØŒ ÙˆØ§Ù„Ù…Ø§Ø¶ÙŠ Ø§Ù„Ø¨Ø³ÙŠØ· Ù„Ø­Ø¸Ø© Ù…Ù†ØªÙ‡ÙŠØ©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'anglais' and c.slug = 'astronomy';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Present perfect: "Scientists ___ new planets."', 'Ø§Ù„Ù…Ø¶Ø§Ø±Ø¹ Ø§Ù„ØªØ§Ù…: "Scientists ___ new planets."',
+   '["have discovered","discovered","discovers","are discovering"]'::jsonb, '["have discovered","discovered","discovers","are discovering"]'::jsonb,
+   0, 'have + past participle (discovered).', 'have + Ø§Ø³Ù… Ø§Ù„Ù…ÙØ¹ÙˆÙ„ (discovered).', 'medium', 1),
+  ('Prediction: "Humans ___ on Mars one day."', 'ØªÙ†Ø¨Ø¤: "Humans ___ on Mars one day."',
+   '["will live","lived","have lived","live"]'::jsonb, '["will live","lived","have lived","live"]'::jsonb,
+   0, '"will + base verb" for predictions.', 'Â«will + ÙØ¹Ù„ Ù…Ø¬Ø±Ø¯Â» Ù„Ù„ØªÙ†Ø¨Ø¤.', 'easy', 2),
+  ('Relative clause: "The rocket ___ was launched exploded."', 'Ø¬Ù…Ù„Ø© ÙˆØµÙ„ÙŠØ©: "The rocket ___ was launched exploded."',
+   '["which","who","where","when"]'::jsonb, '["which","who","where","when"]'::jsonb,
+   0, '"which" refers to things.', 'Â«whichÂ» ØªØ¹ÙˆØ¯ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ø´ÙŠØ§Ø¡.', 'medium', 3),
+  ('Which word means "Ù…Ø¯Ø§Ø±"?', 'Ø£ÙŠ ÙƒÙ„Ù…Ø© ØªØ¹Ù†ÙŠ Â«Ù…Ø¯Ø§Ø±Â»ØŸ',
+   '["orbit","gravity","galaxy","satellite"]'::jsonb, '["orbit","gravity","galaxy","satellite"]'::jsonb,
+   0, 'Orbit = the path around a planet/star.', 'orbit = Ø§Ù„Ù…Ø³Ø§Ø± Ø­ÙˆÙ„ ÙƒÙˆÙƒØ¨ Ø£Ùˆ Ù†Ø¬Ù….', 'easy', 4),
+  ('Type 2 conditional: "If we ___ water, life would be possible."', 'Ø§Ù„Ø´Ø±Ø· Ù†ÙˆØ¹ 2: "If we ___ water, life would be possible."',
+   '["found","find","will find","have found"]'::jsonb, '["found","find","will find","have found"]'::jsonb,
+   0, 'Type 2: if + past, would + base verb.', 'Ø§Ù„Ù†ÙˆØ¹ 2: if + Ù…Ø§Ø¶ÙØŒ would + ÙØ¹Ù„ Ù…Ø¬Ø±Ø¯.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AS' and s.slug = 'anglais' and c.slug = 'astronomy'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
