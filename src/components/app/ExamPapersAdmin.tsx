@@ -240,15 +240,12 @@ function NewExamForm({
 
       <div className="md:col-span-2">
         <span className="block text-xs font-semibold text-fg-soft uppercase tracking-wider mb-1">Fichier PDF</span>
-        <div className="flex items-center gap-3">
-          <AdminFileUpload bucket="exam-papers" onUploaded={setFileUrl} label="Téléverser le PDF" />
-          {fileUrl && (
-            <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-fg underline truncate">
-              ✓ {fileUrl.split("/").pop()}
-            </a>
-          )}
-        </div>
-        <p className="text-xs text-fg-faint mt-1">PDF jusqu&apos;à 25 MB. Stocké dans Supabase Storage.</p>
+        <AdminFileUpload bucket="exam-papers" onUploaded={setFileUrl} label="Glisse le PDF du sujet ici, ou clique pour choisir" />
+        {fileUrl && (
+          <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-xs text-emerald-600 font-semibold underline mt-2 truncate max-w-full">
+            ✓ {fileUrl.split("/").pop()}
+          </a>
+        )}
       </div>
 
       <label className="md:col-span-2 flex items-center gap-2 mt-1">
