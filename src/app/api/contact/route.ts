@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { rateLimit, getClientKey } from "@/lib/rate-limit";
+import { sendContactConfirmation } from "@/lib/email";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/**
- * Saves contact-form messages to Supabase. Until the support_messages
- * table exists (added in a future migration), we just log + return ok.
- */
 export async function POST(req: Request) {
   const rl = rateLimit(`contact:${getClientKey(req)}`, { max: 3, windowSec: 60 });
   if (!rl.ok) {
@@ -43,12 +40,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Adresse email invalide" }, { status: 400 });
   }
 
-  // For now, just log it. Once the support_messages table is added we'll
-  // insert here. The field shape matches the future schema.
-  console.log("[contact]", { name, email, subject, message, locale });
+  // Resolve the optional authenticated user so we can link the message.
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // Future: insert into support_messages
-  void createServerClient; // keep import warm
+  const admin = createAdminClient();
+  const { error } = await admin.from("support_messages").insert({
+    name,
+    email,
+    subject,
+    message,
+    locale,
+    user_id: user?.id ?? null,
+    status: "open",
+  });
+
+  if (error) {
+    console.error("[contact] insert failed", error.message);
+    return NextResponse.json(
+      { error: "Une erreur s'est produite. Réessaye dans un instant." },
+      { status: 500 },
+    );
+  }
+
+  // Send auto-reply — fire-and-forget so an email failure never breaks the form.
+  sendContactConfirmation({ to: email, name }).catch(
+    (err) => console.error("[contact] confirmation email failed", err),
+  );
 
   return NextResponse.json({ ok: true });
 }

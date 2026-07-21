@@ -2,39 +2,69 @@ import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { getActiveSubscription, requireSubscriptionApi } from "@/lib/subscriptions";
 
-const MOCK_REPLIES = [
-  "Bonne question ! Décomposons ça étape par étape. D'abord, on isole le terme avec x, puis on divise des deux côtés. Veux-tu un exemple concret ?",
-  "C'est un point qui revient souvent. La règle est simple : tu peux la mémoriser en pensant à un cas pratique. Essaie de l'appliquer à un exercice et dis-moi si ça reste flou.",
-  "Tu es sur la bonne voie. La prochaine étape consiste à vérifier ton résultat en remplaçant la valeur trouvée dans l'équation initiale.",
-  "Parfait, tu as compris l'idée principale. Pour aller plus loin, je peux te générer 3 exercices ciblés. Tu veux ?",
-];
+const SYSTEM_PROMPT = `Tu es Naja, le tuteur IA de la plateforme éducative algérienne Najaح (naja7dz.com).
+Tu aides les élèves algériens (collège et lycée) à comprendre leurs cours scolaires.
+Réponds toujours en français sauf si l'élève écrit en arabe (alors réponds en arabe).
+Sois encourageant, clair et pédagogique. Adapte ta réponse au niveau scolaire algérien (programme officiel).
+Ne fournis jamais de réponses directes aux examens — guide l'élève à raisonner lui-même.
+Limite tes réponses à 3-4 paragraphes maximum.`;
 
-/**
- * Persists tutor messages.
- * If conversationId is missing, creates a new conversation.
- * Returns a mock assistant reply (real Claude API plugs in later).
- */
+async function callAnthropicApi(message: string): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return "Le tuteur IA sera disponible très bientôt. En attendant, contacte ton enseignant ou consulte tes cours.";
+  }
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 600,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: message }],
+    }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    console.error("[tutor] Anthropic API error", res.status);
+    throw new Error("AI unavailable");
+  }
+
+  const data = await res.json() as {
+    content: Array<{ type: string; text: string }>;
+  };
+
+  return data.content.find((b) => b.type === "text")?.text ??
+    "Je n'ai pas pu générer une réponse. Réessaye dans un instant.";
+}
+
 export async function POST(req: Request) {
   const auth = await createServerClient();
   const { data: { user } } = await auth.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
 
-  // Subscription required — tutor is a paid feature.
   const sub = await getActiveSubscription(user.id);
   const block = requireSubscriptionApi(sub);
   if (block) return block;
 
   let body: { conversationId?: string; childId?: string; message?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+
   const message = (body.message ?? "").trim();
   if (!message) return NextResponse.json({ error: "Message vide" }, { status: 400 });
+  if (message.length > 2000) return NextResponse.json({ error: "Message trop long" }, { status: 400 });
   if (!body.childId) return NextResponse.json({ error: "childId required" }, { status: 400 });
 
   const admin = createAdminClient();
   const { data: child } = await admin.from("children").select("id").eq("id", body.childId).eq("parent_id", user.id).maybeSingle();
   if (!child) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Create or load conversation
   let conversationId = body.conversationId;
   if (!conversationId) {
     const { data: conv } = await admin
@@ -46,22 +76,25 @@ export async function POST(req: Request) {
   }
   if (!conversationId) return NextResponse.json({ error: "Conversation init failed" }, { status: 500 });
 
-  // Save user message
   await admin.from("tutor_messages").insert({
     conversation_id: conversationId,
     role: "user",
     content: message,
   });
 
-  // Mock assistant reply (real Claude API plugs here later)
-  const reply = MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)];
+  let reply: string;
+  try {
+    reply = await callAnthropicApi(message);
+  } catch {
+    reply = "Une erreur s'est produite. Réessaye dans un instant.";
+  }
+
   await admin.from("tutor_messages").insert({
     conversation_id: conversationId,
     role: "assistant",
     content: reply,
   });
 
-  // Update conversation last_message_at
   await admin
     .from("tutor_conversations")
     .update({ last_message_at: new Date().toISOString() })

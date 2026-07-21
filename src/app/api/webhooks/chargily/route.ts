@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyWebhookSignature } from "@/lib/chargily";
+import { sendWelcomeEmail } from "@/lib/email";
 
 /**
  * Receives webhook events from Chargily Pay.
@@ -113,7 +114,18 @@ export async function POST(req: Request) {
     );
     if (rpcErr) {
       console.error("[webhook] activate_subscription failed", rpcErr);
-      // Recovery: /checkout/success calls the same RPC if no sub yet.
+    }
+
+    // Send welcome email — look up the checkout to get customer name + email
+    const { data: session } = await supabase
+      .from("checkout_sessions")
+      .select("email, customer_name")
+      .eq("id", updatedSession.id)
+      .maybeSingle();
+    if (session?.email) {
+      await sendWelcomeEmail({ to: session.email, name: session.customer_name ?? undefined }).catch(
+        (err) => console.error("[webhook] welcome email failed", err),
+      );
     }
   }
 
@@ -124,8 +136,6 @@ export async function POST(req: Request) {
       .update({ processed: true })
       .eq("chargily_event_id", evt.id);
   }
-
-  // TODO: send welcome email on `paid` (Resend integration in next session)
 
   return NextResponse.json({ ok: true });
 }

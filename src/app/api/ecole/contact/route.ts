@@ -64,14 +64,11 @@ export async function POST(req: Request) {
 
   const setup = checkSetupErr(error);
   if (setup) {
-    // Table not migrated yet — log + 202 so the funnel doesn't break.
-    console.warn("[ecole/contact] DB not ready:", setup.body);
-    console.log("[ecole/contact] FALLBACK row:", row);
+    console.warn("[ecole/contact] DB not ready — run SETUP.sql in Supabase");
     return NextResponse.json({ ok: true, stored: false }, { status: 202 });
   }
   if (error) {
-    console.error("[ecole/contact] insert failed", error);
-    console.log("[ecole/contact] FALLBACK row:", row);
+    console.error("[ecole/contact] insert failed", error.message);
     return NextResponse.json({ ok: true, stored: false }, { status: 202 });
   }
 

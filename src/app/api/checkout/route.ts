@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient, createAdminClient } from "@/lib/supabase/server";
 import { createCheckout, createCustomer } from "@/lib/chargily";
+import { rateLimit, getClientKey } from "@/lib/rate-limit";
 
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Defensive: env vars sometimes have stray "\n" / whitespace from CLI input.
@@ -20,6 +21,14 @@ interface CheckoutRequest {
 }
 
 export async function POST(req: Request) {
+  const rl = rateLimit(`checkout:${getClientKey(req)}`, { max: 5, windowSec: 60 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Trop de tentatives. Réessaye dans un instant." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 60) } },
+    );
+  }
+
   let body: CheckoutRequest;
   try {
     body = await req.json();
