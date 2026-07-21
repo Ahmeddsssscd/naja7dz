@@ -5,6 +5,7 @@ import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MobileMenu } from "@/components/MobileMenu";
 import { EmailCapture } from "@/components/EmailCapture";
+import { GradeExplorer } from "@/components/GradeExplorer";
 import { HeroInteractive } from "@/components/hero/HeroInteractive";
 import { createServerClient } from "@/lib/supabase/server";
 import { getActiveSubscription } from "@/lib/subscriptions";
@@ -64,6 +65,7 @@ export default async function LandingPage() {
       <SiteNav auth={auth} />
       <Hero auth={auth} />
       <TrustStrip />
+      <GradeExplorer />
       <AlgeriaStats />
       <HowItWorks />
       <ParcoursTeaser />

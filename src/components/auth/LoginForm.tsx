@@ -8,7 +8,9 @@ import { Link } from "@/i18n/routing";
 export function LoginForm() {
   const t = useTranslations("Connexion");
   const params = useSearchParams();
-  const next = params.get("next") || "/parent";
+  // /espace inspects the active child's grade and dispatches:
+  // primaire → /petits (Kids Universe), collège/lycée → /eleve, no child → /parent.
+  const next = params.get("next") || "/espace";
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "err">("idle");
