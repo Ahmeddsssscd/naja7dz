@@ -1302,7 +1302,16 @@
     "no_account": "ليس لديك حساب؟",
     "create_account": "إنشاء حساب",
     "back_home": "→ العودة إلى الصفحة الرئيسية",
-    "generic_error": "حدث خطأ"
+    "generic_error": "حدث خطأ",
+    "or": "أو",
+    "continue_google": "المتابعة عبر Google",
+    "continue_phone": "المتابعة برقم الهاتف",
+    "send_code": "استلام الرمز",
+    "verify_code": "تأكيد الرمز",
+    "otp_placeholder": "رمز من 6 أرقام",
+    "otp_sent": "أُرسل الرمز عبر SMS",
+    "otp_invalid": "رمز غير صحيح",
+    "phone_invalid": "رقم هاتف غير صالح"
   },
   "ResetPassword": {
     "title": "إعادة تعيين كلمة المرور",

@@ -1302,7 +1302,16 @@
     "no_account": "Pas encore de compte ?",
     "create_account": "Créer un compte",
     "back_home": "← Retour à l'accueil",
-    "generic_error": "Erreur"
+    "generic_error": "Erreur",
+    "or": "ou",
+    "continue_google": "Continuer avec Google",
+    "continue_phone": "Continuer avec un numéro de téléphone",
+    "send_code": "Recevoir le code",
+    "verify_code": "Vérifier le code",
+    "otp_placeholder": "Code à 6 chiffres",
+    "otp_sent": "Code envoyé par SMS",
+    "otp_invalid": "Code incorrect",
+    "phone_invalid": "Numéro de téléphone invalide"
   },
   "ResetPassword": {
     "title": "Réinitialiser ton mot de passe",

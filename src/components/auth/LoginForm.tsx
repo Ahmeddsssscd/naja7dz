@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
+import { SocialAuth } from "@/components/auth/SocialAuth";
 
 export function LoginForm() {
   const t = useTranslations("Connexion");
@@ -87,6 +88,8 @@ export function LoginForm() {
           {errorMsg}
         </p>
       )}
+
+      <SocialAuth next={next} />
 
       <style jsx>{`
         :global(.auth-input) {

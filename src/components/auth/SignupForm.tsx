@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CheckIcon } from "@/components/Icon";
+import { SocialAuth } from "@/components/auth/SocialAuth";
 
 const WILAYAS = [
   "Alger","Oran","Constantine","Annaba","Blida","Sétif","Tlemcen","Béjaïa","Tizi Ouzou","Batna",
@@ -132,6 +133,8 @@ export function SignupForm() {
       {status === "err" && (
         <p className="text-sm text-red-500 text-center" role="alert">{errorMsg}</p>
       )}
+
+      <SocialAuth next="/espace" />
 
       <style jsx>{`
         :global(.auth-input) {
