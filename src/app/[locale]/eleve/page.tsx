@@ -194,6 +194,14 @@ export default async function StudentHome() {
           subtitle={totalReadyForGrade > 0 ? `${totalReadyForGrade} chapitre${totalReadyForGrade > 1 ? "s" : ""} prêt${totalReadyForGrade > 1 ? "s" : ""}` : "Quiz, jeux et activités"}
           color="bg-gold/15 text-fg border-gold/40"
         />
+        {/* 2b. Programme de la semaine — universal */}
+        <BigTile
+          href="/eleve/programme"
+          icon={CalendarTile}
+          title="Mon programme"
+          subtitle="Organise ta semaine"
+          color="bg-purple-50 dark:bg-purple-950/30 text-fg border-purple-200 dark:border-purple-900"
+        />
         {/* 3. Audience-specific tiles */}
         {audience === "primary" && (
           <>
@@ -326,6 +334,17 @@ export default async function StudentHome() {
         )}
       </div>
     </StudentShell>
+  );
+}
+
+function CalendarTile({ size = 24, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
   );
 }
 
