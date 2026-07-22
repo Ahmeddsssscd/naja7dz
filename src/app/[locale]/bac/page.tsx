@@ -35,8 +35,8 @@ export default function BacPage() {
               <Link href="/inscription" className="btn btn-primary btn-lg">
                 Commencer gratuitement
               </Link>
-              <Link href="/connexion" className="btn btn-outline btn-lg">
-                Se connecter
+              <Link href="/bac/professeurs" className="btn btn-outline btn-lg">
+                Trouver un professeur
               </Link>
             </div>
           </div>
