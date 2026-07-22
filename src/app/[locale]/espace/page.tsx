@@ -1,22 +1,21 @@
 /**
  * /espace — smart post-login dispatch.
  *
- * One URL that sends every account to the right place based on the active
- * child's grade, so the login button never needs to know who is logging in:
+ * One URL that sends every account to the right place:
  *
- *   - no child yet          → /parent   (onboarding: add a child first)
- *   - 1AP … 5AP (primaire)  → /petits   (Kids Universe)
- *   - 1AM … 3AS             → /eleve    (student space, already
- *                                        grade-filtered by child.grade)
+ *   - no child yet                          → /parent   (add a child first)
+ *   - kids_universe_enabled is ON           → /petits   (Kids Universe)
+ *   - otherwise (any grade, default)        → /eleve    (age-appropriate
+ *                                             academic space, filtered by
+ *                                             the child's grade)
  *
- * Parents can still open /parent directly from the nav — this route only
- * decides the default landing after "Connexion".
+ * Kids Universe is now opt-in (migration 024): even primary pupils land on
+ * their academic space by default. A parent flips the toggle per child in
+ * /parent/enfants when they want the playful games.
  */
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { resolveActiveChild } from "@/lib/active-child";
-
-const KIDS_GRADES = new Set(["1AP", "2AP", "3AP", "4AP", "5AP"]);
 
 export default async function EspaceDispatchPage() {
   const supabase = await createServerClient();
@@ -24,8 +23,15 @@ export default async function EspaceDispatchPage() {
   if (!user) redirect("/connexion");
 
   const { active } = await resolveActiveChild(user.id);
-  if (!active?.grade) redirect("/parent");
+  if (!active) redirect("/parent");
 
-  if (KIDS_GRADES.has(active.grade)) redirect("/petits");
+  // Look up the opt-in flag for the active child.
+  const { data: child } = await supabase
+    .from("children")
+    .select("kids_universe_enabled")
+    .eq("id", active.id)
+    .maybeSingle();
+
+  if (child?.kids_universe_enabled) redirect("/petits");
   redirect("/eleve");
 }

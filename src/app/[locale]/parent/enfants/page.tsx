@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app/AppShell";
 import { Link } from "@/i18n/routing";
+import { KidsUniverseToggle } from "@/components/app/KidsUniverseToggle";
 
 export const metadata = { title: "Mes enfants" };
 
@@ -33,24 +34,31 @@ export default async function ChildrenListPage() {
 
         <div className="grid sm:grid-cols-2 gap-5">
           {(children ?? []).map((c) => (
-            <Link
-              key={c.id}
-              href={`/parent/enfants/${c.id}` as never}
-              className="bg-surface border border-line rounded-card p-6 hover:shadow-card-hover transition-all"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <span className="w-14 h-14 rounded-full bg-pale-blue text-navy text-xl font-bold flex items-center justify-center">
-                  {c.full_name.split(" ").map((s: string) => s[0]).slice(0, 2).join("")}
-                </span>
-                <div>
-                  <h3 className="font-semibold text-fg">{c.full_name}</h3>
-                  <p className="text-xs text-fg-soft">
-                    {c.age ? tHome("years_old", { age: c.age }) : ""} · {c.grade ?? "—"}
-                  </p>
+            <div key={c.id} className="bg-surface border border-line rounded-card p-6 flex flex-col gap-4">
+              <Link
+                href={`/parent/enfants/${c.id}` as never}
+                className="hover:opacity-90 transition-opacity"
+              >
+                <div className="flex items-center gap-4 mb-3">
+                  <span className="w-14 h-14 rounded-full bg-pale-blue text-navy text-xl font-bold flex items-center justify-center">
+                    {c.full_name.split(" ").map((s: string) => s[0]).slice(0, 2).join("")}
+                  </span>
+                  <div>
+                    <h3 className="font-semibold text-fg">{c.full_name}</h3>
+                    <p className="text-xs text-fg-soft">
+                      {c.age ? tHome("years_old", { age: c.age }) : ""} · {c.grade ?? "—"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="text-sm text-fg-soft">{t("view_profile")}</div>
-            </Link>
+                <div className="text-sm text-fg-soft">{t("view_profile")} →</div>
+              </Link>
+
+              <KidsUniverseToggle
+                childId={c.id}
+                initialEnabled={!!c.kids_universe_enabled}
+                childName={c.full_name.split(" ")[0]}
+              />
+            </div>
           ))}
         </div>
 

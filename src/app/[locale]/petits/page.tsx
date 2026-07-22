@@ -55,6 +55,17 @@ export default async function KidsHome({ searchParams }: PageProps) {
   const { active, all, hasMultiple } = await resolveActiveChild(user.id, queryChild);
   const firstName = active?.full_name?.split(" ")[0];
 
+  // Kids Universe is opt-in (migration 024). If it isn't enabled for the
+  // active child, send them to their academic space instead.
+  if (active) {
+    const { data: flag } = await supabase
+      .from("children")
+      .select("kids_universe_enabled")
+      .eq("id", active.id)
+      .maybeSingle();
+    if (!flag?.kids_universe_enabled) redirect("/eleve");
+  }
+
   // Feature flags — admin can hide universe shortcuts. Individual games stay
   // always-on; if a tile needs hiding we'd add a per-game flag later.
   const [coloringOn, mathsOn, smartOn, worldOn, readingOn, quranOn, englishOn] = await Promise.all([
