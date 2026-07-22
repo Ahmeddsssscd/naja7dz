@@ -3964,3 +3964,2402 @@ cross join (values
 ) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
 where s.grade_code = '3AS' and s.slug = 'anglais' and c.slug = 'astronomy'
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+
+-- ===============================================================
+-- Migration: 20260722_022_college_1am_2am_maths
+--
+-- Bilingual lessons + 5-question quiz banks for every 1AM and 2AM maths
+-- chapter (chapters seeded in migration 017). Fills the non-exam college
+-- years so younger students get the full lessonâ†’quiz experience.
+-- Idempotent: guarded UPDATEs and NOT EXISTS inserts.
+-- ===============================================================
+
+-- ================= 1AM MATHÃ‰MATIQUES =================
+
+update public.chapters c set
+  lesson_fr = 'NOMBRES ENTIERS ET DÃ‰CIMAUX
+
+LES ENTIERS NATURELS
+0, 1, 2, 3â€¦ servent Ã  compter. On les lit par classes de 3 chiffres
+(unitÃ©s, mille, million).
+
+LES NOMBRES DÃ‰CIMAUX
+Un nombre dÃ©cimal a une partie entiÃ¨re et une partie dÃ©cimale sÃ©parÃ©es par
+une virgule : 12,45. Le premier chiffre aprÃ¨s la virgule = les dixiÃ¨mes,
+le deuxiÃ¨me = les centiÃ¨mes, le troisiÃ¨me = les milliÃ¨mes.
+
+COMPARER
+On compare d''abord la partie entiÃ¨re, puis chiffre par chiffre aprÃ¨s la
+virgule. Attention : 3,5 = 3,50 (les zÃ©ros Ã  droite ne changent rien).
+3,45 < 3,5 car 4 dixiÃ¨mes < 5 dixiÃ¨mes.
+
+REPÃ‰RAGE SUR UNE DEMI-DROITE GRADUÃ‰E
+Chaque nombre a une position (abscisse) sur la droite graduÃ©e.
+
+Ã€ RETENIR : la virgule sÃ©pare les unitÃ©s des dixiÃ¨mes. Bien lire le rang
+de chaque chiffre.',
+  lesson_ar = 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ© ÙˆØ§Ù„Ø¹Ø´Ø±ÙŠØ©
+
+Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©
+0ØŒ 1ØŒ 2ØŒ 3â€¦ ØªÙØ³ØªØ¹Ù…Ù„ Ù„Ù„Ø¹Ø¯Ù‘ØŒ ÙˆØªÙÙ‚Ø±Ø£ Ø¨Ø£Ù‚Ø³Ø§Ù… Ù…Ù† Ø«Ù„Ø§Ø«Ø© Ø£Ø±Ù‚Ø§Ù… (ÙˆØ­Ø¯Ø§ØªØŒ Ø¢Ù„Ø§ÙØŒ Ù…Ù„Ø§ÙŠÙŠÙ†).
+
+Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø¹Ø´Ø±ÙŠØ©
+Ù„Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ø´Ø±ÙŠ Ø¬Ø²Ø¡ ØµØ­ÙŠØ­ ÙˆØ¬Ø²Ø¡ Ø¹Ø´Ø±ÙŠ ØªÙØµÙ„ Ø¨ÙŠÙ†Ù‡Ù…Ø§ ÙØ§ØµÙ„Ø©: 12.45. Ø£ÙˆÙ„ Ø±Ù‚Ù… Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø©
+Ù‡Ùˆ Ø§Ù„Ø£Ø¹Ø´Ø§Ø±ØŒ ÙˆØ§Ù„Ø«Ø§Ù†ÙŠ Ø£Ø¬Ø²Ø§Ø¡ Ù…Ù† Ù…Ø¦Ø©ØŒ ÙˆØ§Ù„Ø«Ø§Ù„Ø« Ø£Ø¬Ø²Ø§Ø¡ Ù…Ù† Ø£Ù„Ù.
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø©
+Ù†Ù‚Ø§Ø±Ù† Ø§Ù„Ø¬Ø²Ø¡ Ø§Ù„ØµØ­ÙŠØ­ Ø£ÙˆÙ„Ø§Ù‹ Ø«Ù… Ø±Ù‚Ù…Ù‹Ø§ Ø±Ù‚Ù…Ù‹Ø§ Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø©. Ù…Ù„Ø§Ø­Ø¸Ø©: 3.5 = 3.50.
+3.45 < 3.5 Ù„Ø£Ù† 4 Ø£Ø¹Ø´Ø§Ø± < 5 Ø£Ø¹Ø´Ø§Ø±.
+
+Ø§Ù„ØªÙˆÙ‚ÙŠØ¹ Ø¹Ù„Ù‰ Ù…Ø³ØªÙ‚ÙŠÙ… Ù…Ø¯Ø±Ù‘Ø¬
+Ù„ÙƒÙ„ Ø¹Ø¯Ø¯ Ù…ÙˆØ¶Ø¹ (ÙØ§ØµÙ„Ø©) Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… Ø§Ù„Ù…Ø¯Ø±Ù‘Ø¬.
+
+ØªØ°ÙƒØ±: Ø§Ù„ÙØ§ØµÙ„Ø© ØªÙØµÙ„ Ø§Ù„ÙˆØ­Ø¯Ø§Øª Ø¹Ù† Ø§Ù„Ø£Ø¹Ø´Ø§Ø±.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'entiers-decimaux';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans 34,72 le chiffre 7 reprÃ©senteâ€¦', 'ÙÙŠ 34.72 ÙŠÙ…Ø«Ù„ Ø§Ù„Ø±Ù‚Ù… 7â€¦',
+   '["7 dixiÃ¨mes","7 unitÃ©s","7 centiÃ¨mes","7 dizaines"]'::jsonb, '["7 Ø£Ø¹Ø´Ø§Ø±","7 ÙˆØ­Ø¯Ø§Øª","7 Ø£Ø¬Ø²Ø§Ø¡ Ù…Ù† Ù…Ø¦Ø©","7 Ø¹Ø´Ø±Ø§Øª"]'::jsonb,
+   0, '1er chiffre aprÃ¨s la virgule = dixiÃ¨mes.', 'Ø£ÙˆÙ„ Ø±Ù‚Ù… Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø© = Ø§Ù„Ø£Ø¹Ø´Ø§Ø±.', 'easy', 1),
+  ('Compare : 3,45 â€¦ 3,5', 'Ù‚Ø§Ø±Ù†: 3.45 â€¦ 3.5',
+   '["3,45 < 3,5","3,45 > 3,5","3,45 = 3,5","impossible"]'::jsonb, '["3.45 < 3.5","3.45 > 3.5","3.45 = 3.5","Ù…Ø³ØªØ­ÙŠÙ„"]'::jsonb,
+   0, '4 dixiÃ¨mes < 5 dixiÃ¨mes.', '4 Ø£Ø¹Ø´Ø§Ø± < 5 Ø£Ø¹Ø´Ø§Ø±.', 'medium', 2),
+  ('Quelle Ã©criture Ã©gale 7,3 ?', 'Ø£ÙŠ ÙƒØªØ§Ø¨Ø© ØªØ³Ø§ÙˆÙŠ 7.3ØŸ',
+   '["7,30","7,03","0,73","73"]'::jsonb, '["7.30","7.03","0.73","73"]'::jsonb,
+   0, 'Ajouter un zÃ©ro Ã  droite ne change rien.', 'Ø¥Ø¶Ø§ÙØ© ØµÙØ± Ø¹Ù„Ù‰ Ø§Ù„ÙŠÙ…ÙŠÙ† Ù„Ø§ ØªØºÙŠÙ‘Ø± Ø§Ù„Ù‚ÙŠÙ…Ø©.', 'easy', 3),
+  ('Le plus grand nombre estâ€¦', 'Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙƒØ¨Ø± Ù‡Ùˆâ€¦',
+   '["12,8","12,79","12,081","9,99"]'::jsonb, '["12.8","12.79","12.081","9.99"]'::jsonb,
+   0, '12,8 = 12,800 > 12,79.', '12.8 = 12.800 > 12.79.', 'medium', 4),
+  ('2,05 se litâ€¦', 'ÙŠÙÙ‚Ø±Ø£ 2.05â€¦',
+   '["deux et cinq centiÃ¨mes","deux et cinq dixiÃ¨mes","deux et cinquante","vingt-cinq"]'::jsonb, '["Ø§Ø«Ù†Ø§Ù† ÙˆØ®Ù…Ø³Ø© Ø£Ø¬Ø²Ø§Ø¡ Ù…Ù† Ù…Ø¦Ø©","Ø§Ø«Ù†Ø§Ù† ÙˆØ®Ù…Ø³Ø© Ø£Ø¹Ø´Ø§Ø±","Ø§Ø«Ù†Ø§Ù† ÙˆØ®Ù…Ø³ÙˆÙ†","Ø®Ù…Ø³Ø© ÙˆØ¹Ø´Ø±ÙˆÙ†"]'::jsonb,
+   0, '05 aprÃ¨s la virgule = 5 centiÃ¨mes.', '05 Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø© = 5 Ø£Ø¬Ø²Ø§Ø¡ Ù…Ù† Ù…Ø¦Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'entiers-decimaux'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LES OPÃ‰RATIONS
+
+L''ADDITION et LA SOUSTRACTION
+On pose les nombres en alignant les virgules et les rangs. On complÃ¨te avec
+des zÃ©ros si besoin.
+
+LA MULTIPLICATION
+Multiplier par 10, 100, 1000 : on dÃ©cale la virgule vers la droite d''autant
+de rangs. 3,45 Ã— 100 = 345.
+Multiplier deux dÃ©cimaux : on multiplie sans virgule puis on place autant de
+chiffres aprÃ¨s la virgule que dans les deux facteurs rÃ©unis.
+
+LA DIVISION
+Diviser par 10, 100 : on dÃ©cale la virgule vers la gauche. 345 Ã· 100 = 3,45.
+Quotient et reste : dans la division euclidienne, dividende = diviseur Ã—
+quotient + reste (avec reste < diviseur).
+
+PRIORITÃ‰S DE CALCUL
+1. Les parenthÃ¨ses. 2. La multiplication et la division. 3. L''addition et la
+soustraction. On calcule de gauche Ã  droite Ã  prioritÃ© Ã©gale.
+Exemple : 5 + 3 Ã— 2 = 5 + 6 = 11 (pas 16).',
+  lesson_ar = 'Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª
+
+Ø§Ù„Ø¬Ù…Ø¹ ÙˆØ§Ù„Ø·Ø±Ø­
+Ù†Ø¶Ø¹ Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø¨Ù…Ø­Ø§Ø°Ø§Ø© Ø§Ù„ÙÙˆØ§ØµÙ„ ÙˆØ§Ù„Ù…Ø±Ø§ØªØ¨ØŒ ÙˆÙ†ÙƒÙ…Ù„ Ø¨Ø§Ù„Ø£ØµÙØ§Ø± Ø¹Ù†Ø¯ Ø§Ù„Ø­Ø§Ø¬Ø©.
+
+Ø§Ù„Ø¶Ø±Ø¨
+Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ 10 Ùˆ100 Ùˆ1000: Ù†Ù†Ù‚Ù„ Ø§Ù„ÙØ§ØµÙ„Ø© Ù†Ø­Ùˆ Ø§Ù„ÙŠÙ…ÙŠÙ† Ø¨Ø¹Ø¯Ø¯ Ø§Ù„Ù…Ø±Ø§ØªØ¨. 3.45 Ã— 100 = 345.
+Ø¶Ø±Ø¨ Ø¹Ø¯Ø¯ÙŠÙ† Ø¹Ø´Ø±ÙŠÙŠÙ†: Ù†Ø¶Ø±Ø¨ Ø¯ÙˆÙ† ÙØ§ØµÙ„Ø© Ø«Ù… Ù†Ø¶Ø¹ Ø¹Ø¯Ø¯ Ø§Ù„Ø£Ø±Ù‚Ø§Ù… Ø§Ù„Ø¹Ø´Ø±ÙŠØ© = Ù…Ø¬Ù…ÙˆØ¹ Ø£Ø±Ù‚Ø§Ù… Ø§Ù„Ø¹Ø§Ù…Ù„ÙŠÙ†.
+
+Ø§Ù„Ù‚Ø³Ù…Ø©
+Ø§Ù„Ù‚Ø³Ù…Ø© Ø¹Ù„Ù‰ 10 Ùˆ100: Ù†Ù†Ù‚Ù„ Ø§Ù„ÙØ§ØµÙ„Ø© Ù†Ø­Ùˆ Ø§Ù„ÙŠØ³Ø§Ø±. 345 Ã· 100 = 3.45.
+Ø§Ù„Ù‚Ø³Ù…Ø© Ø§Ù„Ø¥Ù‚Ù„ÙŠØ¯ÙŠØ©: Ø§Ù„Ù…Ù‚Ø³ÙˆÙ… = Ø§Ù„Ù‚Ø§Ø³Ù… Ã— Ø§Ù„Ø­Ø§ØµÙ„ + Ø§Ù„Ø¨Ø§Ù‚ÙŠ (Ø§Ù„Ø¨Ø§Ù‚ÙŠ < Ø§Ù„Ù‚Ø§Ø³Ù…).
+
+Ø£ÙˆÙ„ÙˆÙŠØ§Øª Ø§Ù„Ø­Ø³Ø§Ø¨
+1. Ø§Ù„Ø£Ù‚ÙˆØ§Ø³. 2. Ø§Ù„Ø¶Ø±Ø¨ ÙˆØ§Ù„Ù‚Ø³Ù…Ø©. 3. Ø§Ù„Ø¬Ù…Ø¹ ÙˆØ§Ù„Ø·Ø±Ø­.
+Ù…Ø«Ø§Ù„: 5 + 3 Ã— 2 = 11 (ÙˆÙ„ÙŠØ³ 16).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'operations';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('3,45 Ã— 100 = ?', '3.45 Ã— 100 = ØŸ',
+   '["345","34,5","3450","3,45"]'::jsonb, '["345","34.5","3450","3.45"]'::jsonb,
+   0, 'On dÃ©cale la virgule de 2 rangs Ã  droite.', 'Ù†Ù†Ù‚Ù„ Ø§Ù„ÙØ§ØµÙ„Ø© Ø±ØªØ¨ØªÙŠÙ† Ù†Ø­Ùˆ Ø§Ù„ÙŠÙ…ÙŠÙ†.', 'easy', 1),
+  ('Calcule : 5 + 3 Ã— 2', 'Ø§Ø­Ø³Ø¨: 5 + 3 Ã— 2',
+   '["11","16","13","10"]'::jsonb, '["11","16","13","10"]'::jsonb,
+   0, 'Multiplication d''abord : 3Ã—2=6, puis 5+6=11.', 'Ø§Ù„Ø¶Ø±Ø¨ Ø£ÙˆÙ„Ø§Ù‹: 6ØŒ Ø«Ù… 5+6=11.', 'medium', 2),
+  ('345 Ã· 100 = ?', '345 Ã· 100 = ØŸ',
+   '["3,45","34,5","3450","0,345"]'::jsonb, '["3.45","34.5","3450","0.345"]'::jsonb,
+   0, 'On dÃ©cale la virgule de 2 rangs Ã  gauche.', 'Ù†Ù†Ù‚Ù„ Ø§Ù„ÙØ§ØµÙ„Ø© Ø±ØªØ¨ØªÙŠÙ† Ù†Ø­Ùˆ Ø§Ù„ÙŠØ³Ø§Ø±.', 'easy', 3),
+  ('Dans 47 = 6 Ã— 7 + reste, le reste estâ€¦', 'ÙÙŠ 47 = 6 Ã— 7 + Ø§Ù„Ø¨Ø§Ù‚ÙŠØŒ Ø§Ù„Ø¨Ø§Ù‚ÙŠ Ù‡Ùˆâ€¦',
+   '["5","1","42","7"]'::jsonb, '["5","1","42","7"]'::jsonb,
+   0, '6Ã—7 = 42, reste = 47âˆ’42 = 5.', '6Ã—7 = 42ØŒ Ø§Ù„Ø¨Ø§Ù‚ÙŠ = 5.', 'medium', 4),
+  ('Calcule : (5 + 3) Ã— 2', 'Ø§Ø­Ø³Ø¨: (5 + 3) Ã— 2',
+   '["16","11","13","10"]'::jsonb, '["16","11","13","10"]'::jsonb,
+   0, 'ParenthÃ¨ses d''abord : 8Ã—2 = 16.', 'Ø§Ù„Ø£Ù‚ÙˆØ§Ø³ Ø£ÙˆÙ„Ø§Ù‹: 8Ã—2 = 16.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'operations'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LES FRACTIONS
+
+SENS D''UNE FRACTION
+a/b : b (dÃ©nominateur) = nombre de parts Ã©gales du tout ; a (numÃ©rateur) =
+nombre de parts prises. 3/4 = 3 parts sur 4.
+
+FRACTIONS Ã‰GALES
+On multiplie (ou divise) numÃ©rateur ET dÃ©nominateur par le mÃªme nombre :
+1/2 = 2/4 = 3/6. Simplifier = diviser les deux par le mÃªme nombre.
+
+COMPARER
+â€¢ MÃªme dÃ©nominateur : la plus grande a le plus grand numÃ©rateur (3/5 > 2/5).
+â€¢ MÃªme numÃ©rateur : la plus grande a le plus petit dÃ©nominateur (1/3 > 1/5).
+
+FRACTION D''UNE QUANTITÃ‰
+Prendre 3/4 de 20 : 20 Ã· 4 = 5, puis 5 Ã— 3 = 15.
+
+ADDITION (mÃªme dÃ©nominateur)
+On additionne les numÃ©rateurs : 2/7 + 3/7 = 5/7.
+
+Ã€ RETENIR : une fraction est un partage ; le dÃ©nominateur ne doit jamais
+Ãªtre nul.',
+  lesson_ar = 'Ø§Ù„ÙƒØ³ÙˆØ±
+
+Ù…Ø¹Ù†Ù‰ Ø§Ù„ÙƒØ³Ø±
+a/b: Ø§Ù„Ù…Ù‚Ø§Ù… b Ø¹Ø¯Ø¯ Ø§Ù„Ø£Ø¬Ø²Ø§Ø¡ Ø§Ù„Ù…ØªØ³Ø§ÙˆÙŠØ© Ù„Ù„ÙƒÙ„ØŒ ÙˆØ§Ù„Ø¨Ø³Ø· a Ø¹Ø¯Ø¯ Ø§Ù„Ø£Ø¬Ø²Ø§Ø¡ Ø§Ù„Ù…Ø£Ø®ÙˆØ°Ø©.
+3/4 = 3 Ø£Ø¬Ø²Ø§Ø¡ Ù…Ù† 4.
+
+Ø§Ù„ÙƒØ³ÙˆØ± Ø§Ù„Ù…ØªØ³Ø§ÙˆÙŠØ©
+Ù†Ø¶Ø±Ø¨ (Ø£Ùˆ Ù†Ù‚Ø³Ù…) Ø§Ù„Ø¨Ø³Ø· ÙˆØ§Ù„Ù…Ù‚Ø§Ù… ÙÙŠ Ù†ÙØ³ Ø§Ù„Ø¹Ø¯Ø¯: 1/2 = 2/4 = 3/6. Ø§Ù„Ø§Ø®ØªØ²Ø§Ù„ = Ø§Ù„Ù‚Ø³Ù…Ø© Ø¹Ù„Ù‰ Ù†ÙØ³ Ø§Ù„Ø¹Ø¯Ø¯.
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø©
+â€¢ Ù†ÙØ³ Ø§Ù„Ù…Ù‚Ø§Ù…: Ø§Ù„Ø£ÙƒØ¨Ø± Ø¨Ø³Ø·Ù‹Ø§ Ù‡Ùˆ Ø§Ù„Ø£ÙƒØ¨Ø± (3/5 > 2/5).
+â€¢ Ù†ÙØ³ Ø§Ù„Ø¨Ø³Ø·: Ø§Ù„Ø£ØµØºØ± Ù…Ù‚Ø§Ù…Ù‹Ø§ Ù‡Ùˆ Ø§Ù„Ø£ÙƒØ¨Ø± (1/3 > 1/5).
+
+ÙƒØ³Ø± Ù…Ù† Ù…Ù‚Ø¯Ø§Ø±
+3/4 Ù…Ù† 20: 20 Ã· 4 = 5 Ø«Ù… 5 Ã— 3 = 15.
+
+Ø§Ù„Ø¬Ù…Ø¹ (Ù†ÙØ³ Ø§Ù„Ù…Ù‚Ø§Ù…)
+2/7 + 3/7 = 5/7.
+
+ØªØ°ÙƒØ±: Ø§Ù„ÙƒØ³Ø± ØªØ¬Ø²Ø¦Ø©ØŒ ÙˆØ§Ù„Ù…Ù‚Ø§Ù… Ù„Ø§ ÙŠÙƒÙˆÙ† Ù…Ø¹Ø¯ÙˆÙ…Ù‹Ø§ Ø£Ø¨Ø¯Ù‹Ø§.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'fractions';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Quelle fraction est Ã©gale Ã  1/2 ?', 'Ø£ÙŠ ÙƒØ³Ø± ÙŠØ³Ø§ÙˆÙŠ 1/2ØŸ',
+   '["3/6","2/3","1/4","3/4"]'::jsonb, '["3/6","2/3","1/4","3/4"]'::jsonb,
+   0, '1/2 = 3/6 (Ã—3 en haut et en bas).', '1/2 = 3/6.', 'easy', 1),
+  ('Compare : 3/5 â€¦ 2/5', 'Ù‚Ø§Ø±Ù†: 3/5 â€¦ 2/5',
+   '["3/5 > 2/5","3/5 < 2/5","3/5 = 2/5","impossible"]'::jsonb, '["3/5 > 2/5","3/5 < 2/5","3/5 = 2/5","Ù…Ø³ØªØ­ÙŠÙ„"]'::jsonb,
+   0, 'MÃªme dÃ©nominateur : 3 > 2.', 'Ù†ÙØ³ Ø§Ù„Ù…Ù‚Ø§Ù…: 3 > 2.', 'easy', 2),
+  ('Calcule : 3/4 de 20', 'Ø§Ø­Ø³Ø¨: 3/4 Ù…Ù† 20',
+   '["15","12","5","60"]'::jsonb, '["15","12","5","60"]'::jsonb,
+   0, '20Ã·4=5, puis 5Ã—3=15.', '20Ã·4=5 Ø«Ù… 5Ã—3=15.', 'medium', 3),
+  ('Simplifie : 6/8', 'Ø§Ø®ØªØ²Ù„: 6/8',
+   '["3/4","2/4","6/8","1/2"]'::jsonb, '["3/4","2/4","6/8","1/2"]'::jsonb,
+   0, 'On divise par 2 : 6/8 = 3/4.', 'Ù†Ù‚Ø³Ù… Ø¹Ù„Ù‰ 2: 6/8 = 3/4.', 'medium', 4),
+  ('Compare : 1/3 â€¦ 1/5', 'Ù‚Ø§Ø±Ù†: 1/3 â€¦ 1/5',
+   '["1/3 > 1/5","1/3 < 1/5","1/3 = 1/5","impossible"]'::jsonb, '["1/3 > 1/5","1/3 < 1/5","1/3 = 1/5","Ù…Ø³ØªØ­ÙŠÙ„"]'::jsonb,
+   0, 'MÃªme numÃ©rateur : plus petit dÃ©nominateur = plus grand.', 'Ù†ÙØ³ Ø§Ù„Ø¨Ø³Ø·: Ø§Ù„Ø£ØµØºØ± Ù…Ù‚Ø§Ù…Ù‹Ø§ Ø£ÙƒØ¨Ø±.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'fractions'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LES NOMBRES RELATIFS
+
+DÃ‰COUVERTE
+Un nombre relatif a un signe : positif (+) ou nÃ©gatif (âˆ’).
+Exemples de la vie : tempÃ©rature âˆ’5 Â°C, une dette âˆ’200 DA, un Ã©tage âˆ’2.
+
+REPÃ‰RAGE SUR UNE DROITE
+0 est l''origine. Les positifs Ã  droite, les nÃ©gatifs Ã  gauche.
+Plus on va Ã  droite, plus le nombre est grand : âˆ’5 < âˆ’2 < 0 < 3.
+
+COMPARER DES RELATIFS
+â€¢ Un nÃ©gatif est toujours plus petit qu''un positif.
+â€¢ Entre deux nÃ©gatifs, le plus grand est celui le plus proche de 0 :
+  âˆ’2 > âˆ’7.
+
+DISTANCE Ã€ ZÃ‰RO (valeur absolue)
+La distance Ã  zÃ©ro de +5 et de âˆ’5 est 5. Deux nombres opposÃ©s (+3 et âˆ’3)
+ont la mÃªme distance Ã  zÃ©ro.
+
+Ã€ RETENIR : sur la droite graduÃ©e, Â« plus grand Â» veut dire Â« plus Ã 
+droite Â», pas Â« plus loin de zÃ©ro Â».',
+  lesson_ar = 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ù†Ø³Ø¨ÙŠØ©
+
+Ø§ÙƒØªØ´Ø§Ù
+Ù„Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ù†Ø³Ø¨ÙŠ Ø¥Ø´Ø§Ø±Ø©: Ù…ÙˆØ¬Ø¨ (+) Ø£Ùˆ Ø³Ø§Ù„Ø¨ (âˆ’).
+Ø£Ù…Ø«Ù„Ø© Ù…Ù† Ø§Ù„Ø­ÙŠØ§Ø©: Ø­Ø±Ø§Ø±Ø© âˆ’5 Â°Ù…ØŒ Ø¯ÙŽÙŠÙ† âˆ’200 Ø¯Ø¬ØŒ Ø·Ø§Ø¨Ù‚ âˆ’2.
+
+Ø§Ù„ØªÙˆÙ‚ÙŠØ¹ Ø¹Ù„Ù‰ Ù…Ø³ØªÙ‚ÙŠÙ…
+0 Ù‡Ùˆ Ø§Ù„Ù…Ø¨Ø¯Ø£. Ø§Ù„Ù…ÙˆØ¬Ø¨Ø© ÙŠÙ…ÙŠÙ†Ù‹Ø§ ÙˆØ§Ù„Ø³Ø§Ù„Ø¨Ø© ÙŠØ³Ø§Ø±Ù‹Ø§. ÙƒÙ„Ù…Ø§ Ø§ØªØ¬Ù‡Ù†Ø§ ÙŠÙ…ÙŠÙ†Ù‹Ø§ ÙƒØ¨Ø± Ø§Ù„Ø¹Ø¯Ø¯:
+âˆ’5 < âˆ’2 < 0 < 3.
+
+Ù…Ù‚Ø§Ø±Ù†Ø© Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ù†Ø³Ø¨ÙŠØ©
+â€¢ Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø³Ø§Ù„Ø¨ Ø¯Ø§Ø¦Ù…Ù‹Ø§ Ø£ØµØºØ± Ù…Ù† Ø§Ù„Ù…ÙˆØ¬Ø¨.
+â€¢ Ø¨ÙŠÙ† Ø³Ø§Ù„Ø¨ÙŠÙ†: Ø§Ù„Ø£ÙƒØ¨Ø± Ù‡Ùˆ Ø§Ù„Ø£Ù‚Ø±Ø¨ Ø¥Ù„Ù‰ Ø§Ù„ØµÙØ±: âˆ’2 > âˆ’7.
+
+Ø§Ù„Ø¨Ø¹Ø¯ Ø¹Ù† Ø§Ù„ØµÙØ± (Ø§Ù„Ù‚ÙŠÙ…Ø© Ø§Ù„Ù…Ø·Ù„Ù‚Ø©)
+Ø¨ÙØ¹Ø¯ +5 Ùˆâˆ’5 Ø¹Ù† Ø§Ù„ØµÙØ± Ù‡Ùˆ 5. Ø§Ù„Ø¹Ø¯Ø¯Ø§Ù† Ø§Ù„Ù…ØªÙ‚Ø§Ø¨Ù„Ø§Ù† (+3 Ùˆâˆ’3) Ù„Ù‡Ù…Ø§ Ù†ÙØ³ Ø§Ù„Ø¨Ø¹Ø¯.
+
+ØªØ°ÙƒØ±: Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… Â«Ø§Ù„Ø£ÙƒØ¨Ø±Â» ÙŠØ¹Ù†ÙŠ Â«Ø§Ù„Ø£ÙƒØ«Ø± ÙŠÙ…ÙŠÙ†Ù‹Ø§Â» Ù„Ø§ Â«Ø§Ù„Ø£Ø¨Ø¹Ø¯ Ø¹Ù† Ø§Ù„ØµÙØ±Â».'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'relatifs';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Compare : âˆ’5 â€¦ âˆ’2', 'Ù‚Ø§Ø±Ù†: âˆ’5 â€¦ âˆ’2',
+   '["âˆ’5 < âˆ’2","âˆ’5 > âˆ’2","âˆ’5 = âˆ’2","impossible"]'::jsonb, '["âˆ’5 < âˆ’2","âˆ’5 > âˆ’2","âˆ’5 = âˆ’2","Ù…Ø³ØªØ­ÙŠÙ„"]'::jsonb,
+   0, 'âˆ’2 est plus proche de 0, donc plus grand.', 'âˆ’2 Ø£Ù‚Ø±Ø¨ Ø¥Ù„Ù‰ Ø§Ù„ØµÙØ± Ø¥Ø°Ù† Ø£ÙƒØ¨Ø±.', 'easy', 1),
+  ('Quel est l''opposÃ© de +7 ?', 'Ù…Ø§ Ù…Ù‚Ø§Ø¨Ù„ +7ØŸ',
+   '["âˆ’7","+7","0","1/7"]'::jsonb, '["âˆ’7","+7","0","1/7"]'::jsonb,
+   0, 'L''opposÃ© change le signe : âˆ’7.', 'Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„ ÙŠØºÙŠÙ‘Ø± Ø§Ù„Ø¥Ø´Ø§Ø±Ø©: âˆ’7.', 'easy', 2),
+  ('Range du plus petit au plus grand : 3 ; âˆ’1 ; âˆ’4 ; 0', 'Ø±ØªÙ‘Ø¨ Ù…Ù† Ø§Ù„Ø£ØµØºØ± Ø¥Ù„Ù‰ Ø§Ù„Ø£ÙƒØ¨Ø±: 3 Ø› âˆ’1 Ø› âˆ’4 Ø› 0',
+   '["âˆ’4 < âˆ’1 < 0 < 3","3 < 0 < âˆ’1 < âˆ’4","âˆ’1 < âˆ’4 < 0 < 3","0 < âˆ’1 < 3 < âˆ’4"]'::jsonb,
+   '["âˆ’4 < âˆ’1 < 0 < 3","3 < 0 < âˆ’1 < âˆ’4","âˆ’1 < âˆ’4 < 0 < 3","0 < âˆ’1 < 3 < âˆ’4"]'::jsonb,
+   0, 'Sur la droite : les nÃ©gatifs Ã  gauche.', 'Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… Ø§Ù„Ø³Ø§Ù„Ø¨Ø© ÙŠØ³Ø§Ø±Ù‹Ø§.', 'medium', 3),
+  ('La distance Ã  zÃ©ro de âˆ’8 estâ€¦', 'Ø¨ÙØ¹Ø¯ âˆ’8 Ø¹Ù† Ø§Ù„ØµÙØ± Ù‡Ùˆâ€¦',
+   '["8","âˆ’8","0","16"]'::jsonb, '["8","âˆ’8","0","16"]'::jsonb,
+   0, 'La distance Ã  zÃ©ro est toujours positive.', 'Ø§Ù„Ø¨Ø¹Ø¯ Ø¹Ù† Ø§Ù„ØµÙØ± Ù…ÙˆØ¬Ø¨ Ø¯Ø§Ø¦Ù…Ù‹Ø§.', 'medium', 4),
+  ('Un nÃ©gatif est-il plus grand ou plus petit qu''un positif ?', 'Ù‡Ù„ Ø§Ù„Ø³Ø§Ù„Ø¨ Ø£ÙƒØ¨Ø± Ø£Ù… Ø£ØµØºØ± Ù…Ù† Ø§Ù„Ù…ÙˆØ¬Ø¨ØŸ',
+   '["toujours plus petit","toujours plus grand","parfois Ã©gal","cela dÃ©pend"]'::jsonb, '["Ø¯Ø§Ø¦Ù…Ù‹Ø§ Ø£ØµØºØ±","Ø¯Ø§Ø¦Ù…Ù‹Ø§ Ø£ÙƒØ¨Ø±","Ø£Ø­ÙŠØ§Ù†Ù‹Ø§ Ù…ØªØ³Ø§ÙˆÙŠØ§Ù†","Ø­Ø³Ø¨ Ø§Ù„Ø­Ø§Ù„Ø©"]'::jsonb,
+   0, 'Tout nÃ©gatif < tout positif.', 'ÙƒÙ„ Ø³Ø§Ù„Ø¨ Ø£ØµØºØ± Ù…Ù† Ø£ÙŠ Ù…ÙˆØ¬Ø¨.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'relatifs'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LA PROPORTIONNALITÃ‰
+
+DÃ‰FINITION
+Deux grandeurs sont proportionnelles si on passe de l''une Ã  l''autre en
+multipliant toujours par le mÃªme nombre (le coefficient).
+
+LE TABLEAU DE PROPORTIONNALITÃ‰
+Les quotients d''une colonne Ã  l''autre sont Ã©gaux.
+2 â†’ 6, 5 â†’ 15, 8 â†’ 24 : coefficient Ã—3.
+
+LA RÃˆGLE DE TROIS (passage Ã  l''unitÃ©)
+4 stylos coÃ»tent 60 DA. Combien coÃ»tent 7 stylos ?
+1 stylo : 60 Ã· 4 = 15 DA. 7 stylos : 15 Ã— 7 = 105 DA.
+
+LES POURCENTAGES
+Un pourcentage est une proportion sur 100. 20 % de 50 = (20 Ã— 50) Ã· 100 = 10.
+
+LA VITESSE
+v = distance Ã· temps. C''est une situation de proportionnalitÃ© entre la
+distance et le temps.
+
+Ã€ RETENIR : proportionnel = mÃªme multiplicateur pour toutes les colonnes.',
+  lesson_ar = 'Ø§Ù„ØªÙ†Ø§Ø³Ø¨ÙŠØ©
+
+ØªØ¹Ø±ÙŠÙ
+Ù…Ù‚Ø¯Ø§Ø±Ø§Ù† Ù…ØªÙ†Ø§Ø³Ø¨Ø§Ù† Ø¥Ø°Ø§ Ø§Ù†ØªÙ‚Ù„Ù†Ø§ Ù…Ù† Ø§Ù„Ø£ÙˆÙ„ Ø¥Ù„Ù‰ Ø§Ù„Ø«Ø§Ù†ÙŠ Ø¨Ø§Ù„Ø¶Ø±Ø¨ Ø¯Ø§Ø¦Ù…Ù‹Ø§ ÙÙŠ Ù†ÙØ³ Ø§Ù„Ø¹Ø¯Ø¯ (Ø§Ù„Ù…Ø¹Ø§Ù…Ù„).
+
+Ø¬Ø¯ÙˆÙ„ Ø§Ù„ØªÙ†Ø§Ø³Ø¨ÙŠØ©
+Ø®Ø§Ø±Ø¬ Ø§Ù„Ù‚Ø³Ù…Ø© Ù…ØªØ³Ø§ÙˆÙ Ù…Ù† Ø¹Ù…ÙˆØ¯ Ù„Ø¢Ø®Ø±.
+2 â† 6ØŒ 5 â† 15ØŒ 8 â† 24: Ø§Ù„Ù…Ø¹Ø§Ù…Ù„ Ã—3.
+
+Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø«Ù„Ø§Ø«Ø© (Ø§Ù„Ù…Ø±ÙˆØ± Ø¨Ø§Ù„ÙˆØ­Ø¯Ø©)
+4 Ø£Ù‚Ù„Ø§Ù… Ø¨Ù€ 60 Ø¯Ø¬. ÙƒÙ… Ø«Ù…Ù† 7 Ø£Ù‚Ù„Ø§Ù…ØŸ
+Ù‚Ù„Ù… ÙˆØ§Ø­Ø¯: 60 Ã· 4 = 15 Ø¯Ø¬. Ø³Ø¨Ø¹Ø©: 15 Ã— 7 = 105 Ø¯Ø¬.
+
+Ø§Ù„Ù†Ø³Ø¨ Ø§Ù„Ù…Ø¦ÙˆÙŠØ©
+Ø§Ù„Ù†Ø³Ø¨Ø© Ø§Ù„Ù…Ø¦ÙˆÙŠØ© ØªÙ†Ø§Ø³Ø¨ Ù…Ù† 100. 20% Ù…Ù† 50 = (20 Ã— 50) Ã· 100 = 10.
+
+Ø§Ù„Ø³Ø±Ø¹Ø©
+v = Ø§Ù„Ù…Ø³Ø§ÙØ© Ã· Ø§Ù„Ø²Ù…Ù†ØŒ ÙˆÙ‡ÙŠ ÙˆØ¶Ø¹ÙŠØ© ØªÙ†Ø§Ø³Ø¨ÙŠØ© Ø¨ÙŠÙ† Ø§Ù„Ù…Ø³Ø§ÙØ© ÙˆØ§Ù„Ø²Ù…Ù†.
+
+ØªØ°ÙƒØ±: Ø§Ù„ØªÙ†Ø§Ø³Ø¨ = Ù†ÙØ³ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„ Ù„ÙƒÙ„ Ø§Ù„Ø£Ø¹Ù…Ø¯Ø©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'proportionnalite';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('4 stylos coÃ»tent 60 DA. 7 stylos coÃ»tentâ€¦', '4 Ø£Ù‚Ù„Ø§Ù… Ø¨Ù€ 60 Ø¯Ø¬. 7 Ø£Ù‚Ù„Ø§Ù… Ø¨Ù€â€¦',
+   '["105 DA","120 DA","90 DA","420 DA"]'::jsonb, '["105 Ø¯Ø¬","120 Ø¯Ø¬","90 Ø¯Ø¬","420 Ø¯Ø¬"]'::jsonb,
+   0, '1 stylo = 15 DA, 7 stylos = 105 DA.', 'Ù‚Ù„Ù… = 15 Ø¯Ø¬ØŒ 7 = 105 Ø¯Ø¬.', 'medium', 1),
+  ('20 % de 50 = ?', '20% Ù…Ù† 50 = ØŸ',
+   '["10","20","30","5"]'::jsonb, '["10","20","30","5"]'::jsonb,
+   0, '(20Ã—50)/100 = 10.', '(20Ã—50)/100 = 10.', 'easy', 2),
+  ('Le tableau 2â†’6, 5â†’15 a pour coefficientâ€¦', 'Ø§Ù„Ø¬Ø¯ÙˆÙ„ 2â†6ØŒ 5â†15 Ù…Ø¹Ø§Ù…Ù„Ù‡â€¦',
+   '["3","2","4","6"]'::jsonb, '["3","2","4","6"]'::jsonb,
+   0, '6Ã·2 = 15Ã·5 = 3.', '6Ã·2 = 15Ã·5 = 3.', 'medium', 3),
+  ('Une voiture Ã  80 km/h parcourt en 3 hâ€¦', 'Ø³ÙŠØ§Ø±Ø© Ø³Ø±Ø¹ØªÙ‡Ø§ 80 ÙƒÙ…/Ø³Ø§ ØªÙ‚Ø·Ø¹ ÙÙŠ 3 Ø³Ø§â€¦',
+   '["240 km","83 km","160 km","27 km"]'::jsonb, '["240 ÙƒÙ…","83 ÙƒÙ…","160 ÙƒÙ…","27 ÙƒÙ…"]'::jsonb,
+   0, '80 Ã— 3 = 240 km.', '80 Ã— 3 = 240 ÙƒÙ….', 'easy', 4),
+  ('Ce tableau est-il proportionnel ? 3â†’9 ; 4â†’12 ; 5â†’14', 'Ù‡Ù„ Ø§Ù„Ø¬Ø¯ÙˆÙ„ ØªÙ†Ø§Ø³Ø¨ÙŠØŸ 3â†9 Ø› 4â†12 Ø› 5â†14',
+   '["Non","Oui, coef 3","Oui, coef 2","On ne peut pas savoir"]'::jsonb, '["Ù„Ø§","Ù†Ø¹Ù…ØŒ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„ 3","Ù†Ø¹Ù…ØŒ Ø§Ù„Ù…Ø¹Ø§Ù…Ù„ 2","Ù„Ø§ Ù†Ø¹Ù„Ù…"]'::jsonb,
+   0, '9Ã·3=3, 12Ã·4=3, mais 14Ã·5=2,8 : non proportionnel.', '14Ã·5 = 2.8 â‰  3 Ø¥Ø°Ù† ØºÙŠØ± ØªÙ†Ø§Ø³Ø¨ÙŠ.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'proportionnalite'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'DROITES ET ANGLES
+
+VOCABULAIRE DES DROITES
+â€¢ Droites PARALLÃˆLES : ne se croisent jamais (mÃªme Ã©cart partout). Notation //.
+â€¢ Droites PERPENDICULAIRES : se croisent en formant un angle droit (90Â°).
+  Notation âŠ¥.
+â€¢ Droites SÃ‰CANTES : se croisent en un point.
+
+LES ANGLES
+Un angle se mesure en degrÃ©s avec un rapporteur.
+â€¢ Angle DROIT = 90Â°. â€¢ Angle PLAT = 180Â°. â€¢ Angle AIGU < 90Â°.
+â€¢ Angle OBTUS entre 90Â° et 180Â°.
+
+ANGLES PARTICULIERS
+â€¢ Deux angles COMPLÃ‰MENTAIRES : leur somme fait 90Â°.
+â€¢ Deux angles SUPPLÃ‰MENTAIRES : leur somme fait 180Â°.
+â€¢ Angles OPPOSÃ‰S PAR LE SOMMET : ils sont Ã©gaux.
+
+LA MÃ‰DIATRICE
+La mÃ©diatrice d''un segment est la droite perpendiculaire qui passe par son
+milieu. Tout point de la mÃ©diatrice est Ã  Ã©gale distance des deux extrÃ©mitÃ©s.',
+  lesson_ar = 'Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Øª ÙˆØ§Ù„Ø²ÙˆØ§ÙŠØ§
+
+Ù…ØµØ·Ù„Ø­Ø§Øª Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Øª
+â€¢ Ù…ØªÙˆØ§Ø²ÙŠØ§Ù†: Ù„Ø§ ÙŠØªÙ‚Ø§Ø·Ø¹Ø§Ù† Ø£Ø¨Ø¯Ù‹Ø§ (Ù†ÙØ³ Ø§Ù„Ù…Ø³Ø§ÙØ©). Ø§Ù„Ø±Ù…Ø² //.
+â€¢ Ù…ØªØ¹Ø§Ù…Ø¯Ø§Ù†: ÙŠØªÙ‚Ø§Ø·Ø¹Ø§Ù† Ù…ÙƒÙˆÙ‘Ù†ÙŠÙ† Ø²Ø§ÙˆÙŠØ© Ù‚Ø§Ø¦Ù…Ø© (90Â°). Ø§Ù„Ø±Ù…Ø² âŠ¥.
+â€¢ Ù…ØªÙ‚Ø§Ø·Ø¹Ø§Ù†: ÙŠÙ„ØªÙ‚ÙŠØ§Ù† ÙÙŠ Ù†Ù‚Ø·Ø©.
+
+Ø§Ù„Ø²ÙˆØ§ÙŠØ§
+ØªÙÙ‚Ø§Ø³ Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø¨Ø§Ù„Ø¯Ø±Ø¬Ø§Øª Ø¨Ø§Ù„Ù…Ù†Ù‚Ù„Ø©.
+â€¢ Ù‚Ø§Ø¦Ù…Ø© = 90Â°. â€¢ Ù…Ø³ØªÙ‚ÙŠÙ…Ø© = 180Â°. â€¢ Ø­Ø§Ø¯Ø© < 90Â°. â€¢ Ù…Ù†ÙØ±Ø¬Ø© Ø¨ÙŠÙ† 90Â° Ùˆ180Â°.
+
+Ø²ÙˆØ§ÙŠØ§ Ø®Ø§ØµØ©
+â€¢ Ù…ØªØªØ§Ù…Ù‘ØªØ§Ù†: Ù…Ø¬Ù…ÙˆØ¹Ù‡Ù…Ø§ 90Â°.
+â€¢ Ù…ØªÙƒØ§Ù…Ù„ØªØ§Ù†: Ù…Ø¬Ù…ÙˆØ¹Ù‡Ù…Ø§ 180Â°.
+â€¢ Ù…ØªÙ‚Ø§Ø¨Ù„ØªØ§Ù† Ø¨Ø§Ù„Ø±Ø£Ø³: Ù…ØªØ³Ø§ÙˆÙŠØªØ§Ù†.
+
+Ù…Ø­ÙˆØ± Ø§Ù„Ù‚Ø·Ø¹Ø©
+Ù…Ø­ÙˆØ± Ø§Ù„Ù‚Ø·Ø¹Ø© Ù‡Ùˆ Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… Ø§Ù„Ø¹Ù…ÙˆØ¯ÙŠ Ø§Ù„Ù…Ø§Ø± Ø¨Ù…Ù†ØªØµÙÙ‡Ø§. ÙƒÙ„ Ù†Ù‚Ø·Ø© Ù…Ù†Ù‡ ØªØ¨Ø¹Ø¯ Ø¨Ø§Ù„ØªØ³Ø§ÙˆÙŠ Ø¹Ù† Ø·Ø±ÙÙŠÙ‡Ø§.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'droites-angles';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Un angle droit mesureâ€¦', 'Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© ØªÙ‚ÙŠØ³â€¦',
+   '["90Â°","180Â°","45Â°","360Â°"]'::jsonb, '["90Â°","180Â°","45Â°","360Â°"]'::jsonb,
+   0, 'L''angle droit = 90Â°.', 'Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© = 90Â°.', 'easy', 1),
+  ('Deux droites qui ne se croisent jamais sontâ€¦', 'Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† Ù„Ø§ ÙŠØªÙ‚Ø§Ø·Ø¹Ø§Ù† Ø£Ø¨Ø¯Ù‹Ø§ Ù‡Ù…Ø§â€¦',
+   '["parallÃ¨les","perpendiculaires","sÃ©cantes","confondues"]'::jsonb, '["Ù…ØªÙˆØ§Ø²ÙŠØ§Ù†","Ù…ØªØ¹Ø§Ù…Ø¯Ø§Ù†","Ù…ØªÙ‚Ø§Ø·Ø¹Ø§Ù†","Ù…Ù†Ø·Ø¨Ù‚Ø§Ù†"]'::jsonb,
+   0, 'Elles sont parallÃ¨les.', 'Ù‡Ù…Ø§ Ù…ØªÙˆØ§Ø²ÙŠØ§Ù†.', 'easy', 2),
+  ('Deux angles complÃ©mentaires ont une somme deâ€¦', 'Ø²Ø§ÙˆÙŠØªØ§Ù† Ù…ØªØªØ§Ù…Ù‘ØªØ§Ù† Ù…Ø¬Ù…ÙˆØ¹Ù‡Ù…Ø§â€¦',
+   '["90Â°","180Â°","45Â°","360Â°"]'::jsonb, '["90Â°","180Â°","45Â°","360Â°"]'::jsonb,
+   0, 'ComplÃ©mentaires â†’ 90Â°.', 'Ø§Ù„Ù…ØªØªØ§Ù…Ù‘ØªØ§Ù† â† 90Â°.', 'medium', 3),
+  ('Un angle de 130Â° estâ€¦', 'Ø²Ø§ÙˆÙŠØ© 130Â° Ù‡ÙŠâ€¦',
+   '["obtus","aigu","droit","plat"]'::jsonb, '["Ù…Ù†ÙØ±Ø¬Ø©","Ø­Ø§Ø¯Ø©","Ù‚Ø§Ø¦Ù…Ø©","Ù…Ø³ØªÙ‚ÙŠÙ…Ø©"]'::jsonb,
+   0, 'Entre 90Â° et 180Â° = obtus.', 'Ø¨ÙŠÙ† 90Â° Ùˆ180Â° = Ù…Ù†ÙØ±Ø¬Ø©.', 'medium', 4),
+  ('La mÃ©diatrice d''un segment passe par son milieu et lui estâ€¦', 'Ù…Ø­ÙˆØ± Ø§Ù„Ù‚Ø·Ø¹Ø© ÙŠÙ…Ø± Ø¨Ù…Ù†ØªØµÙÙ‡Ø§ ÙˆÙŠÙƒÙˆÙ† Ù„Ù‡Ø§â€¦',
+   '["perpendiculaire","parallÃ¨le","sÃ©cante oblique","confondu"]'::jsonb, '["Ø¹Ù…ÙˆØ¯ÙŠÙ‹Ø§","Ù…ÙˆØ§Ø²ÙŠÙ‹Ø§","Ù…Ø§Ø¦Ù„Ø§Ù‹","Ù…Ù†Ø·Ø¨Ù‚Ù‹Ø§"]'::jsonb,
+   0, 'Perpendiculaire passant par le milieu.', 'Ø¹Ù…ÙˆØ¯ÙŠ Ù…Ø§Ø± Ø¨Ø§Ù„Ù…Ù†ØªØµÙ.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'droites-angles'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'TRIANGLES ET QUADRILATÃˆRES
+
+LES TRIANGLES
+â€¢ Quelconque : 3 cÃ´tÃ©s diffÃ©rents.
+â€¢ IsocÃ¨le : 2 cÃ´tÃ©s Ã©gaux (et 2 angles Ã©gaux).
+â€¢ Ã‰quilatÃ©ral : 3 cÃ´tÃ©s Ã©gaux (et 3 angles de 60Â°).
+â€¢ Rectangle : un angle droit.
+PROPRIÃ‰TÃ‰ : la somme des angles d''un triangle est toujours 180Â°.
+
+INÃ‰GALITÃ‰ TRIANGULAIRE
+Un triangle est constructible si le plus grand cÃ´tÃ© est plus petit que la
+somme des deux autres.
+
+LES QUADRILATÃˆRES
+â€¢ Rectangle : 4 angles droits, cÃ´tÃ©s opposÃ©s Ã©gaux.
+â€¢ CarrÃ© : 4 cÃ´tÃ©s Ã©gaux + 4 angles droits.
+â€¢ Losange : 4 cÃ´tÃ©s Ã©gaux.
+â€¢ ParallÃ©logramme : cÃ´tÃ©s opposÃ©s parallÃ¨les deux Ã  deux.
+
+CONSTRUCTION
+On utilise rÃ¨gle, Ã©querre, compas et rapporteur en respectant les mesures
+donnÃ©es.
+
+Ã€ RETENIR : dans tout triangle, angle1 + angle2 + angle3 = 180Â°.',
+  lesson_ar = 'Ø§Ù„Ù…Ø«Ù„Ø«Ø§Øª ÙˆØ§Ù„Ø±Ø¨Ø§Ø¹ÙŠØ§Øª
+
+Ø§Ù„Ù…Ø«Ù„Ø«Ø§Øª
+â€¢ Ø£ÙŠ Ù…Ø«Ù„Ø«: 3 Ø£Ø¶Ù„Ø§Ø¹ Ù…Ø®ØªÙ„ÙØ©.
+â€¢ Ù…ØªÙ‚Ø§ÙŠØ³ Ø§Ù„Ø³Ø§Ù‚ÙŠÙ†: Ø¶Ù„Ø¹Ø§Ù† Ù…ØªØ³Ø§ÙˆÙŠØ§Ù† (ÙˆØ²Ø§ÙˆÙŠØªØ§Ù† Ù…ØªØ³Ø§ÙˆÙŠØªØ§Ù†).
+â€¢ Ù…ØªÙ‚Ø§ÙŠØ³ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹: 3 Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªØ³Ø§ÙˆÙŠØ© (Ùˆ3 Ø²ÙˆØ§ÙŠØ§ 60Â°).
+â€¢ Ù‚Ø§Ø¦Ù…: Ø²Ø§ÙˆÙŠØ© Ù‚Ø§Ø¦Ù…Ø©.
+Ø®Ø§ØµÙŠØ©: Ù…Ø¬Ù…ÙˆØ¹ Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù…Ø«Ù„Ø« ÙŠØ³Ø§ÙˆÙŠ Ø¯Ø§Ø¦Ù…Ù‹Ø§ 180Â°.
+
+Ø§Ù„Ù…ØªØ¨Ø§ÙŠÙ†Ø© Ø§Ù„Ù…Ø«Ù„Ø«ÙŠØ©
+ÙŠÙ…ÙƒÙ† Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù…Ø«Ù„Ø« Ø¥Ø°Ø§ ÙƒØ§Ù† Ø£ÙƒØ¨Ø± Ø¶Ù„Ø¹ Ø£ØµØºØ± Ù…Ù† Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„Ø¶Ù„Ø¹ÙŠÙ† Ø§Ù„Ø¢Ø®Ø±ÙŠÙ†.
+
+Ø§Ù„Ø±Ø¨Ø§Ø¹ÙŠØ§Øª
+â€¢ Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„: 4 Ø²ÙˆØ§ÙŠØ§ Ù‚Ø§Ø¦Ù…Ø©ØŒ Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªÙ‚Ø§Ø¨Ù„Ø© Ù…ØªØ³Ø§ÙˆÙŠØ©.
+â€¢ Ø§Ù„Ù…Ø±Ø¨Ø¹: 4 Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªØ³Ø§ÙˆÙŠØ© + 4 Ø²ÙˆØ§ÙŠØ§ Ù‚Ø§Ø¦Ù…Ø©.
+â€¢ Ø§Ù„Ù…Ø¹ÙŠÙ‘Ù†: 4 Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªØ³Ø§ÙˆÙŠØ©.
+â€¢ Ù…ØªÙˆØ§Ø²ÙŠ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹: Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªÙ‚Ø§Ø¨Ù„Ø© Ù…ØªÙˆØ§Ø²ÙŠØ©.
+
+ØªØ°ÙƒØ±: ÙÙŠ ÙƒÙ„ Ù…Ø«Ù„Ø« Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„Ø²ÙˆØ§ÙŠØ§ = 180Â°.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'triangles-quadri';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('La somme des angles d''un triangle estâ€¦', 'Ù…Ø¬Ù…ÙˆØ¹ Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù…Ø«Ù„Ø« Ù‡Ùˆâ€¦',
+   '["180Â°","360Â°","90Â°","270Â°"]'::jsonb, '["180Â°","360Â°","90Â°","270Â°"]'::jsonb,
+   0, 'Toujours 180Â°.', 'Ø¯Ø§Ø¦Ù…Ù‹Ø§ 180Â°.', 'easy', 1),
+  ('Un triangle Ã©quilatÃ©ral a des angles deâ€¦', 'Ø§Ù„Ù…Ø«Ù„Ø« Ø§Ù„Ù…ØªÙ‚Ø§ÙŠØ³ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹ Ø²ÙˆØ§ÙŠØ§Ù‡â€¦',
+   '["60Â°","90Â°","45Â°","30Â°"]'::jsonb, '["60Â°","90Â°","45Â°","30Â°"]'::jsonb,
+   0, '180 Ã· 3 = 60Â°.', '180 Ã· 3 = 60Â°.', 'medium', 2),
+  ('Un carrÃ© est un quadrilatÃ¨re avecâ€¦', 'Ø§Ù„Ù…Ø±Ø¨Ø¹ Ø±Ø¨Ø§Ø¹ÙŠ Ù„Ù‡â€¦',
+   '["4 cÃ´tÃ©s Ã©gaux et 4 angles droits","4 cÃ´tÃ©s Ã©gaux seulement","4 angles droits seulement","2 cÃ´tÃ©s Ã©gaux"]'::jsonb,
+   '["4 Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªØ³Ø§ÙˆÙŠØ© Ùˆ4 Ø²ÙˆØ§ÙŠØ§ Ù‚Ø§Ø¦Ù…Ø©","4 Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªØ³Ø§ÙˆÙŠØ© ÙÙ‚Ø·","4 Ø²ÙˆØ§ÙŠØ§ Ù‚Ø§Ø¦Ù…Ø© ÙÙ‚Ø·","Ø¶Ù„Ø¹Ø§Ù† Ù…ØªØ³Ø§ÙˆÙŠØ§Ù†"]'::jsonb,
+   0, 'DÃ©finition du carrÃ©.', 'ØªØ¹Ø±ÙŠÙ Ø§Ù„Ù…Ø±Ø¨Ø¹.', 'easy', 3),
+  ('Dans un triangle, deux angles font 50Â° et 60Â°. Le troisiÃ¨meâ€¦', 'ÙÙŠ Ù…Ø«Ù„Ø« Ø²Ø§ÙˆÙŠØªØ§Ù† 50Â° Ùˆ60Â°. Ø§Ù„Ø«Ø§Ù„Ø«Ø©â€¦',
+   '["70Â°","80Â°","90Â°","110Â°"]'::jsonb, '["70Â°","80Â°","90Â°","110Â°"]'::jsonb,
+   0, '180 âˆ’ 50 âˆ’ 60 = 70Â°.', '180 âˆ’ 50 âˆ’ 60 = 70Â°.', 'medium', 4),
+  ('Peut-on construire un triangle de cÃ´tÃ©s 2, 3 et 8 cm ?', 'Ù‡Ù„ ÙŠÙ…ÙƒÙ† Ø¥Ù†Ø´Ø§Ø¡ Ù…Ø«Ù„Ø« Ø£Ø¶Ù„Ø§Ø¹Ù‡ 2 Ùˆ3 Ùˆ8 Ø³Ù…ØŸ',
+   '["Non (2+3 < 8)","Oui","Oui, isocÃ¨le","Oui, rectangle"]'::jsonb, '["Ù„Ø§ (2+3 < 8)","Ù†Ø¹Ù…","Ù†Ø¹Ù…ØŒ Ù…ØªÙ‚Ø§ÙŠØ³ Ø§Ù„Ø³Ø§Ù‚ÙŠÙ†","Ù†Ø¹Ù…ØŒ Ù‚Ø§Ø¦Ù…"]'::jsonb,
+   0, 'InÃ©galitÃ© triangulaire : 2+3=5 < 8, impossible.', 'Ø§Ù„Ù…ØªØ¨Ø§ÙŠÙ†Ø© Ø§Ù„Ù…Ø«Ù„Ø«ÙŠØ©: 5 < 8ØŒ Ù…Ø³ØªØ­ÙŠÙ„.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'triangles-quadri'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'AIRES ET PÃ‰RIMÃˆTRES
+
+LE PÃ‰RIMÃˆTRE (le tour, en cm)
+â€¢ CarrÃ© : P = 4 Ã— cÃ´tÃ©.
+â€¢ Rectangle : P = 2 Ã— (Longueur + largeur).
+â€¢ Cercle (circonfÃ©rence) : P = 2 Ã— Ï€ Ã— rayon â‰ˆ 6,28 Ã— rayon.
+
+L''AIRE (la surface, en cmÂ²)
+â€¢ CarrÃ© : A = cÃ´tÃ© Ã— cÃ´tÃ©.
+â€¢ Rectangle : A = Longueur Ã— largeur.
+â€¢ Triangle : A = (base Ã— hauteur) Ã· 2.
+â€¢ Disque : A = Ï€ Ã— rayonÂ².
+
+CONVERSIONS D''AIRES
+1 mÂ² = 100 dmÂ² = 10 000 cmÂ². Attention, les aires se convertissent par
+bonds de 100, pas de 10.
+
+NE PAS CONFONDRE
+PÃ©rimÃ¨tre en cm, aire en cmÂ². Deux figures de mÃªme pÃ©rimÃ¨tre peuvent avoir
+des aires diffÃ©rentes.
+
+Ã€ RETENIR : hauteur d''un triangle = segment perpendiculaire Ã  la base
+passant par le sommet opposÃ©.',
+  lesson_ar = 'Ø§Ù„Ù…Ø³Ø§Ø­Ø§Øª ÙˆØ§Ù„Ù…Ø­ÙŠØ·Ø§Øª
+
+Ø§Ù„Ù…Ø­ÙŠØ· (Ø§Ù„Ø¯ÙˆØ±Ø§Ù†ØŒ Ø¨Ø§Ù„Ø³Ù…)
+â€¢ Ø§Ù„Ù…Ø±Ø¨Ø¹: 4 Ã— Ø§Ù„Ø¶Ù„Ø¹.
+â€¢ Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„: 2 Ã— (Ø§Ù„Ø·ÙˆÙ„ + Ø§Ù„Ø¹Ø±Ø¶).
+â€¢ Ø§Ù„Ø¯Ø§Ø¦Ø±Ø©: 2 Ã— Ï€ Ã— Ù†ØµÙ Ø§Ù„Ù‚Ø·Ø± â‰ˆ 6.28 Ã— Ù†ØµÙ Ø§Ù„Ù‚Ø·Ø±.
+
+Ø§Ù„Ù…Ø³Ø§Ø­Ø© (Ø§Ù„Ø³Ø·Ø­ØŒ Ø¨Ø§Ù„Ø³Ù…Â²)
+â€¢ Ø§Ù„Ù…Ø±Ø¨Ø¹: Ø§Ù„Ø¶Ù„Ø¹ Ã— Ø§Ù„Ø¶Ù„Ø¹.
+â€¢ Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„: Ø§Ù„Ø·ÙˆÙ„ Ã— Ø§Ù„Ø¹Ø±Ø¶.
+â€¢ Ø§Ù„Ù…Ø«Ù„Ø«: (Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø© Ã— Ø§Ù„Ø§Ø±ØªÙØ§Ø¹) Ã· 2.
+â€¢ Ø§Ù„Ù‚Ø±Øµ: Ï€ Ã— Ù†ØµÙ Ø§Ù„Ù‚Ø·Ø±Â².
+
+ØªØ­ÙˆÙŠÙ„ Ø§Ù„Ù…Ø³Ø§Ø­Ø§Øª
+1 Ù…Â² = 100 Ø¯Ø³Ù…Â² = 10000 Ø³Ù…Â². ØªÙØ­ÙˆÙ‘Ù„ Ø§Ù„Ù…Ø³Ø§Ø­Ø§Øª Ø¨Ù‚ÙØ²Ø§Øª 100 Ù„Ø§ 10.
+
+Ù„Ø§ ØªØ®Ù„Ø·: Ø§Ù„Ù…Ø­ÙŠØ· Ø¨Ø§Ù„Ø³Ù… ÙˆØ§Ù„Ù…Ø³Ø§Ø­Ø© Ø¨Ø§Ù„Ø³Ù…Â².
+
+ØªØ°ÙƒØ±: Ø§Ø±ØªÙØ§Ø¹ Ø§Ù„Ù…Ø«Ù„Ø« Ù‚Ø·Ø¹Ø© Ø¹Ù…ÙˆØ¯ÙŠØ© Ø¹Ù„Ù‰ Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø© ØªÙ…Ø± Ø¨Ø§Ù„Ø±Ø£Ø³ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'aires-perimetres';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Aire d''un rectangle 7 cm Ã— 4 cm ?', 'Ù…Ø³Ø§Ø­Ø© Ù…Ø³ØªØ·ÙŠÙ„ 7 Ø³Ù… Ã— 4 Ø³Ù…ØŸ',
+   '["28 cmÂ²","22 cmÂ²","11 cmÂ²","28 cm"]'::jsonb, '["28 Ø³Ù…Â²","22 Ø³Ù…Â²","11 Ø³Ù…Â²","28 Ø³Ù…"]'::jsonb,
+   0, 'A = L Ã— l = 7 Ã— 4 = 28 cmÂ².', 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© = 7 Ã— 4 = 28 Ø³Ù…Â².', 'easy', 1),
+  ('PÃ©rimÃ¨tre d''un carrÃ© de cÃ´tÃ© 5 cm ?', 'Ù…Ø­ÙŠØ· Ù…Ø±Ø¨Ø¹ Ø¶Ù„Ø¹Ù‡ 5 Ø³Ù…ØŸ',
+   '["20 cm","25 cm","10 cm","15 cm"]'::jsonb, '["20 Ø³Ù…","25 Ø³Ù…","10 Ø³Ù…","15 Ø³Ù…"]'::jsonb,
+   0, 'P = 4 Ã— 5 = 20 cm.', 'Ø§Ù„Ù…Ø­ÙŠØ· = 4 Ã— 5 = 20 Ø³Ù….', 'easy', 2),
+  ('Aire d''un triangle : base 8, hauteur 5 ?', 'Ù…Ø³Ø§Ø­Ø© Ù…Ø«Ù„Ø« Ù‚Ø§Ø¹Ø¯ØªÙ‡ 8 ÙˆØ§Ø±ØªÙØ§Ø¹Ù‡ 5ØŸ',
+   '["20 cmÂ²","40 cmÂ²","13 cmÂ²","26 cmÂ²"]'::jsonb, '["20 Ø³Ù…Â²","40 Ø³Ù…Â²","13 Ø³Ù…Â²","26 Ø³Ù…Â²"]'::jsonb,
+   0, 'A = (8Ã—5)/2 = 20 cmÂ².', 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© = (8Ã—5)/2 = 20 Ø³Ù…Â².', 'medium', 3),
+  ('1 mÂ² = ? cmÂ²', '1 Ù…Â² = ØŸ Ø³Ù…Â²',
+   '["10 000","100","1000","10"]'::jsonb, '["10000","100","1000","10"]'::jsonb,
+   0, '1 mÂ² = 10 000 cmÂ².', '1 Ù…Â² = 10000 Ø³Ù…Â².', 'medium', 4),
+  ('Le pÃ©rimÃ¨tre se mesure en cm, l''aire enâ€¦', 'Ø§Ù„Ù…Ø­ÙŠØ· Ø¨Ø§Ù„Ø³Ù… ÙˆØ§Ù„Ù…Ø³Ø§Ø­Ø© Ø¨Ù€â€¦',
+   '["cmÂ²","cm","cmÂ³","litres"]'::jsonb, '["Ø³Ù…Â²","Ø³Ù…","Ø³Ù…Â³","Ù„ØªØ±Ø§Øª"]'::jsonb,
+   0, 'L''aire est une surface : cmÂ².', 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ø³Ø·Ø­: Ø³Ù…Â².', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AM' and s.slug = 'mathematiques' and c.slug = 'aires-perimetres'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- ================= 2AM MATHÃ‰MATIQUES =================
+
+update public.chapters c set
+  lesson_fr = 'OPÃ‰RATIONS SUR LES NOMBRES RELATIFS
+
+ADDITION DE DEUX RELATIFS
+â€¢ MÃªmes signes : on additionne les distances Ã  zÃ©ro, on garde le signe.
+  (+5) + (+3) = +8 ;  (âˆ’5) + (âˆ’3) = âˆ’8.
+â€¢ Signes diffÃ©rents : on soustrait les distances, on garde le signe du plus
+  grand en distance. (+7) + (âˆ’4) = +3 ;  (âˆ’7) + (+4) = âˆ’3.
+
+SOUSTRACTION
+Soustraire = ajouter l''opposÃ©.
+(+5) âˆ’ (+8) = (+5) + (âˆ’8) = âˆ’3.
+(âˆ’4) âˆ’ (âˆ’9) = (âˆ’4) + (+9) = +5.
+
+MULTIPLICATION ET DIVISION â€” RÃˆGLE DES SIGNES
+â€¢ (+) Ã— (+) = (+) et (âˆ’) Ã— (âˆ’) = (+).
+â€¢ (+) Ã— (âˆ’) = (âˆ’) et (âˆ’) Ã— (+) = (âˆ’).
+MÃªme rÃ¨gle pour la division.
+(âˆ’6) Ã— (âˆ’2) = +12 ;  (âˆ’12) Ã· (+3) = âˆ’4.
+
+Ã€ RETENIR : Â« moins par moins donne plus Â». Pour soustraire, on transforme
+en addition de l''opposÃ©.',
+  lesson_ar = 'Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø¹Ù„Ù‰ Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ù†Ø³Ø¨ÙŠØ©
+
+Ø¬Ù…Ø¹ Ø¹Ø¯Ø¯ÙŠÙ† Ù†Ø³Ø¨ÙŠÙŠÙ†
+â€¢ Ù†ÙØ³ Ø§Ù„Ø¥Ø´Ø§Ø±Ø©: Ù†Ø¬Ù…Ø¹ Ø§Ù„Ø¨Ø¹Ø¯ÙŠÙ† Ø¹Ù† Ø§Ù„ØµÙØ± ÙˆÙ†Ø­ØªÙØ¸ Ø¨Ø§Ù„Ø¥Ø´Ø§Ø±Ø©.
+  (+5) + (+3) = +8 Ø› (âˆ’5) + (âˆ’3) = âˆ’8.
+â€¢ Ø¥Ø´Ø§Ø±ØªØ§Ù† Ù…Ø®ØªÙ„ÙØªØ§Ù†: Ù†Ø·Ø±Ø­ Ø§Ù„Ø¨Ø¹Ø¯ÙŠÙ† ÙˆÙ†Ø­ØªÙØ¸ Ø¨Ø¥Ø´Ø§Ø±Ø© Ø§Ù„Ø£ÙƒØ¨Ø± Ø¨Ø¹Ø¯Ù‹Ø§.
+  (+7) + (âˆ’4) = +3 Ø› (âˆ’7) + (+4) = âˆ’3.
+
+Ø§Ù„Ø·Ø±Ø­
+Ø§Ù„Ø·Ø±Ø­ = Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„.
+(+5) âˆ’ (+8) = (+5) + (âˆ’8) = âˆ’3.
+
+Ø§Ù„Ø¶Ø±Ø¨ ÙˆØ§Ù„Ù‚Ø³Ù…Ø© â€” Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¥Ø´Ø§Ø±Ø§Øª
+â€¢ (+) Ã— (+) = (+) Ùˆ (âˆ’) Ã— (âˆ’) = (+).
+â€¢ (+) Ã— (âˆ’) = (âˆ’) Ùˆ (âˆ’) Ã— (+) = (âˆ’).
+Ù†ÙØ³ Ø§Ù„Ù‚Ø§Ø¹Ø¯Ø© Ù„Ù„Ù‚Ø³Ù…Ø©.
+(âˆ’6) Ã— (âˆ’2) = +12 Ø› (âˆ’12) Ã· (+3) = âˆ’4.
+
+ØªØ°ÙƒØ±: Â«Ø³Ø§Ù„Ø¨ ÙÙŠ Ø³Ø§Ù„Ø¨ ÙŠØ¹Ø·ÙŠ Ù…ÙˆØ¬Ø¨Ù‹Ø§Â». ÙˆÙ„Ù„Ø·Ø±Ø­ Ù†Ø­ÙˆÙ‘Ù„ Ø¥Ù„Ù‰ Ø¬Ù…Ø¹ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'relatifs-operations';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Calcule : (âˆ’5) + (âˆ’3)', 'Ø§Ø­Ø³Ø¨: (âˆ’5) + (âˆ’3)',
+   '["âˆ’8","âˆ’2","+8","+2"]'::jsonb, '["âˆ’8","âˆ’2","+8","+2"]'::jsonb,
+   0, 'MÃªmes signes : on ajoute, on garde le signe.', 'Ù†ÙØ³ Ø§Ù„Ø¥Ø´Ø§Ø±Ø©: Ù†Ø¬Ù…Ø¹ ÙˆÙ†Ø­ØªÙØ¸ Ø¨Ø§Ù„Ø¥Ø´Ø§Ø±Ø©.', 'easy', 1),
+  ('Calcule : (+7) + (âˆ’4)', 'Ø§Ø­Ø³Ø¨: (+7) + (âˆ’4)',
+   '["+3","âˆ’3","+11","âˆ’11"]'::jsonb, '["+3","âˆ’3","+11","âˆ’11"]'::jsonb,
+   0, 'On soustrait, signe du plus grand : +3.', 'Ù†Ø·Ø±Ø­ØŒ Ø¥Ø´Ø§Ø±Ø© Ø§Ù„Ø£ÙƒØ¨Ø±: +3.', 'medium', 2),
+  ('Calcule : (âˆ’6) Ã— (âˆ’2)', 'Ø§Ø­Ø³Ø¨: (âˆ’6) Ã— (âˆ’2)',
+   '["+12","âˆ’12","âˆ’8","+8"]'::jsonb, '["+12","âˆ’12","âˆ’8","+8"]'::jsonb,
+   0, 'Moins par moins = plus.', 'Ø³Ø§Ù„Ø¨ ÙÙŠ Ø³Ø§Ù„Ø¨ = Ù…ÙˆØ¬Ø¨.', 'easy', 3),
+  ('Calcule : (+5) âˆ’ (+8)', 'Ø§Ø­Ø³Ø¨: (+5) âˆ’ (+8)',
+   '["âˆ’3","+3","+13","âˆ’13"]'::jsonb, '["âˆ’3","+3","+13","âˆ’13"]'::jsonb,
+   0, '(+5) + (âˆ’8) = âˆ’3.', '(+5) + (âˆ’8) = âˆ’3.', 'medium', 4),
+  ('Calcule : (âˆ’12) Ã· (+3)', 'Ø§Ø­Ø³Ø¨: (âˆ’12) Ã· (+3)',
+   '["âˆ’4","+4","âˆ’9","âˆ’36"]'::jsonb, '["âˆ’4","+4","âˆ’9","âˆ’36"]'::jsonb,
+   0, 'Signes diffÃ©rents = nÃ©gatif : âˆ’4.', 'Ø¥Ø´Ø§Ø±ØªØ§Ù† Ù…Ø®ØªÙ„ÙØªØ§Ù† = Ø³Ø§Ù„Ø¨: âˆ’4.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'relatifs-operations'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'OPÃ‰RATIONS SUR LES FRACTIONS
+
+METTRE AU MÃŠME DÃ‰NOMINATEUR
+Pour additionner ou soustraire, il faut le mÃªme dÃ©nominateur.
+1/3 + 1/4 : dÃ©nominateur commun 12 â†’ 4/12 + 3/12 = 7/12.
+
+MULTIPLICATION
+On multiplie les numÃ©rateurs entre eux, les dÃ©nominateurs entre eux.
+2/3 Ã— 5/7 = 10/21. On peut simplifier avant de calculer.
+
+DIVISION
+Diviser par une fraction = multiplier par son inverse.
+2/3 Ã· 4/5 = 2/3 Ã— 5/4 = 10/12 = 5/6.
+
+FRACTION D''UNE FRACTION
+Les 2/3 de 3/4 : 2/3 Ã— 3/4 = 6/12 = 1/2.
+
+SIMPLIFIER
+On divise numÃ©rateur et dÃ©nominateur par le mÃªme nombre jusqu''Ã  la forme
+irrÃ©ductible : 18/24 = 3/4 (Ã·6).
+
+Ã€ RETENIR : on additionne SEULEMENT au mÃªme dÃ©nominateur ; on multiplie
+directement ; on divise en multipliant par l''inverse.',
+  lesson_ar = 'Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø¹Ù„Ù‰ Ø§Ù„ÙƒØ³ÙˆØ±
+
+ØªÙˆØ­ÙŠØ¯ Ø§Ù„Ù…Ù‚Ø§Ù…Ø§Øª
+Ù„Ù„Ø¬Ù…Ø¹ Ø£Ùˆ Ø§Ù„Ø·Ø±Ø­ ÙŠØ¬Ø¨ ØªÙˆØ­ÙŠØ¯ Ø§Ù„Ù…Ù‚Ø§Ù….
+1/3 + 1/4: Ø§Ù„Ù…Ù‚Ø§Ù… Ø§Ù„Ù…Ø´ØªØ±Ùƒ 12 â† 4/12 + 3/12 = 7/12.
+
+Ø§Ù„Ø¶Ø±Ø¨
+Ù†Ø¶Ø±Ø¨ Ø§Ù„Ø¨Ø³Ø· ÙÙŠ Ø§Ù„Ø¨Ø³Ø· ÙˆØ§Ù„Ù…Ù‚Ø§Ù… ÙÙŠ Ø§Ù„Ù…Ù‚Ø§Ù….
+2/3 Ã— 5/7 = 10/21. ÙŠÙ…ÙƒÙ† Ø§Ù„Ø§Ø®ØªØ²Ø§Ù„ Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø³Ø§Ø¨.
+
+Ø§Ù„Ù‚Ø³Ù…Ø©
+Ø§Ù„Ù‚Ø³Ù…Ø© Ø¹Ù„Ù‰ ÙƒØ³Ø± = Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ Ù…Ù‚Ù„ÙˆØ¨Ù‡.
+2/3 Ã· 4/5 = 2/3 Ã— 5/4 = 5/6.
+
+ÙƒØ³Ø± Ù…Ù† ÙƒØ³Ø±
+2/3 Ù…Ù† 3/4: 2/3 Ã— 3/4 = 1/2.
+
+Ø§Ù„Ø§Ø®ØªØ²Ø§Ù„
+Ù†Ù‚Ø³Ù… Ø§Ù„Ø¨Ø³Ø· ÙˆØ§Ù„Ù…Ù‚Ø§Ù… Ø¹Ù„Ù‰ Ù†ÙØ³ Ø§Ù„Ø¹Ø¯Ø¯ Ø­ØªÙ‰ Ø§Ù„ØµÙˆØ±Ø© ØºÙŠØ± Ø§Ù„Ù‚Ø§Ø¨Ù„Ø© Ù„Ù„Ø§Ø®ØªØ²Ø§Ù„: 18/24 = 3/4.
+
+ØªØ°ÙƒØ±: Ù†Ø¬Ù…Ø¹ ÙÙ‚Ø· Ø¨Ù†ÙØ³ Ø§Ù„Ù…Ù‚Ø§Ù…ØŒ ÙˆÙ†Ø¶Ø±Ø¨ Ù…Ø¨Ø§Ø´Ø±Ø©ØŒ ÙˆÙ†Ù‚Ø³Ù… Ø¨Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ Ø§Ù„Ù…Ù‚Ù„ÙˆØ¨.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'fractions-operations';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Calcule : 1/3 + 1/4', 'Ø§Ø­Ø³Ø¨: 1/3 + 1/4',
+   '["7/12","2/7","2/12","1/7"]'::jsonb, '["7/12","2/7","2/12","1/7"]'::jsonb,
+   0, 'DÃ©nominateur 12 : 4/12 + 3/12 = 7/12.', 'Ø§Ù„Ù…Ù‚Ø§Ù… 12: 4/12 + 3/12 = 7/12.', 'medium', 1),
+  ('Calcule : 2/3 Ã— 5/7', 'Ø§Ø­Ø³Ø¨: 2/3 Ã— 5/7',
+   '["10/21","7/10","10/10","2/7"]'::jsonb, '["10/21","7/10","10/10","2/7"]'::jsonb,
+   0, 'NumÃ©rateurs et dÃ©nominateurs : 10/21.', 'Ø§Ù„Ø¨Ø³Ø· ÙÙŠ Ø§Ù„Ø¨Ø³Ø· ÙˆØ§Ù„Ù…Ù‚Ø§Ù… ÙÙŠ Ø§Ù„Ù…Ù‚Ø§Ù…: 10/21.', 'easy', 2),
+  ('Calcule : 2/3 Ã· 4/5', 'Ø§Ø­Ø³Ø¨: 2/3 Ã· 4/5',
+   '["5/6","8/15","6/5","10/7"]'::jsonb, '["5/6","8/15","6/5","10/7"]'::jsonb,
+   0, '2/3 Ã— 5/4 = 10/12 = 5/6.', '2/3 Ã— 5/4 = 5/6.', 'medium', 3),
+  ('Simplifie : 18/24', 'Ø§Ø®ØªØ²Ù„: 18/24',
+   '["3/4","9/12","2/3","6/8"]'::jsonb, '["3/4","9/12","2/3","6/8"]'::jsonb,
+   0, 'On divise par 6 : 18/24 = 3/4.', 'Ù†Ù‚Ø³Ù… Ø¹Ù„Ù‰ 6: 3/4.', 'easy', 4),
+  ('Les 2/3 de 3/4 = ?', '2/3 Ù…Ù† 3/4 = ØŸ',
+   '["1/2","5/7","6/7","2/4"]'::jsonb, '["1/2","5/7","6/7","2/4"]'::jsonb,
+   0, '2/3 Ã— 3/4 = 6/12 = 1/2.', '2/3 Ã— 3/4 = 1/2.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'fractions-operations'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'CALCUL LITTÃ‰RAL (initiation)
+
+UNE EXPRESSION LITTÃ‰RALE
+C''est un calcul contenant des lettres (variables). Ex. 3x + 5.
+On peut CALCULER SA VALEUR en remplaÃ§ant la lettre par un nombre :
+pour x = 2, 3x + 5 = 3Ã—2 + 5 = 11.
+
+CONVENTIONS D''Ã‰CRITURE
+On n''Ã©crit pas le signe Ã— devant une lettre : 3 Ã— x = 3x.
+x Ã— x = xÂ². 1 Ã— x = x.
+
+RÃ‰DUIRE UNE EXPRESSION
+On regroupe les termes SEMBLABLES (mÃªmes lettres) :
+3x + 5x = 8x ;  2x + 3 + 4x + 1 = 6x + 4.
+On ne peut PAS additionner 3x et 5 (termes diffÃ©rents).
+
+LA DISTRIBUTIVITÃ‰ (dÃ©velopper)
+k(a + b) = ka + kb.
+3(x + 2) = 3x + 6 ;  5(2x âˆ’ 1) = 10x âˆ’ 5.
+
+Ã€ RETENIR : on ne rÃ©duit qu''entre termes semblables. Â« DÃ©velopper Â», c''est
+supprimer les parenthÃ¨ses avec la distributivitÃ©.',
+  lesson_ar = 'Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ø­Ø±ÙÙŠ (ØªÙ…Ù‡ÙŠØ¯)
+
+Ø§Ù„Ø¹Ø¨Ø§Ø±Ø© Ø§Ù„Ø­Ø±ÙÙŠØ©
+Ø­Ø³Ø§Ø¨ ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ Ø­Ø±ÙˆÙ (Ù…ØªØºÙŠØ±Ø§Øª). Ù…Ø«Ø§Ù„: 3x + 5.
+Ù†Ø­Ø³Ø¨ Ù‚ÙŠÙ…ØªÙ‡Ø§ Ø¨ØªØ¹ÙˆÙŠØ¶ Ø§Ù„Ø­Ø±Ù Ø¨Ø¹Ø¯Ø¯: Ù…Ù† Ø£Ø¬Ù„ x = 2ØŒ 3x + 5 = 11.
+
+Ø§ØµØ·Ù„Ø§Ø­Ø§Øª Ø§Ù„ÙƒØªØ§Ø¨Ø©
+Ù„Ø§ Ù†ÙƒØªØ¨ Ã— Ø£Ù…Ø§Ù… Ø­Ø±Ù: 3 Ã— x = 3x. Ùˆ x Ã— x = xÂ². Ùˆ 1 Ã— x = x.
+
+Ø§Ø®ØªØ²Ø§Ù„ Ø¹Ø¨Ø§Ø±Ø©
+Ù†Ø¬Ù…Ø¹ Ø§Ù„Ø­Ø¯ÙˆØ¯ Ø§Ù„Ù…ØªØ´Ø§Ø¨Ù‡Ø© (Ù†ÙØ³ Ø§Ù„Ø­Ø±ÙˆÙ):
+3x + 5x = 8x Ø› 2x + 3 + 4x + 1 = 6x + 4.
+Ù„Ø§ Ù†Ø¬Ù…Ø¹ 3x Ùˆ5 (Ø­Ø¯Ù‘Ø§Ù† Ù…Ø®ØªÙ„ÙØ§Ù†).
+
+Ø§Ù„ØªÙˆØ²ÙŠØ¹ÙŠØ© (Ø§Ù„Ù†Ø´Ø±)
+k(a + b) = ka + kb.
+3(x + 2) = 3x + 6 Ø› 5(2x âˆ’ 1) = 10x âˆ’ 5.
+
+ØªØ°ÙƒØ±: Ù†Ø®ØªØ²Ù„ ÙÙ‚Ø· Ø¨ÙŠÙ† Ø§Ù„Ø­Ø¯ÙˆØ¯ Ø§Ù„Ù…ØªØ´Ø§Ø¨Ù‡Ø©. Ø§Ù„Ù†Ø´Ø± = Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ø£Ù‚ÙˆØ§Ø³ Ø¨Ø§Ù„ØªÙˆØ²ÙŠØ¹ÙŠØ©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'calcul-litteral';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Pour x = 2, que vaut 3x + 5 ?', 'Ù…Ù† Ø£Ø¬Ù„ x = 2ØŒ ÙƒÙ… ÙŠØ³Ø§ÙˆÙŠ 3x + 5ØŸ',
+   '["11","10","16","8"]'::jsonb, '["11","10","16","8"]'::jsonb,
+   0, '3Ã—2 + 5 = 11.', '3Ã—2 + 5 = 11.', 'easy', 1),
+  ('RÃ©duis : 3x + 5x', 'Ø§Ø®ØªØ²Ù„: 3x + 5x',
+   '["8x","8xÂ²","15x","8"]'::jsonb, '["8x","8xÂ²","15x","8"]'::jsonb,
+   0, 'Termes semblables : 3x+5x = 8x.', 'Ø­Ø¯ÙˆØ¯ Ù…ØªØ´Ø§Ø¨Ù‡Ø©: 8x.', 'easy', 2),
+  ('DÃ©veloppe : 3(x + 2)', 'Ø§Ù†Ø´Ø±: 3(x + 2)',
+   '["3x + 6","3x + 2","x + 6","3x + 5"]'::jsonb, '["3x + 6","3x + 2","x + 6","3x + 5"]'::jsonb,
+   0, 'k(a+b) = ka+kb.', 'k(a+b) = ka+kb.', 'medium', 3),
+  ('RÃ©duis : 2x + 3 + 4x + 1', 'Ø§Ø®ØªØ²Ù„: 2x + 3 + 4x + 1',
+   '["6x + 4","6x + 3","8x","10x"]'::jsonb, '["6x + 4","6x + 3","8x","10x"]'::jsonb,
+   0, '(2x+4x) + (3+1) = 6x + 4.', '(2x+4x) + (3+1) = 6x + 4.', 'medium', 4),
+  ('DÃ©veloppe : 5(2x âˆ’ 1)', 'Ø§Ù†Ø´Ø±: 5(2x âˆ’ 1)',
+   '["10x âˆ’ 5","10x âˆ’ 1","7x âˆ’ 5","10x + 5"]'::jsonb, '["10x âˆ’ 5","10x âˆ’ 1","7x âˆ’ 5","10x + 5"]'::jsonb,
+   0, '5Ã—2x âˆ’ 5Ã—1 = 10x âˆ’ 5.', '10x âˆ’ 5.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'calcul-litteral'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'PROPORTIONNALITÃ‰ ET POURCENTAGES
+
+RAPPEL
+Deux grandeurs proportionnelles ont un coefficient constant.
+
+LES POURCENTAGES
+â€¢ Calculer t % d''une valeur : (t Ã— valeur) Ã· 100.
+  15 % de 200 = (15 Ã— 200) Ã· 100 = 30.
+â€¢ Augmentation de 10 % : on multiplie par 1,10.
+â€¢ RÃ©duction de 20 % : on multiplie par 0,80.
+
+L''Ã‰CHELLE
+Sur une carte, l''Ã©chelle 1/100 000 signifie : 1 cm sur la carte = 100 000 cm
+= 1 km dans la rÃ©alitÃ©.
+distance rÃ©elle = distance carte Ã— dÃ©nominateur de l''Ã©chelle.
+
+LA VITESSE MOYENNE
+v = distance Ã· temps. UnitÃ©s cohÃ©rentes (km et h, ou m et s).
+150 km en 2 h â†’ v = 75 km/h.
+
+Ã€ RETENIR : un pourcentage est une proportion sur 100. Augmenter de t %,
+c''est multiplier par (1 + t/100).',
+  lesson_ar = 'Ø§Ù„ØªÙ†Ø§Ø³Ø¨ÙŠØ© ÙˆØ§Ù„Ù†Ø³Ø¨ Ø§Ù„Ù…Ø¦ÙˆÙŠØ©
+
+ØªØ°ÙƒÙŠØ±
+Ø§Ù„Ù…Ù‚Ø¯Ø§Ø±Ø§Ù† Ø§Ù„Ù…ØªÙ†Ø§Ø³Ø¨Ø§Ù† Ù„Ù‡Ù…Ø§ Ù…Ø¹Ø§Ù…Ù„ Ø«Ø§Ø¨Øª.
+
+Ø§Ù„Ù†Ø³Ø¨ Ø§Ù„Ù…Ø¦ÙˆÙŠØ©
+â€¢ Ø­Ø³Ø§Ø¨ t% Ù…Ù† Ù‚ÙŠÙ…Ø©: (t Ã— Ø§Ù„Ù‚ÙŠÙ…Ø©) Ã· 100.
+  15% Ù…Ù† 200 = 30.
+â€¢ Ø²ÙŠØ§Ø¯Ø© Ø¨Ù€ 10%: Ù†Ø¶Ø±Ø¨ ÙÙŠ 1.10.
+â€¢ ØªØ®ÙÙŠØ¶ Ø¨Ù€ 20%: Ù†Ø¶Ø±Ø¨ ÙÙŠ 0.80.
+
+Ø§Ù„Ø³Ù„Ù‘Ù…
+Ø¹Ù„Ù‰ Ø®Ø±ÙŠØ·Ø©ØŒ Ø§Ù„Ø³Ù„Ù‘Ù… 1/100000 ÙŠØ¹Ù†ÙŠ: 1 Ø³Ù… Ø¹Ù„Ù‰ Ø§Ù„Ø®Ø±ÙŠØ·Ø© = 100000 Ø³Ù… = 1 ÙƒÙ… ÙÙŠ Ø§Ù„ÙˆØ§Ù‚Ø¹.
+Ø§Ù„Ù…Ø³Ø§ÙØ© Ø§Ù„Ø­Ù‚ÙŠÙ‚ÙŠØ© = Ù…Ø³Ø§ÙØ© Ø§Ù„Ø®Ø±ÙŠØ·Ø© Ã— Ù…Ù‚Ø§Ù… Ø§Ù„Ø³Ù„Ù‘Ù….
+
+Ø§Ù„Ø³Ø±Ø¹Ø© Ø§Ù„Ù…ØªÙˆØ³Ø·Ø©
+v = Ø§Ù„Ù…Ø³Ø§ÙØ© Ã· Ø§Ù„Ø²Ù…Ù† (ÙˆØ­Ø¯Ø§Øª Ù…ØªØ¬Ø§Ù†Ø³Ø©). 150 ÙƒÙ… ÙÙŠ Ø³Ø§Ø¹ØªÙŠÙ† â† 75 ÙƒÙ…/Ø³Ø§.
+
+ØªØ°ÙƒØ±: Ø§Ù„Ù†Ø³Ø¨Ø© Ø§Ù„Ù…Ø¦ÙˆÙŠØ© ØªÙ†Ø§Ø³Ø¨ Ù…Ù† 100. Ø§Ù„Ø²ÙŠØ§Ø¯Ø© Ø¨Ù€ t% = Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ (1 + t/100).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'proportionnalite';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('15 % de 200 = ?', '15% Ù…Ù† 200 = ØŸ',
+   '["30","15","20","45"]'::jsonb, '["30","15","20","45"]'::jsonb,
+   0, '(15Ã—200)/100 = 30.', '(15Ã—200)/100 = 30.', 'easy', 1),
+  ('Augmenter 50 de 10 % donneâ€¦', 'Ø²ÙŠØ§Ø¯Ø© 50 Ø¨Ù€ 10% ØªØ¹Ø·ÙŠâ€¦',
+   '["55","60","51","10"]'::jsonb, '["55","60","51","10"]'::jsonb,
+   0, '50 Ã— 1,10 = 55.', '50 Ã— 1.10 = 55.', 'medium', 2),
+  ('Ã‰chelle 1/100 000 : 3 cm sur la carte = ? rÃ©el', 'Ø§Ù„Ø³Ù„Ù‘Ù… 1/100000: 3 Ø³Ù… Ø¹Ù„Ù‰ Ø§Ù„Ø®Ø±ÙŠØ·Ø© = ØŸ ÙÙŠ Ø§Ù„ÙˆØ§Ù‚Ø¹',
+   '["3 km","300 m","30 km","3 m"]'::jsonb, '["3 ÙƒÙ…","300 Ù…","30 ÙƒÙ…","3 Ù…"]'::jsonb,
+   0, '3 Ã— 100 000 = 300 000 cm = 3 km.', '3 Ã— 100000 = 3 ÙƒÙ….', 'medium', 3),
+  ('150 km en 2 h : vitesse moyenne ?', '150 ÙƒÙ… ÙÙŠ Ø³Ø§Ø¹ØªÙŠÙ†: Ø§Ù„Ø³Ø±Ø¹Ø© Ø§Ù„Ù…ØªÙˆØ³Ø·Ø©ØŸ',
+   '["75 km/h","300 km/h","152 km/h","50 km/h"]'::jsonb, '["75 ÙƒÙ…/Ø³Ø§","300 ÙƒÙ…/Ø³Ø§","152 ÙƒÙ…/Ø³Ø§","50 ÙƒÙ…/Ø³Ø§"]'::jsonb,
+   0, 'v = 150/2 = 75 km/h.', 'v = 150/2 = 75 ÙƒÙ…/Ø³Ø§.', 'easy', 4),
+  ('RÃ©duire un prix de 20 %, c''est multiplier parâ€¦', 'ØªØ®ÙÙŠØ¶ Ø«Ù…Ù† Ø¨Ù€ 20% = Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠâ€¦',
+   '["0,80","1,20","0,20","0,08"]'::jsonb, '["0.80","1.20","0.20","0.08"]'::jsonb,
+   0, '100 % âˆ’ 20 % = 80 % â†’ Ã—0,80.', '100% âˆ’ 20% = 80% â† Ã—0.80.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'proportionnalite'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LA SYMÃ‰TRIE CENTRALE
+
+DÃ‰FINITION
+Le symÃ©trique d''un point M par rapport Ã  un point O est le point M'' tel que
+O est le MILIEU du segment [MM'']. On dit qu''on a fait un demi-tour (180Â°)
+autour de O.
+
+CONSTRUCTION
+Pour construire M'' : on trace la demi-droite [MO), et on reporte la distance
+OM de l''autre cÃ´tÃ© : OM'' = OM.
+
+PROPRIÃ‰TÃ‰S
+La symÃ©trie centrale CONSERVE :
+â€¢ les longueurs (un segment et son image ont mÃªme longueur),
+â€¢ les angles (mÃªmes mesures),
+â€¢ le parallÃ©lisme et l''alignement,
+â€¢ les aires.
+L''image d''une droite est une droite qui lui est PARALLÃˆLE.
+
+CENTRE DE SYMÃ‰TRIE D''UNE FIGURE
+Une figure a un centre de symÃ©trie O si elle se superpose Ã  elle-mÃªme aprÃ¨s
+un demi-tour autour de O (ex. le cercle, le rectangle, le parallÃ©logramme).
+
+DIFFÃ‰RENCE avec la symÃ©trie axiale : la symÃ©trie axiale est un pliage
+(par rapport Ã  une droite) ; la symÃ©trie centrale est un demi-tour
+(par rapport Ã  un point).',
+  lesson_ar = 'Ø§Ù„ØªÙ†Ø§Ø¸Ø± Ø§Ù„Ù…Ø±ÙƒØ²ÙŠ
+
+ØªØ¹Ø±ÙŠÙ
+Ù†Ø¸ÙŠØ± Ø§Ù„Ù†Ù‚Ø·Ø© M Ø¨Ø§Ù„Ù†Ø³Ø¨Ø© Ù„Ù„Ù†Ù‚Ø·Ø© O Ù‡Ùˆ Ø§Ù„Ù†Ù‚Ø·Ø© M'' Ø¨Ø­ÙŠØ« O Ù…Ù†ØªØµÙ Ø§Ù„Ù‚Ø·Ø¹Ø© [MM''].
+Ø£ÙŠ Ø£Ù†Ù†Ø§ Ù‚Ù…Ù†Ø§ Ø¨Ù†ØµÙ Ø¯ÙˆØ±Ø© (180Â°) Ø­ÙˆÙ„ O.
+
+Ø§Ù„Ø¥Ù†Ø´Ø§Ø¡
+Ù„Ø¥Ù†Ø´Ø§Ø¡ M'': Ù†Ø±Ø³Ù… Ù†ØµÙ Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… [MO) ÙˆÙ†Ù†Ù‚Ù„ Ø§Ù„Ù…Ø³Ø§ÙØ© OM Ø¥Ù„Ù‰ Ø§Ù„Ø¬Ù‡Ø© Ø§Ù„Ø£Ø®Ø±Ù‰: OM'' = OM.
+
+Ø§Ù„Ø®ØµØ§Ø¦Øµ
+ÙŠØ­Ø§ÙØ¸ Ø§Ù„ØªÙ†Ø§Ø¸Ø± Ø§Ù„Ù…Ø±ÙƒØ²ÙŠ Ø¹Ù„Ù‰:
+â€¢ Ø§Ù„Ø£Ø·ÙˆØ§Ù„ØŒ â€¢ Ø§Ù„Ø²ÙˆØ§ÙŠØ§ØŒ â€¢ Ø§Ù„ØªÙˆØ§Ø²ÙŠ ÙˆØ§Ù„Ø§Ø³ØªÙ‚Ø§Ù…ÙŠØ©ØŒ â€¢ Ø§Ù„Ù…Ø³Ø§Ø­Ø§Øª.
+ØµÙˆØ±Ø© Ù…Ø³ØªÙ‚ÙŠÙ… Ù‡ÙŠ Ù…Ø³ØªÙ‚ÙŠÙ… ÙŠÙˆØ§Ø²ÙŠÙ‡.
+
+Ù…Ø±ÙƒØ² ØªÙ†Ø§Ø¸Ø± Ø´ÙƒÙ„
+Ù„Ù„Ø´ÙƒÙ„ Ù…Ø±ÙƒØ² ØªÙ†Ø§Ø¸Ø± O Ø¥Ø°Ø§ Ø§Ù†Ø·Ø¨Ù‚ Ø¹Ù„Ù‰ Ù†ÙØ³Ù‡ Ø¨Ø¹Ø¯ Ù†ØµÙ Ø¯ÙˆØ±Ø© Ø­ÙˆÙ„ O (Ø§Ù„Ø¯Ø§Ø¦Ø±Ø©ØŒ Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„ØŒ Ù…ØªÙˆØ§Ø²ÙŠ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹).
+
+Ø§Ù„ÙØ±Ù‚ Ù…Ø¹ Ø§Ù„ØªÙ†Ø§Ø¸Ø± Ø§Ù„Ù…Ø­ÙˆØ±ÙŠ: Ø§Ù„Ù…Ø­ÙˆØ±ÙŠ Ø·ÙŠÙ‘ (Ø¨Ø§Ù„Ù†Ø³Ø¨Ø© Ù„Ù…Ø³ØªÙ‚ÙŠÙ…)ØŒ ÙˆØ§Ù„Ù…Ø±ÙƒØ²ÙŠ Ù†ØµÙ Ø¯ÙˆØ±Ø© (Ø¨Ø§Ù„Ù†Ø³Ø¨Ø© Ù„Ù†Ù‚Ø·Ø©).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'symetrie-centrale';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('La symÃ©trie centrale correspond Ã  unâ€¦', 'Ø§Ù„ØªÙ†Ø§Ø¸Ø± Ø§Ù„Ù…Ø±ÙƒØ²ÙŠ ÙŠÙˆØ§ÙÙ‚â€¦',
+   '["demi-tour (180Â°)","pliage","quart de tour","agrandissement"]'::jsonb, '["Ù†ØµÙ Ø¯ÙˆØ±Ø© (180Â°)","Ø·ÙŠÙ‘","Ø±Ø¨Ø¹ Ø¯ÙˆØ±Ø©","ØªÙƒØ¨ÙŠØ±"]'::jsonb,
+   0, 'Demi-tour autour du centre.', 'Ù†ØµÙ Ø¯ÙˆØ±Ø© Ø­ÙˆÙ„ Ø§Ù„Ù…Ø±ÙƒØ².', 'easy', 1),
+  ('Si M'' est le symÃ©trique de M par rapport Ã  O, alors O estâ€¦', 'Ø¥Ø°Ø§ ÙƒØ§Ù†Øª M'' Ù†Ø¸ÙŠØ±Ø© M Ø¨Ø§Ù„Ù†Ø³Ø¨Ø© Ù„Ù€ O ÙØ¥Ù† O Ù‡ÙŠâ€¦',
+   '["le milieu de [MM'']","une extrÃ©mitÃ©","en dehors","confondu avec M"]'::jsonb, '["Ù…Ù†ØªØµÙ [MM'']","Ø·Ø±Ù","Ø®Ø§Ø±Ø¬ Ø§Ù„Ù‚Ø·Ø¹Ø©","Ù…Ù†Ø·Ø¨Ù‚Ø© Ø¹Ù„Ù‰ M"]'::jsonb,
+   0, 'O est le milieu de [MM''].', 'O Ù…Ù†ØªØµÙ [MM''].', 'medium', 2),
+  ('La symÃ©trie centrale conserveâ€¦', 'ÙŠØ­Ø§ÙØ¸ Ø§Ù„ØªÙ†Ø§Ø¸Ø± Ø§Ù„Ù…Ø±ÙƒØ²ÙŠ Ø¹Ù„Ù‰â€¦',
+   '["les longueurs et les angles","seulement les couleurs","rien","seulement le sens"]'::jsonb, '["Ø§Ù„Ø£Ø·ÙˆØ§Ù„ ÙˆØ§Ù„Ø²ÙˆØ§ÙŠØ§","Ø§Ù„Ø£Ù„ÙˆØ§Ù† ÙÙ‚Ø·","Ù„Ø§ Ø´ÙŠØ¡","Ø§Ù„Ù…Ù†Ø­Ù‰ ÙÙ‚Ø·"]'::jsonb,
+   0, 'Longueurs, angles, aires sont conservÃ©s.', 'ÙŠØ­Ø§ÙØ¸ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ø·ÙˆØ§Ù„ ÙˆØ§Ù„Ø²ÙˆØ§ÙŠØ§ ÙˆØ§Ù„Ù…Ø³Ø§Ø­Ø§Øª.', 'medium', 3),
+  ('L''image d''une droite par symÃ©trie centrale estâ€¦', 'ØµÙˆØ±Ø© Ù…Ø³ØªÙ‚ÙŠÙ… Ø¨Ø§Ù„ØªÙ†Ø§Ø¸Ø± Ø§Ù„Ù…Ø±ÙƒØ²ÙŠ Ù‡ÙŠâ€¦',
+   '["une droite parallÃ¨le","un cercle","un point","une courbe"]'::jsonb, '["Ù…Ø³ØªÙ‚ÙŠÙ… Ù…ÙˆØ§Ø²Ù","Ø¯Ø§Ø¦Ø±Ø©","Ù†Ù‚Ø·Ø©","Ù…Ù†Ø­Ù†Ù‰"]'::jsonb,
+   0, 'Une droite parallÃ¨le Ã  la premiÃ¨re.', 'Ù…Ø³ØªÙ‚ÙŠÙ… ÙŠÙˆØ§Ø²ÙŠ Ø§Ù„Ø£ÙˆÙ„.', 'easy', 4),
+  ('Laquelle a un centre de symÃ©trie ?', 'Ø£ÙŠ Ø´ÙƒÙ„ Ù„Ù‡ Ù…Ø±ÙƒØ² ØªÙ†Ø§Ø¸Ø±ØŸ',
+   '["le rectangle","le triangle quelconque","le triangle isocÃ¨le seul","la lettre A"]'::jsonb, '["Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„","Ø§Ù„Ù…Ø«Ù„Ø« Ø§Ù„ÙƒÙŠÙÙŠ","Ø§Ù„Ù…ØªÙ‚Ø§ÙŠØ³ Ø§Ù„Ø³Ø§Ù‚ÙŠÙ† ÙÙ‚Ø·","Ø§Ù„Ø­Ø±Ù A"]'::jsonb,
+   0, 'Le rectangle a un centre de symÃ©trie (son centre).', 'Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„ Ù„Ù‡ Ù…Ø±ÙƒØ² ØªÙ†Ø§Ø¸Ø±.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'symetrie-centrale'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'ANGLES ET PARALLÃ‰LISME
+
+DEUX DROITES COUPÃ‰ES PAR UNE SÃ‰CANTE
+Quand une droite (sÃ©cante) coupe deux autres droites, elle forme des paires
+d''angles remarquables :
+â€¢ Angles ALTERNES-INTERNES : de part et d''autre de la sÃ©cante, entre les
+  deux droites.
+â€¢ Angles CORRESPONDANTS : mÃªme position par rapport Ã  la sÃ©cante et Ã  chaque
+  droite.
+
+PROPRIÃ‰TÃ‰ FONDAMENTALE
+Si les deux droites sont PARALLÃˆLES, alors :
+â€¢ les angles alternes-internes sont Ã‰GAUX,
+â€¢ les angles correspondants sont Ã‰GAUX.
+
+RÃ‰CIPROQUE (pour prouver le parallÃ©lisme)
+Si deux angles alternes-internes sont Ã©gaux (ou deux correspondants Ã©gaux),
+alors les deux droites sont PARALLÃˆLES.
+
+ANGLES OPPOSÃ‰S PAR LE SOMMET
+Toujours Ã©gaux, que les droites soient parallÃ¨les ou non.
+
+Ã€ RETENIR : Â« alternes-internes Ã©gaux Â» âŸº Â« droites parallÃ¨les Â». C''est
+l''outil pour dÃ©montrer que deux droites sont parallÃ¨les.',
+  lesson_ar = 'Ø§Ù„Ø²ÙˆØ§ÙŠØ§ ÙˆØ§Ù„ØªÙˆØ§Ø²ÙŠ
+
+Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† ÙŠÙ‚Ø·Ø¹Ù‡Ù…Ø§ Ù‚Ø§Ø·Ø¹
+Ø¹Ù†Ø¯Ù…Ø§ ÙŠÙ‚Ø·Ø¹ Ù…Ø³ØªÙ‚ÙŠÙ… (Ù‚Ø§Ø·Ø¹) Ù…Ø³ØªÙ‚ÙŠÙ…ÙŠÙ† Ø¢Ø®Ø±ÙŠÙ† ÙŠÙƒÙˆÙ‘Ù† Ø£Ø²ÙˆØ§Ø¬ Ø²ÙˆØ§ÙŠØ§ Ù…Ù…ÙŠØ²Ø©:
+â€¢ Ø²ÙˆØ§ÙŠØ§ Ù…ØªØ¨Ø§Ø¯Ù„Ø© Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§: Ø¹Ù„Ù‰ Ø¬Ø§Ù†Ø¨ÙŠ Ø§Ù„Ù‚Ø§Ø·Ø¹ Ø¨ÙŠÙ† Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…ÙŠÙ†.
+â€¢ Ø²ÙˆØ§ÙŠØ§ Ù…ØªÙ†Ø§Ø¸Ø±Ø©: Ù†ÙØ³ Ø§Ù„Ù…ÙˆØ¶Ø¹ Ø¨Ø§Ù„Ù†Ø³Ø¨Ø© Ù„Ù„Ù‚Ø§Ø·Ø¹ ÙˆÙ„ÙƒÙ„ Ù…Ø³ØªÙ‚ÙŠÙ….
+
+Ø§Ù„Ø®Ø§ØµÙŠØ© Ø§Ù„Ø£Ø³Ø§Ø³ÙŠØ©
+Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† Ù…ØªÙˆØ§Ø²ÙŠÙŠÙ† ÙØ¥Ù†:
+â€¢ Ø§Ù„Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù…ØªØ¨Ø§Ø¯Ù„Ø© Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§ Ù…ØªØ³Ø§ÙˆÙŠØ©ØŒ
+â€¢ Ø§Ù„Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù…ØªÙ†Ø§Ø¸Ø±Ø© Ù…ØªØ³Ø§ÙˆÙŠØ©.
+
+Ø§Ù„Ø¹ÙƒØ³ (Ù„Ø¥Ø«Ø¨Ø§Øª Ø§Ù„ØªÙˆØ§Ø²ÙŠ)
+Ø¥Ø°Ø§ ØªØ³Ø§ÙˆØª Ø²Ø§ÙˆÙŠØªØ§Ù† Ù…ØªØ¨Ø§Ø¯Ù„ØªØ§Ù† Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§ (Ø£Ùˆ Ù…ØªÙ†Ø§Ø¸Ø±ØªØ§Ù†) ÙØ§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† Ù…ØªÙˆØ§Ø²ÙŠØ§Ù†.
+
+Ø§Ù„Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù…ØªÙ‚Ø§Ø¨Ù„Ø© Ø¨Ø§Ù„Ø±Ø£Ø³
+Ù…ØªØ³Ø§ÙˆÙŠØ© Ø¯Ø§Ø¦Ù…Ù‹Ø§ØŒ Ø³ÙˆØ§Ø¡ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† Ù…ØªÙˆØ§Ø²ÙŠÙŠÙ† Ø£Ù… Ù„Ø§.
+
+ØªØ°ÙƒØ±: Â«Ù…ØªØ¨Ø§Ø¯Ù„ØªØ§Ù† Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§ Ù…ØªØ³Ø§ÙˆÙŠØªØ§Ù†Â» âŸº Â«Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† Ù…ØªÙˆØ§Ø²ÙŠØ§Ù†Â».'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'angles-parallelisme';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Les angles opposÃ©s par le sommet sontâ€¦', 'Ø§Ù„Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù…ØªÙ‚Ø§Ø¨Ù„Ø© Ø¨Ø§Ù„Ø±Ø£Ø³â€¦',
+   '["toujours Ã©gaux","toujours supplÃ©mentaires","toujours droits","jamais Ã©gaux"]'::jsonb, '["Ù…ØªØ³Ø§ÙˆÙŠØ© Ø¯Ø§Ø¦Ù…Ù‹Ø§","Ù…ØªÙƒØ§Ù…Ù„Ø© Ø¯Ø§Ø¦Ù…Ù‹Ø§","Ù‚Ø§Ø¦Ù…Ø© Ø¯Ø§Ø¦Ù…Ù‹Ø§","ØºÙŠØ± Ù…ØªØ³Ø§ÙˆÙŠØ© Ø£Ø¨Ø¯Ù‹Ø§"]'::jsonb,
+   0, 'Toujours Ã©gaux.', 'Ù…ØªØ³Ø§ÙˆÙŠØ© Ø¯Ø§Ø¦Ù…Ù‹Ø§.', 'easy', 1),
+  ('Si deux droites sont parallÃ¨les, les angles alternes-internes sontâ€¦', 'Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† Ù…ØªÙˆØ§Ø²ÙŠÙŠÙ† ÙØ§Ù„Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù…ØªØ¨Ø§Ø¯Ù„Ø© Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§â€¦',
+   '["Ã©gaux","supplÃ©mentaires","complÃ©mentaires","nuls"]'::jsonb, '["Ù…ØªØ³Ø§ÙˆÙŠØ©","Ù…ØªÙƒØ§Ù…Ù„Ø©","Ù…ØªØªØ§Ù…Ù‘Ø©","Ù…Ø¹Ø¯ÙˆÙ…Ø©"]'::jsonb,
+   0, 'ParallÃ¨les â†’ alternes-internes Ã©gaux.', 'Ø§Ù„ØªÙˆØ§Ø²ÙŠ â† Ø§Ù„Ù…ØªØ¨Ø§Ø¯Ù„Ø© Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§ Ù…ØªØ³Ø§ÙˆÙŠØ©.', 'medium', 2),
+  ('Deux angles correspondants Ã©gaux prouvent que les droites sontâ€¦', 'Ø²Ø§ÙˆÙŠØªØ§Ù† Ù…ØªÙ†Ø§Ø¸Ø±ØªØ§Ù† Ù…ØªØ³Ø§ÙˆÙŠØªØ§Ù† ØªØ«Ø¨ØªØ§Ù† Ø£Ù† Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…ÙŠÙ†â€¦',
+   '["parallÃ¨les","perpendiculaires","sÃ©cants","confondus"]'::jsonb, '["Ù…ØªÙˆØ§Ø²ÙŠØ§Ù†","Ù…ØªØ¹Ø§Ù…Ø¯Ø§Ù†","Ù…ØªÙ‚Ø§Ø·Ø¹Ø§Ù†","Ù…Ù†Ø·Ø¨Ù‚Ø§Ù†"]'::jsonb,
+   0, 'RÃ©ciproque : correspondants Ã©gaux â†’ parallÃ¨les.', 'Ø§Ù„Ø¹ÙƒØ³: Ù…ØªÙ†Ø§Ø¸Ø±ØªØ§Ù† Ù…ØªØ³Ø§ÙˆÙŠØªØ§Ù† â† Ù…ØªÙˆØ§Ø²ÙŠØ§Ù†.', 'medium', 3),
+  ('Deux droites parallÃ¨les coupÃ©es par une sÃ©cante : un angle vaut 65Â°, son alterne-interne vautâ€¦', 'Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Ù† Ù…ØªÙˆØ§Ø²ÙŠØ§Ù† ÙŠÙ‚Ø·Ø¹Ù‡Ù…Ø§ Ù‚Ø§Ø·Ø¹: Ø²Ø§ÙˆÙŠØ© 65Â°ØŒ Ù…ØªØ¨Ø§Ø¯Ù„ØªÙ‡Ø§ Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§â€¦',
+   '["65Â°","115Â°","25Â°","180Â°"]'::jsonb, '["65Â°","115Â°","25Â°","180Â°"]'::jsonb,
+   0, 'Alternes-internes Ã©gaux : 65Â°.', 'Ø§Ù„Ù…ØªØ¨Ø§Ø¯Ù„ØªØ§Ù† Ù…ØªØ³Ø§ÙˆÙŠØªØ§Ù†: 65Â°.', 'easy', 4),
+  ('L''outil pour DÃ‰MONTRER que deux droites sont parallÃ¨les estâ€¦', 'Ø£Ø¯Ø§Ø© Ø¥Ø«Ø¨Ø§Øª Ø£Ù† Ù…Ø³ØªÙ‚ÙŠÙ…ÙŠÙ† Ù…ØªÙˆØ§Ø²ÙŠØ§Ù† Ù‡ÙŠâ€¦',
+   '["l''Ã©galitÃ© d''angles alternes-internes","le calcul d''aire","le thÃ©orÃ¨me de Pythagore","la mÃ©diane"]'::jsonb, '["ØªØ³Ø§ÙˆÙŠ Ø²Ø§ÙˆÙŠØªÙŠÙ† Ù…ØªØ¨Ø§Ø¯Ù„ØªÙŠÙ† Ø¯Ø§Ø®Ù„ÙŠÙ‹Ø§","Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø³Ø§Ø­Ø©","Ø®Ø§ØµÙŠØ© ÙÙŠØ«Ø§ØºÙˆØ±Ø«","Ø§Ù„Ù…ØªÙˆØ³Ø·"]'::jsonb,
+   0, 'La rÃ©ciproque sur les angles prouve le parallÃ©lisme.', 'Ø§Ù„Ø¹ÙƒØ³ Ø¹Ù„Ù‰ Ø§Ù„Ø²ÙˆØ§ÙŠØ§ ÙŠØ«Ø¨Øª Ø§Ù„ØªÙˆØ§Ø²ÙŠ.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'angles-parallelisme'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'LES TRIANGLES â€” DROITES REMARQUABLES
+
+LES MÃ‰DIATRICES
+La mÃ©diatrice d''un cÃ´tÃ© est perpendiculaire Ã  ce cÃ´tÃ© en son milieu.
+Les 3 mÃ©diatrices se coupent en un point unique : le CENTRE DU CERCLE
+CIRCONSCRIT (le cercle qui passe par les 3 sommets).
+
+LES HAUTEURS
+Une hauteur part d''un sommet et est perpendiculaire au cÃ´tÃ© opposÃ©.
+Les 3 hauteurs se coupent en un point : l''ORTHOCENTRE.
+
+LES MÃ‰DIANES
+Une mÃ©diane joint un sommet au milieu du cÃ´tÃ© opposÃ©.
+Les 3 mÃ©dianes se coupent en un point : le CENTRE DE GRAVITÃ‰ (G). Il est
+situÃ© aux 2/3 de chaque mÃ©diane depuis le sommet.
+
+LES BISSECTRICES
+Une bissectrice partage un angle en deux angles Ã©gaux.
+Les 3 bissectrices se coupent au CENTRE DU CERCLE INSCRIT (tangent aux
+3 cÃ´tÃ©s).
+
+Ã€ RETENIR : mÃ©diatrices â†’ cercle circonscrit ; bissectrices â†’ cercle
+inscrit ; mÃ©dianes â†’ centre de gravitÃ© ; hauteurs â†’ orthocentre.',
+  lesson_ar = 'Ø§Ù„Ù…Ø«Ù„Ø«Ø§Øª â€” Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ…Ø§Øª Ø§Ù„Ø®Ø§ØµØ©
+
+Ø§Ù„Ù…Ø­Ø§ÙˆØ± (Ø§Ù„Ù…ØªÙˆØ³Ø·Ø§Øª Ø§Ù„Ø¹Ù…ÙˆØ¯ÙŠØ©)
+Ù…Ø­ÙˆØ± Ø¶Ù„Ø¹ Ø¹Ù…ÙˆØ¯ÙŠ Ø¹Ù„ÙŠÙ‡ ÙÙŠ Ù…Ù†ØªØµÙÙ‡. ØªØªÙ‚Ø§Ø·Ø¹ Ø§Ù„Ù…Ø­Ø§ÙˆØ± Ø§Ù„Ø«Ù„Ø§Ø«Ø© ÙÙŠ Ù†Ù‚Ø·Ø© ÙˆØ§Ø­Ø¯Ø©:
+Ù…Ø±ÙƒØ² Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ø§Ù„Ù…Ø­ÙŠØ·Ø© (Ø§Ù„Ù…Ø§Ø±Ø© Ø¨Ø§Ù„Ø±Ø¤ÙˆØ³ Ø§Ù„Ø«Ù„Ø§Ø«Ø©).
+
+Ø§Ù„Ø§Ø±ØªÙØ§Ø¹Ø§Øª
+Ø§Ù„Ø§Ø±ØªÙØ§Ø¹ ÙŠÙ†Ø·Ù„Ù‚ Ù…Ù† Ø±Ø£Ø³ ÙˆÙŠÙƒÙˆÙ† Ø¹Ù…ÙˆØ¯ÙŠÙ‹Ø§ Ø¹Ù„Ù‰ Ø§Ù„Ø¶Ù„Ø¹ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„. ØªØªÙ‚Ø§Ø·Ø¹ Ø§Ù„Ø§Ø±ØªÙØ§Ø¹Ø§Øª ÙÙŠ Ù†Ù‚Ø·Ø©:
+Ù…Ø±ÙƒØ² Ø§Ù„Ø§Ø±ØªÙØ§Ø¹Ø§Øª (Ø§Ù„Ø£Ø±Ø«ÙˆÙ…Ø±ÙƒØ²).
+
+Ø§Ù„Ù…ØªÙˆØ³Ø·Ø§Øª
+Ø§Ù„Ù…ØªÙˆØ³Ø· ÙŠØµÙ„ Ø±Ø£Ø³Ù‹Ø§ Ø¨Ù…Ù†ØªØµÙ Ø§Ù„Ø¶Ù„Ø¹ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„. ØªØªÙ‚Ø§Ø·Ø¹ Ø§Ù„Ù…ØªÙˆØ³Ø·Ø§Øª ÙÙŠ Ù†Ù‚Ø·Ø©:
+Ù…Ø±ÙƒØ² Ø§Ù„Ø«Ù‚Ù„ (G) Ø¹Ù„Ù‰ Ø¨ÙØ¹Ø¯ 2/3 Ù…Ù† ÙƒÙ„ Ù…ØªÙˆØ³Ø· Ø§Ù†Ø·Ù„Ø§Ù‚Ù‹Ø§ Ù…Ù† Ø§Ù„Ø±Ø£Ø³.
+
+Ø§Ù„Ù…Ù†ØµÙ‘ÙØ§Øª
+Ø§Ù„Ù…Ù†ØµÙ‘Ù ÙŠÙ‚Ø³Ù… Ø²Ø§ÙˆÙŠØ© Ø¥Ù„Ù‰ Ø²Ø§ÙˆÙŠØªÙŠÙ† Ù…ØªØ³Ø§ÙˆÙŠØªÙŠÙ†. ØªØªÙ‚Ø§Ø·Ø¹ Ø§Ù„Ù…Ù†ØµÙ‘ÙØ§Øª ÙÙŠ Ù…Ø±ÙƒØ² Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ø§Ù„Ù…Ø­Ø§Ø·Ø©
+(Ø§Ù„Ù…Ù…Ø§Ø³Ø© Ù„Ù„Ø£Ø¶Ù„Ø§Ø¹ Ø§Ù„Ø«Ù„Ø§Ø«Ø©).
+
+ØªØ°ÙƒØ±: Ø§Ù„Ù…Ø­Ø§ÙˆØ± â† Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ø§Ù„Ù…Ø­ÙŠØ·Ø©ØŒ Ø§Ù„Ù…Ù†ØµÙ‘ÙØ§Øª â† Ø§Ù„Ù…Ø­Ø§Ø·Ø©ØŒ Ø§Ù„Ù…ØªÙˆØ³Ø·Ø§Øª â† Ù…Ø±ÙƒØ² Ø§Ù„Ø«Ù‚Ù„ØŒ Ø§Ù„Ø§Ø±ØªÙØ§Ø¹Ø§Øª â† Ø§Ù„Ø£Ø±Ø«ÙˆÙ…Ø±ÙƒØ².'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'triangles';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Les 3 mÃ©diatrices d''un triangle se coupent au centre du cercleâ€¦', 'ØªØªÙ‚Ø§Ø·Ø¹ Ù…Ø­Ø§ÙˆØ± Ø§Ù„Ù…Ø«Ù„Ø« ÙÙŠ Ù…Ø±ÙƒØ² Ø§Ù„Ø¯Ø§Ø¦Ø±Ø©â€¦',
+   '["circonscrit","inscrit","de gravitÃ©","tangent"]'::jsonb, '["Ø§Ù„Ù…Ø­ÙŠØ·Ø©","Ø§Ù„Ù…Ø­Ø§Ø·Ø©","Ø§Ù„Ø«Ù‚Ù„","Ø§Ù„Ù…Ù…Ø§Ø³Ø©"]'::jsonb,
+   0, 'MÃ©diatrices â†’ cercle circonscrit.', 'Ø§Ù„Ù…Ø­Ø§ÙˆØ± â† Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ø§Ù„Ù…Ø­ÙŠØ·Ø©.', 'medium', 1),
+  ('Une mÃ©diane joint un sommetâ€¦', 'Ø§Ù„Ù…ØªÙˆØ³Ø· ÙŠØµÙ„ Ø±Ø£Ø³Ù‹Ø§â€¦',
+   '["au milieu du cÃ´tÃ© opposÃ©","au pied de la hauteur","au centre du cercle","Ã  un autre sommet"]'::jsonb,
+   '["Ø¨Ù…Ù†ØªØµÙ Ø§Ù„Ø¶Ù„Ø¹ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„","Ø¨Ø£Ø³ÙÙ„ Ø§Ù„Ø§Ø±ØªÙØ§Ø¹","Ø¨Ù…Ø±ÙƒØ² Ø§Ù„Ø¯Ø§Ø¦Ø±Ø©","Ø¨Ø±Ø£Ø³ Ø¢Ø®Ø±"]'::jsonb,
+   0, 'MÃ©diane : sommet â†’ milieu du cÃ´tÃ© opposÃ©.', 'Ø§Ù„Ù…ØªÙˆØ³Ø·: Ø±Ø£Ø³ â† Ù…Ù†ØªØµÙ Ø§Ù„Ø¶Ù„Ø¹ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„.', 'easy', 2),
+  ('Le point de concours des mÃ©dianes estâ€¦', 'Ù†Ù‚Ø·Ø© ØªÙ‚Ø§Ø·Ø¹ Ø§Ù„Ù…ØªÙˆØ³Ø·Ø§Øª Ù‡ÙŠâ€¦',
+   '["le centre de gravitÃ©","l''orthocentre","le centre inscrit","le milieu"]'::jsonb, '["Ù…Ø±ÙƒØ² Ø§Ù„Ø«Ù‚Ù„","Ø§Ù„Ø£Ø±Ø«ÙˆÙ…Ø±ÙƒØ²","Ø§Ù„Ù…Ø±ÙƒØ² Ø§Ù„Ù…Ø­Ø§Ø·","Ø§Ù„Ù…Ù†ØªØµÙ"]'::jsonb,
+   0, 'MÃ©dianes â†’ centre de gravitÃ© G.', 'Ø§Ù„Ù…ØªÙˆØ³Ø·Ø§Øª â† Ù…Ø±ÙƒØ² Ø§Ù„Ø«Ù‚Ù„.', 'medium', 3),
+  ('Une hauteur est perpendiculaireâ€¦', 'Ø§Ù„Ø§Ø±ØªÙØ§Ø¹ Ø¹Ù…ÙˆØ¯ÙŠ Ø¹Ù„Ù‰â€¦',
+   '["au cÃ´tÃ© opposÃ©","Ã  la mÃ©diane","Ã  la bissectrice","Ã  rien"]'::jsonb, '["Ø§Ù„Ø¶Ù„Ø¹ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„","Ø§Ù„Ù…ØªÙˆØ³Ø·","Ø§Ù„Ù…Ù†ØµÙ‘Ù","Ù„Ø§ Ø´ÙŠØ¡"]'::jsonb,
+   0, 'Hauteur âŠ¥ cÃ´tÃ© opposÃ©.', 'Ø§Ù„Ø§Ø±ØªÙØ§Ø¹ Ø¹Ù…ÙˆØ¯ÙŠ Ø¹Ù„Ù‰ Ø§Ù„Ø¶Ù„Ø¹ Ø§Ù„Ù…Ù‚Ø§Ø¨Ù„.', 'easy', 4),
+  ('Le cercle inscrit dans un triangle a pour centre le point de concours desâ€¦', 'Ù…Ø±ÙƒØ² Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ø§Ù„Ù…Ø­Ø§Ø·Ø© ÙÙŠ Ù…Ø«Ù„Ø« Ù‡Ùˆ ØªÙ‚Ø§Ø·Ø¹â€¦',
+   '["bissectrices","mÃ©diatrices","hauteurs","mÃ©dianes"]'::jsonb, '["Ø§Ù„Ù…Ù†ØµÙ‘ÙØ§Øª","Ø§Ù„Ù…Ø­Ø§ÙˆØ±","Ø§Ù„Ø§Ø±ØªÙØ§Ø¹Ø§Øª","Ø§Ù„Ù…ØªÙˆØ³Ø·Ø§Øª"]'::jsonb,
+   0, 'Bissectrices â†’ cercle inscrit.', 'Ø§Ù„Ù…Ù†ØµÙ‘ÙØ§Øª â† Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ø§Ù„Ù…Ø­Ø§Ø·Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'triangles'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+update public.chapters c set
+  lesson_fr = 'STATISTIQUES (initiation)
+
+VOCABULAIRE DE BASE
+â€¢ Population : l''ensemble Ã©tudiÃ©. â€¢ CaractÃ¨re : ce qu''on observe (taille,
+  noteâ€¦). â€¢ Effectif : nombre d''individus pour une valeur.
+â€¢ Effectif total (N) : somme de tous les effectifs.
+
+LA FRÃ‰QUENCE
+frÃ©quence = effectif Ã· effectif total. On l''exprime en fraction, en dÃ©cimal
+ou en pourcentage. Sur 25 Ã©lÃ¨ves, si 5 ont eu 16 : frÃ©quence = 5/25 = 0,2 = 20 %.
+
+LES REPRÃ‰SENTATIONS GRAPHIQUES
+â€¢ Diagramme en bÃ¢tons : la hauteur du bÃ¢ton = l''effectif.
+â€¢ Diagramme circulaire : chaque part = un angle proportionnel Ã  l''effectif
+  (angle = frÃ©quence Ã— 360Â°).
+â€¢ Histogramme : pour des donnÃ©es regroupÃ©es en classes.
+
+LA MOYENNE
+moyenne = (somme de toutes les valeurs) Ã· (nombre de valeurs).
+Moyenne pondÃ©rÃ©e : (Î£ valeur Ã— effectif) Ã· effectif total.
+
+Ã€ RETENIR : la somme des frÃ©quences vaut toujours 1 (ou 100 %).',
+  lesson_ar = 'Ø§Ù„Ø¥Ø­ØµØ§Ø¡ (ØªÙ…Ù‡ÙŠØ¯)
+
+Ù…ØµØ·Ù„Ø­Ø§Øª Ø£Ø³Ø§Ø³ÙŠØ©
+â€¢ Ø§Ù„Ù…Ø¬ØªÙ…Ø¹ Ø§Ù„Ø¥Ø­ØµØ§Ø¦ÙŠ: Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Ø© Ø§Ù„Ù…Ø¯Ø±ÙˆØ³Ø©. â€¢ Ø§Ù„Ù…ÙŠØ²Ø©: Ù…Ø§ Ù†Ù„Ø§Ø­Ø¸Ù‡ (Ø§Ù„Ø·ÙˆÙ„ØŒ Ø§Ù„Ø¹Ù„Ø§Ù…Ø©â€¦).
+â€¢ Ø§Ù„ØªÙƒØ±Ø§Ø±: Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙØ±Ø§Ø¯ Ù„Ù‚ÙŠÙ…Ø© Ù…Ø¹ÙŠÙ†Ø©. â€¢ Ø§Ù„ØªÙƒØ±Ø§Ø± Ø§Ù„ÙƒÙ„ÙŠ (N): Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„ØªÙƒØ±Ø§Ø±Ø§Øª.
+
+Ø§Ù„ØªÙˆØ§ØªØ±
+Ø§Ù„ØªÙˆØ§ØªØ± = Ø§Ù„ØªÙƒØ±Ø§Ø± Ã· Ø§Ù„ØªÙƒØ±Ø§Ø± Ø§Ù„ÙƒÙ„ÙŠØŒ ÙˆÙŠÙØ¹Ø¨Ù‘Ø± Ø¹Ù†Ù‡ Ø¨ÙƒØ³Ø± Ø£Ùˆ Ù†Ø³Ø¨Ø© Ù…Ø¦ÙˆÙŠØ©.
+Ù…Ù† 25 ØªÙ„Ù…ÙŠØ°Ù‹Ø§ Ù†Ø§Ù„ 5 Ø¹Ù„Ø§Ù…Ø© 16: Ø§Ù„ØªÙˆØ§ØªØ± = 5/25 = 0.2 = 20%.
+
+Ø§Ù„ØªÙ…Ø«ÙŠÙ„Ø§Øª Ø§Ù„Ø¨ÙŠØ§Ù†ÙŠØ©
+â€¢ Ø§Ù„Ù…Ø®Ø·Ø· Ø¨Ø§Ù„Ø£Ø¹Ù…Ø¯Ø©: Ø§Ø±ØªÙØ§Ø¹ Ø§Ù„Ø¹Ù…ÙˆØ¯ = Ø§Ù„ØªÙƒØ±Ø§Ø±.
+â€¢ Ø§Ù„Ù…Ø®Ø·Ø· Ø§Ù„Ø¯Ø§Ø¦Ø±ÙŠ: ÙƒÙ„ Ø¬Ø²Ø¡ Ø²Ø§ÙˆÙŠØ© ØªÙ†Ø§Ø³Ø¨ Ø§Ù„ØªÙƒØ±Ø§Ø± (Ø§Ù„Ø²Ø§ÙˆÙŠØ© = Ø§Ù„ØªÙˆØ§ØªØ± Ã— 360Â°).
+â€¢ Ø§Ù„Ù…Ø¯Ø±Ù‘Ø¬ Ø§Ù„ØªÙƒØ±Ø§Ø±ÙŠ: Ù„Ù…Ø¹Ø·ÙŠØ§Øª Ù…Ø¬Ù…Ù‘Ø¹Ø© ÙÙŠ ÙØ¦Ø§Øª.
+
+Ø§Ù„Ù…ØªÙˆØ³Ø· Ø§Ù„Ø­Ø³Ø§Ø¨ÙŠ
+Ø§Ù„Ù…ØªÙˆØ³Ø· = (Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„Ù‚ÙŠÙ…) Ã· (Ø¹Ø¯Ø¯Ù‡Ø§).
+Ø§Ù„Ù…ØªÙˆØ³Ø· Ø§Ù„Ù…ØªÙˆØ§Ø²Ù†: (Î£ Ø§Ù„Ù‚ÙŠÙ…Ø© Ã— Ø§Ù„ØªÙƒØ±Ø§Ø±) Ã· Ø§Ù„ØªÙƒØ±Ø§Ø± Ø§Ù„ÙƒÙ„ÙŠ.
+
+ØªØ°ÙƒØ±: Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„ØªÙˆØ§ØªØ±Ø§Øª ÙŠØ³Ø§ÙˆÙŠ Ø¯Ø§Ø¦Ù…Ù‹Ø§ 1 (Ø£Ùˆ 100%).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'statistiques';
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c
+join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Sur 25 Ã©lÃ¨ves, 5 ont eu 16. La frÃ©quence estâ€¦', 'Ù…Ù† 25 ØªÙ„Ù…ÙŠØ°Ù‹Ø§ Ù†Ø§Ù„ 5 Ø¹Ù„Ø§Ù…Ø© 16. Ø§Ù„ØªÙˆØ§ØªØ±â€¦',
+   '["20 %","5 %","16 %","25 %"]'::jsonb, '["20 %","5 %","16 %","25 %"]'::jsonb,
+   0, '5/25 = 0,2 = 20 %.', '5/25 = 20%.', 'medium', 1),
+  ('L''effectif total estâ€¦', 'Ø§Ù„ØªÙƒØ±Ø§Ø± Ø§Ù„ÙƒÙ„ÙŠ Ù‡Ùˆâ€¦',
+   '["la somme de tous les effectifs","le plus grand effectif","la moyenne","le nombre de valeurs diffÃ©rentes"]'::jsonb,
+   '["Ù…Ø¬Ù…ÙˆØ¹ ÙƒÙ„ Ø§Ù„ØªÙƒØ±Ø§Ø±Ø§Øª","Ø£ÙƒØ¨Ø± ØªÙƒØ±Ø§Ø±","Ø§Ù„Ù…ØªÙˆØ³Ø·","Ø¹Ø¯Ø¯ Ø§Ù„Ù‚ÙŠÙ… Ø§Ù„Ù…Ø®ØªÙ„ÙØ©"]'::jsonb,
+   0, 'N = somme des effectifs.', 'N = Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„ØªÙƒØ±Ø§Ø±Ø§Øª.', 'easy', 2),
+  ('Moyenne de 10, 12, 14 ?', 'Ù…ØªÙˆØ³Ø· 10 Ùˆ12 Ùˆ14ØŸ',
+   '["12","36","14","11"]'::jsonb, '["12","36","14","11"]'::jsonb,
+   0, '(10+12+14)/3 = 12.', '(10+12+14)/3 = 12.', 'easy', 3),
+  ('Dans un diagramme circulaire, l''angle d''une part = frÃ©quence Ã— â€¦', 'ÙÙŠ Ù…Ø®Ø·Ø· Ø¯Ø§Ø¦Ø±ÙŠØŒ Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ø¬Ø²Ø¡ = Ø§Ù„ØªÙˆØ§ØªØ± Ã— â€¦',
+   '["360Â°","180Â°","100Â°","90Â°"]'::jsonb, '["360Â°","180Â°","100Â°","90Â°"]'::jsonb,
+   0, 'Le disque entier = 360Â°.', 'Ø§Ù„Ù‚Ø±Øµ ÙƒØ§Ù…Ù„ = 360Â°.', 'medium', 4),
+  ('La somme de toutes les frÃ©quences vautâ€¦', 'Ù…Ø¬Ù…ÙˆØ¹ ÙƒÙ„ Ø§Ù„ØªÙˆØ§ØªØ±Ø§Øª ÙŠØ³Ø§ÙˆÙŠâ€¦',
+   '["1 (ou 100 %)","0","N","360Â°"]'::jsonb, '["1 (Ø£Ùˆ 100%)","0","N","360Â°"]'::jsonb,
+   0, 'Les frÃ©quences totalisent toujours 1.', 'Ù…Ø¬Ù…ÙˆØ¹ Ø§Ù„ØªÙˆØ§ØªØ±Ø§Øª Ø¯Ø§Ø¦Ù…Ù‹Ø§ 1.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'statistiques'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+
+-- ===============================================================
+-- Migration: 20260722_023_primaire_maths
+--
+-- Primaire (1APâ€“4AP) maths: these grades had subjects seeded (migration
+-- 017) but NO chapters. This creates age-appropriate maths chapters +
+-- bilingual lessons + quiz banks for each. 5AP was already done in 017/018.
+-- Idempotent: ON CONFLICT DO NOTHING chapters, guarded lesson UPDATEs,
+-- NOT EXISTS quiz inserts.
+-- ===============================================================
+
+-- ===== 1. Create chapters =====
+
+-- 1AP maths (very basic: numbers to 100, simple add/subtract, shapes)
+insert into public.chapters (subject_id, slug, title_fr, title_ar, description_fr, sort_order)
+select s.id, v.slug, v.title_fr, v.title_ar, v.descr, v.ord
+from public.subjects s
+cross join (values
+  ('nombres-0-100',  'Les nombres de 0 Ã  100',  'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ù…Ù† 0 Ø¥Ù„Ù‰ 100', 'Lire, Ã©crire et compter jusqu''Ã  100.', 1),
+  ('addition',       'L''addition',             'Ø§Ù„Ø¬Ù…Ø¹',                'Ajouter deux nombres jusqu''Ã  20.', 2),
+  ('soustraction',   'La soustraction',         'Ø§Ù„Ø·Ø±Ø­',                'Retirer, trouver ce qui reste.', 3),
+  ('formes',         'Les formes',              'Ø§Ù„Ø£Ø´ÙƒØ§Ù„',              'CarrÃ©, rond, triangle, rectangle.', 4)
+) as v(slug, title_fr, title_ar, descr, ord)
+where s.grade_code = '1AP' and s.slug = 'mathematiques'
+on conflict (subject_id, slug) do nothing;
+
+-- 2AP maths (numbers to 1000, add/subtract with carry, intro multiplication)
+insert into public.chapters (subject_id, slug, title_fr, title_ar, description_fr, sort_order)
+select s.id, v.slug, v.title_fr, v.title_ar, v.descr, v.ord
+from public.subjects s
+cross join (values
+  ('nombres-0-1000', 'Les nombres jusqu''Ã  1000', 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø­ØªÙ‰ 1000', 'Lire, Ã©crire, comparer jusqu''Ã  1000.', 1),
+  ('addition-retenue','L''addition avec retenue',  'Ø§Ù„Ø¬Ù…Ø¹ Ù…Ø¹ Ø§Ù„Ø§Ø­ØªÙØ§Ø¸', 'Poser et calculer une addition.', 2),
+  ('soustraction-retenue','La soustraction avec retenue','Ø§Ù„Ø·Ø±Ø­ Ù…Ø¹ Ø§Ù„Ø§Ø­ØªÙØ§Ø¸','Poser et calculer une soustraction.', 3),
+  ('multiplication', 'La multiplication',          'Ø§Ù„Ø¶Ø±Ø¨',            'DÃ©couvrir le sens de la multiplication.', 4),
+  ('mesures-temps',  'Le temps et les mesures',    'Ø§Ù„ÙˆÙ‚Øª ÙˆØ§Ù„Ù‚ÙŠØ§Ø³',     'Heures, jours, longueurs simples.', 5)
+) as v(slug, title_fr, title_ar, descr, ord)
+where s.grade_code = '2AP' and s.slug = 'mathematiques'
+on conflict (subject_id, slug) do nothing;
+
+-- 3AP maths (numbers to 10000, tables, intro division, perimeter)
+insert into public.chapters (subject_id, slug, title_fr, title_ar, description_fr, sort_order)
+select s.id, v.slug, v.title_fr, v.title_ar, v.descr, v.ord
+from public.subjects s
+cross join (values
+  ('nombres-10000',  'Les nombres jusqu''Ã  10 000', 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø­ØªÙ‰ 10000', 'Lire, Ã©crire et ranger les grands nombres.', 1),
+  ('tables',         'Les tables de multiplication', 'Ø¬Ø¯Ø§ÙˆÙ„ Ø§Ù„Ø¶Ø±Ø¨',     'MÃ©moriser les tables de 1 Ã  9.', 2),
+  ('division',       'La division',                 'Ø§Ù„Ù‚Ø³Ù…Ø©',           'Partager en parts Ã©gales.', 3),
+  ('perimetre',      'Le pÃ©rimÃ¨tre',                'Ø§Ù„Ù…Ø­ÙŠØ·',           'Mesurer le tour d''une figure.', 4),
+  ('problemes',      'RÃ©soudre des problÃ¨mes',      'Ø­Ù„ Ø§Ù„Ù…Ø´ÙƒÙ„Ø§Øª',      'Choisir la bonne opÃ©ration.', 5)
+) as v(slug, title_fr, title_ar, descr, ord)
+where s.grade_code = '3AP' and s.slug = 'mathematiques'
+on conflict (subject_id, slug) do nothing;
+
+-- 4AP maths (numbers to millions, intro fractions/decimals, area, angles)
+insert into public.chapters (subject_id, slug, title_fr, title_ar, description_fr, sort_order)
+select s.id, v.slug, v.title_fr, v.title_ar, v.descr, v.ord
+from public.subjects s
+cross join (values
+  ('grands-nombres', 'Les grands nombres',        'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„ÙƒØ¨ÙŠØ±Ø©',   'Lire et Ã©crire jusqu''au million.', 1),
+  ('fractions',      'Les fractions',             'Ø§Ù„ÙƒØ³ÙˆØ±',            'DÃ©couvrir les fractions simples.', 2),
+  ('decimaux',       'Les nombres dÃ©cimaux',      'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø¹Ø´Ø±ÙŠØ©',   'La virgule, les dixiÃ¨mes.', 3),
+  ('operations',     'Les quatre opÃ©rations',     'Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ø£Ø±Ø¨Ø¹',   'Poser addition, soustraction, Ã—, Ã·.', 4),
+  ('aires',          'Les aires',                 'Ø§Ù„Ù…Ø³Ø§Ø­Ø§Øª',          'Aire du carrÃ© et du rectangle.', 5),
+  ('angles',         'Les angles',                'Ø§Ù„Ø²ÙˆØ§ÙŠØ§',           'Angle droit, aigu, obtus.', 6)
+) as v(slug, title_fr, title_ar, descr, ord)
+where s.grade_code = '4AP' and s.slug = 'mathematiques'
+on conflict (subject_id, slug) do nothing;
+
+-- ===== 2. Lessons =====
+
+update public.chapters c set
+  lesson_fr = 'LES NOMBRES DE 0 Ã€ 100
+
+COMPTER
+On compte 1, 2, 3â€¦ jusqu''Ã  100. Les nombres se regroupent par DIZAINES :
+10, 20, 30â€¦ AprÃ¨s 19 vient 20, aprÃ¨s 29 vient 30.
+
+DIZAINES ET UNITÃ‰S
+Le nombre 34 = 3 dizaines et 4 unitÃ©s. Le premier chiffre compte les
+dizaines, le deuxiÃ¨me compte les unitÃ©s.
+
+COMPARER
+Pour dire quel nombre est le plus grand :
+â€¢ On regarde d''abord les dizaines : 52 > 47 car 5 dizaines > 4 dizaines.
+â€¢ Si les dizaines sont pareilles, on regarde les unitÃ©s : 34 < 38.
+
+Signes : > veut dire Â« plus grand que Â», < veut dire Â« plus petit que Â».
+
+Ã€ RETENIR : dans un nombre Ã  deux chiffres, le chiffre de gauche compte
+les dizaines.',
+  lesson_ar = 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ù…Ù† 0 Ø¥Ù„Ù‰ 100
+
+Ø§Ù„Ø¹Ø¯Ù‘
+Ù†Ø¹Ø¯Ù‘ 1ØŒ 2ØŒ 3â€¦ Ø­ØªÙ‰ 100. ØªÙØ¬Ù…Ø¹ Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø¨Ø§Ù„Ø¹Ø´Ø±Ø§Øª: 10ØŒ 20ØŒ 30â€¦ Ø¨Ø¹Ø¯ 19 ÙŠØ£ØªÙŠ 20.
+
+Ø§Ù„Ø¹Ø´Ø±Ø§Øª ÙˆØ§Ù„ÙˆØ­Ø¯Ø§Øª
+Ø§Ù„Ø¹Ø¯Ø¯ 34 = 3 Ø¹Ø´Ø±Ø§Øª Ùˆ4 ÙˆØ­Ø¯Ø§Øª. Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ø£ÙˆÙ„ ÙŠØ¹Ø¯Ù‘ Ø§Ù„Ø¹Ø´Ø±Ø§Øª ÙˆØ§Ù„Ø«Ø§Ù†ÙŠ ÙŠØ¹Ø¯Ù‘ Ø§Ù„ÙˆØ­Ø¯Ø§Øª.
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø©
+Ù„Ù…Ø¹Ø±ÙØ© Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙƒØ¨Ø±:
+â€¢ Ù†Ù†Ø¸Ø± Ø£ÙˆÙ„Ø§Ù‹ Ø¥Ù„Ù‰ Ø§Ù„Ø¹Ø´Ø±Ø§Øª: 52 > 47 Ù„Ø£Ù† 5 Ø¹Ø´Ø±Ø§Øª > 4 Ø¹Ø´Ø±Ø§Øª.
+â€¢ Ø¥Ø°Ø§ ØªØ³Ø§ÙˆØª Ø§Ù„Ø¹Ø´Ø±Ø§Øª Ù†Ù†Ø¸Ø± Ø¥Ù„Ù‰ Ø§Ù„ÙˆØ­Ø¯Ø§Øª: 34 < 38.
+
+Ø§Ù„Ø±Ù…ÙˆØ²: > ØªØ¹Ù†ÙŠ Â«Ø£ÙƒØ¨Ø± Ù…Ù†Â» Ùˆ< ØªØ¹Ù†ÙŠ Â«Ø£ØµØºØ± Ù…Ù†Â».
+
+ØªØ°ÙƒØ±: ÙÙŠ Ø¹Ø¯Ø¯ Ù…Ù† Ø±Ù‚Ù…ÙŠÙ†ØŒ Ø§Ù„Ø±Ù‚Ù… Ø¹Ù„Ù‰ Ø§Ù„ÙŠØ³Ø§Ø± ÙŠØ¹Ø¯Ù‘ Ø§Ù„Ø¹Ø´Ø±Ø§Øª.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'nombres-0-100';
+
+update public.chapters c set
+  lesson_fr = 'L''ADDITION
+
+AJOUTER, C''EST RÃ‰UNIR
+Additionner, c''est mettre ensemble. 3 + 2 = 5 : j''ai 3 billes, j''en ajoute
+2, j''ai 5 billes en tout. Le rÃ©sultat s''appelle la SOMME.
+
+LE SIGNE +
+Le signe + veut dire Â« plus Â» ou Â« et Â». 4 + 1 se lit Â« quatre plus un Â».
+
+ADDITION ASTUCIEUSE
+â€¢ Ajouter 0 ne change rien : 7 + 0 = 7.
+â€¢ On peut changer l''ordre : 2 + 6 = 6 + 2 = 8.
+â€¢ Pour ajouter 10, on ajoute 1 dizaine : 23 + 10 = 33.
+
+CALCULER JUSQU''Ã€ 20
+5 + 5 = 10 ; 6 + 4 = 10. Bien connaÃ®tre les paires qui font 10 aide beaucoup !
+
+Ã€ RETENIR : le mot Â« en tout Â» ou Â« ensemble Â» veut souvent dire qu''il faut
+additionner.',
+  lesson_ar = 'Ø§Ù„Ø¬Ù…Ø¹
+
+Ø§Ù„Ø¬Ù…Ø¹ Ù‡Ùˆ Ø§Ù„Ø¶Ù…Ù‘
+Ø§Ù„Ø¬Ù…Ø¹ ÙŠØ¹Ù†ÙŠ ÙˆØ¶Ø¹ Ø§Ù„Ø£Ø´ÙŠØ§Ø¡ Ù…Ø¹Ù‹Ø§. 3 + 2 = 5: Ø¹Ù†Ø¯ÙŠ 3 ÙƒØ±Ø§Øª Ø£Ø¶ÙŠÙ 2 ÙÙŠØµØ¨Ø­ Ù„Ø¯ÙŠ 5.
+Ø§Ù„Ù†ØªÙŠØ¬Ø© ØªÙØ³Ù…Ù‰ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹.
+
+Ø§Ù„Ø±Ù…Ø² +
+Ø§Ù„Ø±Ù…Ø² + ÙŠØ¹Ù†ÙŠ Â«Ø²Ø§Ø¦Ø¯Â» Ø£Ùˆ Â«ÙˆÂ». 4 + 1 ØªÙÙ‚Ø±Ø£ Â«Ø£Ø±Ø¨Ø¹Ø© Ø²Ø§Ø¦Ø¯ ÙˆØ§Ø­Ø¯Â».
+
+Ø§Ù„Ø¬Ù…Ø¹ Ø§Ù„Ø°ÙƒÙŠ
+â€¢ Ø¥Ø¶Ø§ÙØ© 0 Ù„Ø§ ØªØºÙŠÙ‘Ø± Ø´ÙŠØ¦Ù‹Ø§: 7 + 0 = 7.
+â€¢ ÙŠÙ…ÙƒÙ† ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„ØªØ±ØªÙŠØ¨: 2 + 6 = 6 + 2 = 8.
+â€¢ Ù„Ø¥Ø¶Ø§ÙØ© 10 Ù†Ø¶ÙŠÙ Ø¹Ø´Ø±Ø© ÙˆØ§Ø­Ø¯Ø©: 23 + 10 = 33.
+
+Ø§Ù„Ø­Ø³Ø§Ø¨ Ø­ØªÙ‰ 20
+5 + 5 = 10 Ø› 6 + 4 = 10. Ù…Ø¹Ø±ÙØ© Ø§Ù„Ø£Ø²ÙˆØ§Ø¬ Ø§Ù„ØªÙŠ Ù…Ø¬Ù…ÙˆØ¹Ù‡Ø§ 10 Ù…ÙÙŠØ¯Ø© Ø¬Ø¯Ù‹Ø§!
+
+ØªØ°ÙƒØ±: Ø¹Ø¨Ø§Ø±Ø© Â«ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Â» Ø£Ùˆ Â«Ù…Ø¹Ù‹Ø§Â» ØªØ¹Ù†ÙŠ ØºØ§Ù„Ø¨Ù‹Ø§ Ø§Ù„Ø¬Ù…Ø¹.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'addition';
+
+update public.chapters c set
+  lesson_fr = 'LA SOUSTRACTION
+
+RETIRER, C''EST ENLEVER
+Soustraire, c''est enlever. 5 âˆ’ 2 = 3 : j''ai 5 bonbons, j''en mange 2, il
+m''en reste 3. Le rÃ©sultat s''appelle la DIFFÃ‰RENCE.
+
+LE SIGNE âˆ’
+Le signe âˆ’ veut dire Â« moins Â». 7 âˆ’ 3 se lit Â« sept moins trois Â».
+
+CE QU''IL FAUT SAVOIR
+â€¢ Enlever 0 ne change rien : 8 âˆ’ 0 = 8.
+â€¢ Un nombre moins lui-mÃªme fait 0 : 6 âˆ’ 6 = 0.
+â€¢ On ne peut pas enlever plus que ce qu''on a (au primaire).
+
+LIEN AVEC L''ADDITION
+La soustraction est le contraire de l''addition :
+si 3 + 2 = 5, alors 5 âˆ’ 2 = 3 et 5 âˆ’ 3 = 2.
+
+Ã€ RETENIR : les mots Â« reste Â», Â« enlÃ¨ve Â», Â« perd Â» veulent souvent dire
+qu''il faut soustraire.',
+  lesson_ar = 'Ø§Ù„Ø·Ø±Ø­
+
+Ø§Ù„Ø·Ø±Ø­ Ù‡Ùˆ Ø§Ù„Ø¥Ø²Ø§Ù„Ø©
+Ø§Ù„Ø·Ø±Ø­ ÙŠØ¹Ù†ÙŠ Ø£Ù† Ù†ÙØ²ÙŠÙ„. 5 âˆ’ 2 = 3: Ø¹Ù†Ø¯ÙŠ 5 Ø­Ù„ÙˆÙŠØ§Øª Ø¢ÙƒÙ„ 2 ÙÙŠØ¨Ù‚Ù‰ 3.
+Ø§Ù„Ù†ØªÙŠØ¬Ø© ØªÙØ³Ù…Ù‰ Ø§Ù„ÙØ±Ù‚.
+
+Ø§Ù„Ø±Ù…Ø² âˆ’
+Ø§Ù„Ø±Ù…Ø² âˆ’ ÙŠØ¹Ù†ÙŠ Â«Ù†Ø§Ù‚ØµÂ». 7 âˆ’ 3 ØªÙÙ‚Ø±Ø£ Â«Ø³Ø¨Ø¹Ø© Ù†Ø§Ù‚Øµ Ø«Ù„Ø§Ø«Ø©Â».
+
+Ù…Ø§ ÙŠØ¬Ø¨ Ù…Ø¹Ø±ÙØªÙ‡
+â€¢ Ø¥Ø²Ø§Ù„Ø© 0 Ù„Ø§ ØªØºÙŠÙ‘Ø± Ø´ÙŠØ¦Ù‹Ø§: 8 âˆ’ 0 = 8.
+â€¢ Ø¹Ø¯Ø¯ Ù†Ø§Ù‚Øµ Ù†ÙØ³Ù‡ = 0: 6 âˆ’ 6 = 0.
+
+Ø§Ù„Ø¹Ù„Ø§Ù‚Ø© Ø¨Ø§Ù„Ø¬Ù…Ø¹
+Ø§Ù„Ø·Ø±Ø­ Ø¹ÙƒØ³ Ø§Ù„Ø¬Ù…Ø¹:
+Ø¥Ø°Ø§ ÙƒØ§Ù† 3 + 2 = 5 ÙØ¥Ù† 5 âˆ’ 2 = 3 Ùˆ 5 âˆ’ 3 = 2.
+
+ØªØ°ÙƒØ±: ÙƒÙ„Ù…Ø§Øª Â«Ø§Ù„Ø¨Ø§Ù‚ÙŠÂ»ØŒ Â«ÙŠÙØ²ÙŠÙ„Â»ØŒ Â«ÙŠÙÙ‚Ø¯Â» ØªØ¹Ù†ÙŠ ØºØ§Ù„Ø¨Ù‹Ø§ Ø§Ù„Ø·Ø±Ø­.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'soustraction';
+
+update public.chapters c set
+  lesson_fr = 'LES FORMES
+
+LES FORMES QU''ON VOIT PARTOUT
+â€¢ Le CARRÃ‰ : 4 cÃ´tÃ©s Ã©gaux, 4 coins droits. (une fenÃªtre)
+â€¢ Le RECTANGLE : 4 coins droits, mais 2 cÃ´tÃ©s longs et 2 cÃ´tÃ©s courts.
+  (une porte, un cahier)
+â€¢ Le TRIANGLE : 3 cÃ´tÃ©s et 3 coins. (un panneau)
+â€¢ Le ROND (cercle) : tout arrondi, sans coin. (une roue, le soleil)
+
+CÃ”TÃ‰S ET COINS
+Un CÃ”TÃ‰ est un bord droit. Un COIN (sommet) est l''endroit oÃ¹ deux cÃ´tÃ©s se
+rencontrent. Le carrÃ© a 4 cÃ´tÃ©s et 4 coins.
+
+RECONNAÃŽTRE
+On reconnaÃ®t une forme en comptant ses cÃ´tÃ©s :
+3 cÃ´tÃ©s â†’ triangle, 4 cÃ´tÃ©s â†’ carrÃ© ou rectangle, 0 cÃ´tÃ© droit â†’ rond.
+
+Ã€ RETENIR : le carrÃ© a tous ses cÃ´tÃ©s de la mÃªme longueur ; le rectangle a
+des cÃ´tÃ©s longs et des cÃ´tÃ©s courts.',
+  lesson_ar = 'Ø§Ù„Ø£Ø´ÙƒØ§Ù„
+
+Ø£Ø´ÙƒØ§Ù„ Ù†Ø±Ø§Ù‡Ø§ ÙÙŠ ÙƒÙ„ Ù…ÙƒØ§Ù†
+â€¢ Ø§Ù„Ù…Ø±Ø¨Ø¹: 4 Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªØ³Ø§ÙˆÙŠØ© Ùˆ4 Ø²ÙˆØ§ÙŠØ§ Ù‚Ø§Ø¦Ù…Ø©. (Ù†Ø§ÙØ°Ø©)
+â€¢ Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„: 4 Ø²ÙˆØ§ÙŠØ§ Ù‚Ø§Ø¦Ù…Ø©ØŒ Ø¶Ù„Ø¹Ø§Ù† Ø·ÙˆÙŠÙ„Ø§Ù† ÙˆØ¶Ù„Ø¹Ø§Ù† Ù‚ØµÙŠØ±Ø§Ù†. (Ø¨Ø§Ø¨ØŒ ÙƒØ±Ø§Ø³)
+â€¢ Ø§Ù„Ù…Ø«Ù„Ø«: 3 Ø£Ø¶Ù„Ø§Ø¹ Ùˆ3 Ø²ÙˆØ§ÙŠØ§. (Ù„ÙˆØ­Ø© Ø¥Ø´Ø§Ø±Ø©)
+â€¢ Ø§Ù„Ø¯Ø§Ø¦Ø±Ø©: Ù…Ø³ØªØ¯ÙŠØ±Ø© ØªÙ…Ø§Ù…Ù‹Ø§ Ø¨Ù„Ø§ Ø²ÙˆØ§ÙŠØ§. (Ø¹Ø¬Ù„Ø©ØŒ Ø§Ù„Ø´Ù…Ø³)
+
+Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹ ÙˆØ§Ù„Ø²ÙˆØ§ÙŠØ§
+Ø§Ù„Ø¶Ù„Ø¹ Ø­Ø§ÙØ© Ù…Ø³ØªÙ‚ÙŠÙ…Ø©. Ø§Ù„Ø²Ø§ÙˆÙŠØ© (Ø§Ù„Ø±Ø£Ø³) Ù‡ÙŠ Ù…ÙƒØ§Ù† Ø§Ù„ØªÙ‚Ø§Ø¡ Ø¶Ù„Ø¹ÙŠÙ†. Ø§Ù„Ù…Ø±Ø¨Ø¹ Ù„Ù‡ 4 Ø£Ø¶Ù„Ø§Ø¹ Ùˆ4 Ø²ÙˆØ§ÙŠØ§.
+
+Ø§Ù„ØªØ¹Ø±Ù‘Ù
+Ù†ØªØ¹Ø±Ù‘Ù Ø¹Ù„Ù‰ Ø§Ù„Ø´ÙƒÙ„ Ø¨Ø¹Ø¯Ù‘ Ø£Ø¶Ù„Ø§Ø¹Ù‡:
+3 Ø£Ø¶Ù„Ø§Ø¹ â† Ù…Ø«Ù„Ø«ØŒ 4 Ø£Ø¶Ù„Ø§Ø¹ â† Ù…Ø±Ø¨Ø¹ Ø£Ùˆ Ù…Ø³ØªØ·ÙŠÙ„ØŒ Ø¨Ù„Ø§ Ø£Ø¶Ù„Ø§Ø¹ Ù…Ø³ØªÙ‚ÙŠÙ…Ø© â† Ø¯Ø§Ø¦Ø±Ø©.
+
+ØªØ°ÙƒØ±: Ø§Ù„Ù…Ø±Ø¨Ø¹ Ø£Ø¶Ù„Ø§Ø¹Ù‡ Ù…ØªØ³Ø§ÙˆÙŠØ©ØŒ ÙˆØ§Ù„Ù…Ø³ØªØ·ÙŠÙ„ Ù„Ù‡ Ø£Ø¶Ù„Ø§Ø¹ Ø·ÙˆÙŠÙ„Ø© ÙˆØ£Ø®Ø±Ù‰ Ù‚ØµÙŠØ±Ø©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'formes';
+
+update public.chapters c set
+  lesson_fr = 'LES NOMBRES JUSQU''Ã€ 1000
+
+CENTAINES, DIZAINES, UNITÃ‰S
+Le nombre 356 = 3 centaines, 5 dizaines, 6 unitÃ©s.
+â€¢ 100 = 1 centaine = 10 dizaines.
+â€¢ Le chiffre le plus Ã  gauche compte les centaines.
+
+LIRE ET Ã‰CRIRE
+356 se lit Â« trois cent cinquante-six Â». On Ã©crit les centaines, puis les
+dizaines, puis les unitÃ©s.
+
+COMPARER
+On compare d''abord les centaines, puis les dizaines, puis les unitÃ©s :
+420 > 399 car 4 centaines > 3 centaines.
+
+RANGER
+Ranger dans l''ordre croissant = du plus petit au plus grand.
+Ordre dÃ©croissant = du plus grand au plus petit.
+
+Ã€ RETENIR : dans un nombre Ã  trois chiffres, on lit de gauche Ã  droite :
+centaines, dizaines, unitÃ©s.',
+  lesson_ar = 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø­ØªÙ‰ 1000
+
+Ø§Ù„Ù…Ø¦Ø§Øª ÙˆØ§Ù„Ø¹Ø´Ø±Ø§Øª ÙˆØ§Ù„ÙˆØ­Ø¯Ø§Øª
+Ø§Ù„Ø¹Ø¯Ø¯ 356 = 3 Ù…Ø¦Ø§Øª Ùˆ5 Ø¹Ø´Ø±Ø§Øª Ùˆ6 ÙˆØ­Ø¯Ø§Øª.
+â€¢ 100 = Ù…Ø¦Ø© ÙˆØ§Ø­Ø¯Ø© = 10 Ø¹Ø´Ø±Ø§Øª.
+â€¢ Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ø£Ù‚ØµÙ‰ ÙŠØ³Ø§Ø±Ù‹Ø§ ÙŠØ¹Ø¯Ù‘ Ø§Ù„Ù…Ø¦Ø§Øª.
+
+Ø§Ù„Ù‚Ø±Ø§Ø¡Ø© ÙˆØ§Ù„ÙƒØªØ§Ø¨Ø©
+356 ÙŠÙÙ‚Ø±Ø£ Â«Ø«Ù„Ø§Ø«Ù…Ø¦Ø© ÙˆØ³ØªØ© ÙˆØ®Ù…Ø³ÙˆÙ†Â». Ù†ÙƒØªØ¨ Ø§Ù„Ù…Ø¦Ø§Øª Ø«Ù… Ø§Ù„Ø¹Ø´Ø±Ø§Øª Ø«Ù… Ø§Ù„ÙˆØ­Ø¯Ø§Øª.
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø©
+Ù†Ù‚Ø§Ø±Ù† Ø§Ù„Ù…Ø¦Ø§Øª Ø£ÙˆÙ„Ø§Ù‹ Ø«Ù… Ø§Ù„Ø¹Ø´Ø±Ø§Øª Ø«Ù… Ø§Ù„ÙˆØ­Ø¯Ø§Øª:
+420 > 399 Ù„Ø£Ù† 4 Ù…Ø¦Ø§Øª > 3 Ù…Ø¦Ø§Øª.
+
+Ø§Ù„ØªØ±ØªÙŠØ¨
+Ø§Ù„ØªØ±ØªÙŠØ¨ Ø§Ù„ØªØµØ§Ø¹Ø¯ÙŠ = Ù…Ù† Ø§Ù„Ø£ØµØºØ± Ø¥Ù„Ù‰ Ø§Ù„Ø£ÙƒØ¨Ø±. Ø§Ù„ØªÙ†Ø§Ø²Ù„ÙŠ = Ù…Ù† Ø§Ù„Ø£ÙƒØ¨Ø± Ø¥Ù„Ù‰ Ø§Ù„Ø£ØµØºØ±.
+
+ØªØ°ÙƒØ±: ÙÙŠ Ø¹Ø¯Ø¯ Ù…Ù† Ø«Ù„Ø§Ø«Ø© Ø£Ø±Ù‚Ø§Ù… Ù†Ù‚Ø±Ø£ Ù…Ù† Ø§Ù„ÙŠØ³Ø§Ø±: Ù…Ø¦Ø§ØªØŒ Ø¹Ø´Ø±Ø§ØªØŒ ÙˆØ­Ø¯Ø§Øª.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'nombres-0-1000';
+
+update public.chapters c set
+  lesson_fr = 'L''ADDITION AVEC RETENUE
+
+POSER UNE ADDITION
+On Ã©crit les nombres l''un sous l''autre en alignant les unitÃ©s sous les
+unitÃ©s, les dizaines sous les dizaines.
+
+LA RETENUE
+Quand la somme d''une colonne dÃ©passe 9, on Ã©crit les unitÃ©s et on
+Â« retient Â» la dizaine dans la colonne suivante.
+Exemple : 27 + 15.
+â€¢ UnitÃ©s : 7 + 5 = 12 â†’ j''Ã©cris 2, je retiens 1.
+â€¢ Dizaines : 2 + 1 + 1 (retenue) = 4.
+â€¢ RÃ©sultat : 42.
+
+VÃ‰RIFIER
+On peut vÃ©rifier en changeant l''ordre : 15 + 27 doit donner le mÃªme rÃ©sultat.
+
+Ã€ RETENIR : on calcule toujours en commenÃ§ant par la colonne des UNITÃ‰S
+(Ã  droite), et la retenue va vers la gauche.',
+  lesson_ar = 'Ø§Ù„Ø¬Ù…Ø¹ Ù…Ø¹ Ø§Ù„Ø§Ø­ØªÙØ§Ø¸
+
+ÙˆØ¶Ø¹ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø¬Ù…Ø¹
+Ù†ÙƒØªØ¨ Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø¨Ø¹Ø¶Ù‡Ø§ ØªØ­Øª Ø¨Ø¹Ø¶ Ù…Ø¹ Ù…Ø­Ø§Ø°Ø§Ø© Ø§Ù„ÙˆØ­Ø¯Ø§Øª ØªØ­Øª Ø§Ù„ÙˆØ­Ø¯Ø§Øª ÙˆØ§Ù„Ø¹Ø´Ø±Ø§Øª ØªØ­Øª Ø§Ù„Ø¹Ø´Ø±Ø§Øª.
+
+Ø§Ù„Ø§Ø­ØªÙØ§Ø¸
+Ø¹Ù†Ø¯Ù…Ø§ ÙŠØªØ¬Ø§ÙˆØ² Ù…Ø¬Ù…ÙˆØ¹ Ø¹Ù…ÙˆØ¯ Ø§Ù„Ø¹Ø¯Ø¯ 9ØŒ Ù†ÙƒØªØ¨ Ø§Ù„ÙˆØ­Ø¯Ø§Øª ÙˆÂ«Ù†Ø­ØªÙØ¸Â» Ø¨Ø§Ù„Ø¹Ø´Ø±Ø© ÙÙŠ Ø§Ù„Ø¹Ù…ÙˆØ¯ Ø§Ù„ØªØ§Ù„ÙŠ.
+Ù…Ø«Ø§Ù„: 27 + 15.
+â€¢ Ø§Ù„ÙˆØ­Ø¯Ø§Øª: 7 + 5 = 12 â† Ù†ÙƒØªØ¨ 2 ÙˆÙ†Ø­ØªÙØ¸ Ø¨Ù€ 1.
+â€¢ Ø§Ù„Ø¹Ø´Ø±Ø§Øª: 2 + 1 + 1 = 4.
+â€¢ Ø§Ù„Ù†ØªÙŠØ¬Ø©: 42.
+
+Ø§Ù„ØªØ­Ù‚Ù‚
+ÙŠÙ…ÙƒÙ† Ø§Ù„ØªØ­Ù‚Ù‚ Ø¨ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„ØªØ±ØªÙŠØ¨: 15 + 27 ÙŠØ¹Ø·ÙŠ Ù†ÙØ³ Ø§Ù„Ù†ØªÙŠØ¬Ø©.
+
+ØªØ°ÙƒØ±: Ù†Ø¨Ø¯Ø£ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø¯Ø§Ø¦Ù…Ù‹Ø§ Ù…Ù† Ø¹Ù…ÙˆØ¯ Ø§Ù„ÙˆØ­Ø¯Ø§Øª (ÙŠÙ…ÙŠÙ†Ù‹Ø§)ØŒ ÙˆØ§Ù„Ø§Ø­ØªÙØ§Ø¸ ÙŠØªØ¬Ù‡ ÙŠØ³Ø§Ø±Ù‹Ø§.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'addition-retenue';
+
+update public.chapters c set
+  lesson_fr = 'LA SOUSTRACTION AVEC RETENUE
+
+POSER UNE SOUSTRACTION
+On aligne les unitÃ©s sous les unitÃ©s, les dizaines sous les dizaines. Le plus
+grand nombre est en haut.
+
+QUAND ON NE PEUT PAS ENLEVER
+Si le chiffre du haut est plus petit que celui du bas, on Â« emprunte Â» une
+dizaine.
+Exemple : 42 âˆ’ 15.
+â€¢ UnitÃ©s : 2 âˆ’ 5 impossible â†’ on emprunte 1 dizaine : 12 âˆ’ 5 = 7.
+â€¢ Dizaines : il reste 3 (car on a prÃªtÃ© 1), 3 âˆ’ 1 = 2.
+â€¢ RÃ©sultat : 27.
+
+VÃ‰RIFIER AVEC L''ADDITION
+On vÃ©rifie : 27 + 15 = 42. Si Ã§a retombe sur le grand nombre, c''est juste !
+
+Ã€ RETENIR : on commence par les unitÃ©s ; si on ne peut pas enlever, on
+emprunte une dizaine Ã  la colonne de gauche.',
+  lesson_ar = 'Ø§Ù„Ø·Ø±Ø­ Ù…Ø¹ Ø§Ù„Ø§Ø­ØªÙØ§Ø¸
+
+ÙˆØ¶Ø¹ Ø¹Ù…Ù„ÙŠØ© Ø§Ù„Ø·Ø±Ø­
+Ù†Ø­Ø§Ø°ÙŠ Ø§Ù„ÙˆØ­Ø¯Ø§Øª ØªØ­Øª Ø§Ù„ÙˆØ­Ø¯Ø§Øª ÙˆØ§Ù„Ø¹Ø´Ø±Ø§Øª ØªØ­Øª Ø§Ù„Ø¹Ø´Ø±Ø§Øª. Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙƒØ¨Ø± ÙÙŠ Ø§Ù„Ø£Ø¹Ù„Ù‰.
+
+Ø¹Ù†Ø¯Ù…Ø§ Ù„Ø§ Ù†Ø³ØªØ·ÙŠØ¹ Ø§Ù„Ø·Ø±Ø­
+Ø¥Ø°Ø§ ÙƒØ§Ù† Ø±Ù‚Ù… Ø§Ù„Ø£Ø¹Ù„Ù‰ Ø£ØµØºØ± Ù…Ù† Ø±Ù‚Ù… Ø§Ù„Ø£Ø³ÙÙ„ØŒ Â«Ù†Ø³ØªÙ„ÙÂ» Ø¹Ø´Ø±Ø©.
+Ù…Ø«Ø§Ù„: 42 âˆ’ 15.
+â€¢ Ø§Ù„ÙˆØ­Ø¯Ø§Øª: 2 âˆ’ 5 Ù…Ø³ØªØ­ÙŠÙ„ â† Ù†Ø³ØªÙ„Ù Ø¹Ø´Ø±Ø©: 12 âˆ’ 5 = 7.
+â€¢ Ø§Ù„Ø¹Ø´Ø±Ø§Øª: ÙŠØ¨Ù‚Ù‰ 3ØŒ Ø«Ù… 3 âˆ’ 1 = 2.
+â€¢ Ø§Ù„Ù†ØªÙŠØ¬Ø©: 27.
+
+Ø§Ù„ØªØ­Ù‚Ù‚ Ø¨Ø§Ù„Ø¬Ù…Ø¹
+Ù†ØªØ­Ù‚Ù‚: 27 + 15 = 42. Ø¥Ø°Ø§ Ø±Ø¬Ø¹Ù†Ø§ Ø¥Ù„Ù‰ Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„ÙƒØ¨ÙŠØ± ÙØ§Ù„Ø¬ÙˆØ§Ø¨ ØµØ­ÙŠØ­!
+
+ØªØ°ÙƒØ±: Ù†Ø¨Ø¯Ø£ Ø¨Ø§Ù„ÙˆØ­Ø¯Ø§ØªØŒ ÙˆØ¥Ø°Ø§ ØªØ¹Ø°Ù‘Ø± Ø§Ù„Ø·Ø±Ø­ Ù†Ø³ØªÙ„Ù Ø¹Ø´Ø±Ø© Ù…Ù† Ø§Ù„Ø¹Ù…ÙˆØ¯ Ø¹Ù„Ù‰ Ø§Ù„ÙŠØ³Ø§Ø±.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'soustraction-retenue';
+
+update public.chapters c set
+  lesson_fr = 'LA MULTIPLICATION
+
+MULTIPLIER, C''EST ADDITIONNER PLUSIEURS FOIS
+3 Ã— 4 veut dire Â« 3 fois 4 Â», c''est-Ã -dire 4 + 4 + 4 = 12.
+On peut aussi voir 4 paquets de 3 : 3 + 3 + 3 + 3 = 12.
+
+LE SIGNE Ã—
+Le signe Ã— se lit Â« multipliÃ© par Â» ou Â« fois Â». Le rÃ©sultat s''appelle le
+PRODUIT.
+
+CE QUI AIDE
+â€¢ Multiplier par 1 ne change rien : 7 Ã— 1 = 7.
+â€¢ Multiplier par 0 donne toujours 0 : 8 Ã— 0 = 0.
+â€¢ On peut changer l''ordre : 3 Ã— 4 = 4 Ã— 3 = 12.
+â€¢ Multiplier par 2, c''est doubler : 6 Ã— 2 = 12.
+
+LES DÃ‰BUTS DES TABLES
+Table de 2 : 2, 4, 6, 8, 10â€¦ Table de 5 : 5, 10, 15, 20â€¦
+
+Ã€ RETENIR : Â« fois Â» veut dire multiplier ; 3 Ã— 4 = 4 + 4 + 4.',
+  lesson_ar = 'Ø§Ù„Ø¶Ø±Ø¨
+
+Ø§Ù„Ø¶Ø±Ø¨ Ù‡Ùˆ Ø§Ù„Ø¬Ù…Ø¹ Ø§Ù„Ù…ØªÙƒØ±Ø±
+3 Ã— 4 ØªØ¹Ù†ÙŠ Â«3 Ù…Ø±Ø§Øª 4Â»ØŒ Ø£ÙŠ 4 + 4 + 4 = 12.
+ÙˆÙŠÙ…ÙƒÙ† Ø±Ø¤ÙŠØªÙ‡Ø§ 4 Ù…Ø¬Ù…ÙˆØ¹Ø§Øª Ù…Ù† 3: 3 + 3 + 3 + 3 = 12.
+
+Ø§Ù„Ø±Ù…Ø² Ã—
+Ø§Ù„Ø±Ù…Ø² Ã— ÙŠÙÙ‚Ø±Ø£ Â«Ù…Ø¶Ø±ÙˆØ¨ ÙÙŠÂ» Ø£Ùˆ Â«Ù…Ø±Ø©Â». Ø§Ù„Ù†ØªÙŠØ¬Ø© ØªÙØ³Ù…Ù‰ Ø§Ù„Ø¬Ø¯Ø§Ø¡.
+
+Ù…Ø§ ÙŠØ³Ø§Ø¹Ø¯
+â€¢ Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ 1 Ù„Ø§ ÙŠØºÙŠÙ‘Ø± Ø´ÙŠØ¦Ù‹Ø§: 7 Ã— 1 = 7.
+â€¢ Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ 0 ÙŠØ¹Ø·ÙŠ 0 Ø¯Ø§Ø¦Ù…Ù‹Ø§: 8 Ã— 0 = 0.
+â€¢ ÙŠÙ…ÙƒÙ† ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„ØªØ±ØªÙŠØ¨: 3 Ã— 4 = 4 Ã— 3.
+â€¢ Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ 2 Ù‡Ùˆ Ø§Ù„Ù…Ø¶Ø§Ø¹ÙØ©: 6 Ã— 2 = 12.
+
+Ø¨Ø¯Ø§ÙŠØ§Øª Ø§Ù„Ø¬Ø¯Ø§ÙˆÙ„
+Ø¬Ø¯ÙˆÙ„ 2: 2ØŒ 4ØŒ 6ØŒ 8ØŒ 10â€¦ Ø¬Ø¯ÙˆÙ„ 5: 5ØŒ 10ØŒ 15ØŒ 20â€¦
+
+ØªØ°ÙƒØ±: Â«Ù…Ø±Ø©Â» ØªØ¹Ù†ÙŠ Ø§Ù„Ø¶Ø±Ø¨Ø› 3 Ã— 4 = 4 + 4 + 4.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'multiplication';
+
+update public.chapters c set
+  lesson_fr = 'LE TEMPS ET LES MESURES
+
+LIRE L''HEURE
+Une journÃ©e a 24 heures. L''horloge a une petite aiguille (les heures) et une
+grande aiguille (les minutes). Quand la grande aiguille est sur 12, il est
+Â« pile Â» l''heure. 1 heure = 60 minutes.
+
+LES JOURS ET LES MOIS
+La semaine a 7 jours (de samedi Ã  vendredi en AlgÃ©rie). L''annÃ©e a 12 mois et
+365 jours.
+
+MESURER LES LONGUEURS
+On mesure avec une rÃ¨gle. L''unitÃ© est le CENTIMÃˆTRE (cm) et le MÃˆTRE (m).
+1 mÃ¨tre = 100 centimÃ¨tres.
+Un crayon fait environ 15 cm ; une porte fait environ 2 m.
+
+COMPARER
+Pour comparer, il faut la mÃªme unitÃ© : 1 m est plus long que 50 cm car
+1 m = 100 cm.
+
+Ã€ RETENIR : 1 heure = 60 minutes ; 1 mÃ¨tre = 100 centimÃ¨tres.',
+  lesson_ar = 'Ø§Ù„ÙˆÙ‚Øª ÙˆØ§Ù„Ù‚ÙŠØ§Ø³
+
+Ù‚Ø±Ø§Ø¡Ø© Ø§Ù„Ø³Ø§Ø¹Ø©
+Ø§Ù„ÙŠÙˆÙ… 24 Ø³Ø§Ø¹Ø©. Ù„Ù„Ø³Ø§Ø¹Ø© Ø¹Ù‚Ø±Ø¨ ØµØºÙŠØ± (Ø§Ù„Ø³Ø§Ø¹Ø§Øª) ÙˆØ¹Ù‚Ø±Ø¨ ÙƒØ¨ÙŠØ± (Ø§Ù„Ø¯Ù‚Ø§Ø¦Ù‚). Ø¹Ù†Ø¯Ù…Ø§ ÙŠÙƒÙˆÙ† Ø§Ù„Ø¹Ù‚Ø±Ø¨
+Ø§Ù„ÙƒØ¨ÙŠØ± Ø¹Ù„Ù‰ 12 ØªÙƒÙˆÙ† Ø§Ù„Ø³Ø§Ø¹Ø© Â«ØªÙ…Ø§Ù…Ù‹Ø§Â». 1 Ø³Ø§Ø¹Ø© = 60 Ø¯Ù‚ÙŠÙ‚Ø©.
+
+Ø§Ù„Ø£ÙŠØ§Ù… ÙˆØ§Ù„Ø£Ø´Ù‡Ø±
+Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹ 7 Ø£ÙŠØ§Ù…. Ø§Ù„Ø³Ù†Ø© 12 Ø´Ù‡Ø±Ù‹Ø§ Ùˆ365 ÙŠÙˆÙ…Ù‹Ø§.
+
+Ù‚ÙŠØ§Ø³ Ø§Ù„Ø£Ø·ÙˆØ§Ù„
+Ù†Ù‚ÙŠØ³ Ø¨Ø§Ù„Ù…Ø³Ø·Ø±Ø©. Ø§Ù„ÙˆØ­Ø¯Ø© Ù‡ÙŠ Ø§Ù„Ø³Ù†ØªÙŠÙ…ØªØ± (Ø³Ù…) ÙˆØ§Ù„Ù…ØªØ± (Ù…). 1 Ù…ØªØ± = 100 Ø³Ù†ØªÙŠÙ…ØªØ±.
+Ø§Ù„Ù‚Ù„Ù… Ø­ÙˆØ§Ù„ÙŠ 15 Ø³Ù…Ø› Ø§Ù„Ø¨Ø§Ø¨ Ø­ÙˆØ§Ù„ÙŠ 2 Ù….
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø©
+Ù„Ù„Ù…Ù‚Ø§Ø±Ù†Ø© Ù†Ø­ØªØ§Ø¬ Ù†ÙØ³ Ø§Ù„ÙˆØ­Ø¯Ø©: 1 Ù… Ø£Ø·ÙˆÙ„ Ù…Ù† 50 Ø³Ù… Ù„Ø£Ù† 1 Ù… = 100 Ø³Ù….
+
+ØªØ°ÙƒØ±: 1 Ø³Ø§Ø¹Ø© = 60 Ø¯Ù‚ÙŠÙ‚Ø©Ø› 1 Ù…ØªØ± = 100 Ø³Ù†ØªÙŠÙ…ØªØ±.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'mesures-temps';
+
+update public.chapters c set
+  lesson_fr = 'LES NOMBRES JUSQU''Ã€ 10 000
+
+LES CLASSES
+Le nombre 4 573 = 4 milliers, 5 centaines, 7 dizaines, 3 unitÃ©s.
+1 000 = 1 millier = 10 centaines.
+
+LIRE UN GRAND NOMBRE
+4 573 se lit Â« quatre mille cinq cent soixante-treize Â». On lit d''abord les
+milliers, puis le reste.
+
+COMPARER ET RANGER
+On compare d''abord la classe la plus grande (les milliers), puis on descend.
+2 999 < 3 001 car 2 milliers < 3 milliers.
+
+LA DROITE GRADUÃ‰E
+Chaque nombre a une place sur la droite graduÃ©e. On peut situer 3 500 entre
+3 000 et 4 000, au milieu.
+
+Ã€ RETENIR : pour comparer deux grands nombres, on regarde d''abord le chiffre
+des milliers.',
+  lesson_ar = 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø­ØªÙ‰ 10000
+
+Ø§Ù„Ø£Ù‚Ø³Ø§Ù…
+Ø§Ù„Ø¹Ø¯Ø¯ 4573 = 4 Ø¢Ù„Ø§Ù Ùˆ5 Ù…Ø¦Ø§Øª Ùˆ7 Ø¹Ø´Ø±Ø§Øª Ùˆ3 ÙˆØ­Ø¯Ø§Øª.
+1000 = Ø£Ù„Ù ÙˆØ§Ø­Ø¯ = 10 Ù…Ø¦Ø§Øª.
+
+Ù‚Ø±Ø§Ø¡Ø© Ø¹Ø¯Ø¯ ÙƒØ¨ÙŠØ±
+4573 ÙŠÙÙ‚Ø±Ø£ Â«Ø£Ø±Ø¨Ø¹Ø© Ø¢Ù„Ø§Ù ÙˆØ®Ù…Ø³Ù…Ø¦Ø© ÙˆØ«Ù„Ø§Ø«Ø© ÙˆØ³Ø¨Ø¹ÙˆÙ†Â». Ù†Ù‚Ø±Ø£ Ø§Ù„Ø¢Ù„Ø§Ù Ø£ÙˆÙ„Ø§Ù‹ Ø«Ù… Ø§Ù„Ø¨Ø§Ù‚ÙŠ.
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø© ÙˆØ§Ù„ØªØ±ØªÙŠØ¨
+Ù†Ù‚Ø§Ø±Ù† Ø§Ù„Ù‚Ø³Ù… Ø§Ù„Ø£ÙƒØ¨Ø± (Ø§Ù„Ø¢Ù„Ø§Ù) Ø£ÙˆÙ„Ø§Ù‹ Ø«Ù… Ù†Ù†Ø²Ù„.
+2999 < 3001 Ù„Ø£Ù† 2 Ø£Ù„Ù < 3 Ø¢Ù„Ø§Ù.
+
+Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… Ø§Ù„Ù…Ø¯Ø±Ù‘Ø¬
+Ù„ÙƒÙ„ Ø¹Ø¯Ø¯ Ù…ÙƒØ§Ù† Ø¹Ù„Ù‰ Ø§Ù„Ù…Ø³ØªÙ‚ÙŠÙ… Ø§Ù„Ù…Ø¯Ø±Ù‘Ø¬. Ù†Ø¶Ø¹ 3500 Ø¨ÙŠÙ† 3000 Ùˆ4000 ÙÙŠ Ø§Ù„Ù…Ù†ØªØµÙ.
+
+ØªØ°ÙƒØ±: Ù„Ù…Ù‚Ø§Ø±Ù†Ø© Ø¹Ø¯Ø¯ÙŠÙ† ÙƒØ¨ÙŠØ±ÙŠÙ† Ù†Ù†Ø¸Ø± Ø£ÙˆÙ„Ø§Ù‹ Ø¥Ù„Ù‰ Ø±Ù‚Ù… Ø§Ù„Ø¢Ù„Ø§Ù.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'nombres-10000';
+
+update public.chapters c set
+  lesson_fr = 'LES TABLES DE MULTIPLICATION
+
+Ã€ QUOI Ã‡A SERT ?
+ConnaÃ®tre ses tables permet de calculer vite, sans compter sur les doigts.
+C''est la base de toutes les maths qui suivent.
+
+LES ASTUCES
+â€¢ Table de 2 : on double. 2Ã—7 = 14.
+â€¢ Table de 5 : le rÃ©sultat finit toujours par 0 ou 5. 5Ã—6 = 30.
+â€¢ Table de 10 : on ajoute un 0. 10Ã—4 = 40.
+â€¢ Table de 9 : les dizaines montent, les unitÃ©s descendent (9, 18, 27, 36â€¦).
+â€¢ 3Ã—4 = 4Ã—3 : apprendre une moitiÃ© suffit (on retourne).
+
+LE PRODUIT
+Le rÃ©sultat d''une multiplication s''appelle le produit. Dans 6 Ã— 7 = 42,
+42 est le produit.
+
+Ã€ RETENIR : apprendre ses tables par cÅ“ur fait gagner beaucoup de temps.
+RÃ©viser un peu chaque jour est la meilleure mÃ©thode.',
+  lesson_ar = 'Ø¬Ø¯Ø§ÙˆÙ„ Ø§Ù„Ø¶Ø±Ø¨
+
+Ù…Ø§ ÙØ§Ø¦Ø¯ØªÙ‡Ø§ØŸ
+Ù…Ø¹Ø±ÙØ© Ø§Ù„Ø¬Ø¯Ø§ÙˆÙ„ ØªØªÙŠØ­ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø¨Ø³Ø±Ø¹Ø© Ø¯ÙˆÙ† Ø§Ù„Ø¹Ø¯Ù‘ Ø¨Ø§Ù„Ø£ØµØ§Ø¨Ø¹ØŒ ÙˆÙ‡ÙŠ Ø£Ø³Ø§Ø³ ÙƒÙ„ Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª Ø§Ù„Ù„Ø§Ø­Ù‚Ø©.
+
+Ø§Ù„Ø­ÙŠÙ„
+â€¢ Ø¬Ø¯ÙˆÙ„ 2: Ù†Ø¶Ø§Ø¹Ù. 2Ã—7 = 14.
+â€¢ Ø¬Ø¯ÙˆÙ„ 5: Ø§Ù„Ù†ØªÙŠØ¬Ø© ØªÙ†ØªÙ‡ÙŠ Ø¯Ø§Ø¦Ù…Ù‹Ø§ Ø¨Ù€ 0 Ø£Ùˆ 5. 5Ã—6 = 30.
+â€¢ Ø¬Ø¯ÙˆÙ„ 10: Ù†Ø¶ÙŠÙ ØµÙØ±Ù‹Ø§. 10Ã—4 = 40.
+â€¢ Ø¬Ø¯ÙˆÙ„ 9: Ø§Ù„Ø¹Ø´Ø±Ø§Øª ØªØµØ¹Ø¯ ÙˆØ§Ù„ÙˆØ­Ø¯Ø§Øª ØªÙ†Ø²Ù„ (9ØŒ 18ØŒ 27ØŒ 36â€¦).
+â€¢ 3Ã—4 = 4Ã—3: ÙŠÙƒÙÙŠ Ø­ÙØ¸ Ù†ØµÙ Ø§Ù„Ø¬Ø¯ÙˆÙ„.
+
+Ø§Ù„Ø¬Ø¯Ø§Ø¡
+Ù†ØªÙŠØ¬Ø© Ø§Ù„Ø¶Ø±Ø¨ ØªÙØ³Ù…Ù‰ Ø§Ù„Ø¬Ø¯Ø§Ø¡. ÙÙŠ 6 Ã— 7 = 42ØŒ Ø§Ù„Ø¹Ø¯Ø¯ 42 Ù‡Ùˆ Ø§Ù„Ø¬Ø¯Ø§Ø¡.
+
+ØªØ°ÙƒØ±: Ø­ÙØ¸ Ø§Ù„Ø¬Ø¯Ø§ÙˆÙ„ Ø¹Ù† Ø¸Ù‡Ø± Ù‚Ù„Ø¨ ÙŠÙˆÙÙ‘Ø± ÙˆÙ‚ØªÙ‹Ø§ ÙƒØ¨ÙŠØ±Ù‹Ø§ØŒ ÙˆØ§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„ÙŠÙˆÙ…ÙŠØ© Ø£ÙØ¶Ù„ Ø·Ø±ÙŠÙ‚Ø©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'tables';
+
+update public.chapters c set
+  lesson_fr = 'LA DIVISION
+
+PARTAGER EN PARTS Ã‰GALES
+Diviser, c''est partager Ã©quitablement. 12 Ã· 3 = 4 : je partage 12 bonbons
+entre 3 enfants, chacun reÃ§oit 4.
+
+LE SIGNE Ã·
+12 Ã· 3 se lit Â« douze divisÃ© par trois Â». Le rÃ©sultat s''appelle le QUOTIENT.
+
+LIEN AVEC LA MULTIPLICATION
+La division est le contraire de la multiplication :
+si 3 Ã— 4 = 12, alors 12 Ã· 3 = 4 et 12 Ã· 4 = 3.
+ConnaÃ®tre ses tables aide Ã©normÃ©ment pour diviser !
+
+LE RESTE
+Parfois le partage n''est pas exact. 13 Ã· 4 : chacun a 3 (car 4Ã—3 = 12) et il
+RESTE 1. On Ã©crit : 13 = 4 Ã— 3 + 1.
+
+Ã€ RETENIR : diviser, c''est partager en parts Ã©gales ; le reste est toujours
+plus petit que le nombre par lequel on divise.',
+  lesson_ar = 'Ø§Ù„Ù‚Ø³Ù…Ø©
+
+Ø§Ù„ØªÙ‚Ø³ÙŠÙ… Ø¥Ù„Ù‰ Ø£Ø¬Ø²Ø§Ø¡ Ù…ØªØ³Ø§ÙˆÙŠØ©
+Ø§Ù„Ù‚Ø³Ù…Ø© ØªØ¹Ù†ÙŠ Ø§Ù„ØªÙˆØ²ÙŠØ¹ Ø¨Ø§Ù„ØªØ³Ø§ÙˆÙŠ. 12 Ã· 3 = 4: Ø£ÙˆØ²Ù‘Ø¹ 12 Ø­Ù„ÙˆÙ‰ Ø¹Ù„Ù‰ 3 Ø£Ø·ÙØ§Ù„ ÙÙŠÙ†Ø§Ù„ ÙƒÙ„ ÙˆØ§Ø­Ø¯ 4.
+
+Ø§Ù„Ø±Ù…Ø² Ã·
+12 Ã· 3 ÙŠÙÙ‚Ø±Ø£ Â«Ø§Ø«Ù†Ø§ Ø¹Ø´Ø± Ù…Ù‚Ø³ÙˆÙ… Ø¹Ù„Ù‰ Ø«Ù„Ø§Ø«Ø©Â». Ø§Ù„Ù†ØªÙŠØ¬Ø© ØªÙØ³Ù…Ù‰ Ø§Ù„Ø­Ø§ØµÙ„ (Ø®Ø§Ø±Ø¬ Ø§Ù„Ù‚Ø³Ù…Ø©).
+
+Ø§Ù„Ø¹Ù„Ø§Ù‚Ø© Ø¨Ø§Ù„Ø¶Ø±Ø¨
+Ø§Ù„Ù‚Ø³Ù…Ø© Ø¹ÙƒØ³ Ø§Ù„Ø¶Ø±Ø¨:
+Ø¥Ø°Ø§ ÙƒØ§Ù† 3 Ã— 4 = 12 ÙØ¥Ù† 12 Ã· 3 = 4 Ùˆ 12 Ã· 4 = 3.
+Ù…Ø¹Ø±ÙØ© Ø§Ù„Ø¬Ø¯Ø§ÙˆÙ„ ØªØ³Ø§Ø¹Ø¯ ÙƒØ«ÙŠØ±Ù‹Ø§ ÙÙŠ Ø§Ù„Ù‚Ø³Ù…Ø©!
+
+Ø§Ù„Ø¨Ø§Ù‚ÙŠ
+Ø£Ø­ÙŠØ§Ù†Ù‹Ø§ Ù„Ø§ ÙŠÙƒÙˆÙ† Ø§Ù„ØªÙ‚Ø³ÙŠÙ… ØªØ§Ù…Ù‹Ø§. 13 Ã· 4: Ù„ÙƒÙ„ ÙˆØ§Ø­Ø¯ 3 (Ù„Ø£Ù† 4Ã—3 = 12) ÙˆÙŠØ¨Ù‚Ù‰ 1.
+Ù†ÙƒØªØ¨: 13 = 4 Ã— 3 + 1.
+
+ØªØ°ÙƒØ±: Ø§Ù„Ù‚Ø³Ù…Ø© ØªÙ‚Ø³ÙŠÙ… Ù…ØªØ³Ø§ÙˆÙØŒ ÙˆØ§Ù„Ø¨Ø§Ù‚ÙŠ Ø¯Ø§Ø¦Ù…Ù‹Ø§ Ø£ØµØºØ± Ù…Ù† Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø°ÙŠ Ù†Ù‚Ø³Ù… Ø¹Ù„ÙŠÙ‡.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'division';
+
+update public.chapters c set
+  lesson_fr = 'LE PÃ‰RIMÃˆTRE
+
+C''EST QUOI LE PÃ‰RIMÃˆTRE ?
+Le pÃ©rimÃ¨tre, c''est la longueur du TOUR d''une figure. Si tu marches tout
+autour d''un terrain, la distance parcourue est son pÃ©rimÃ¨tre.
+
+COMMENT LE CALCULER
+On additionne la longueur de tous les cÃ´tÃ©s.
+â€¢ Triangle de cÃ´tÃ©s 3, 4, 5 cm : P = 3 + 4 + 5 = 12 cm.
+â€¢ CarrÃ© de cÃ´tÃ© 5 cm : les 4 cÃ´tÃ©s sont Ã©gaux â†’ P = 5 + 5 + 5 + 5 = 20 cm,
+  ou plus vite : P = 4 Ã— 5 = 20 cm.
+â€¢ Rectangle de 6 cm et 4 cm : P = 6 + 4 + 6 + 4 = 20 cm,
+  ou P = 2 Ã— (6 + 4) = 20 cm.
+
+L''UNITÃ‰
+Le pÃ©rimÃ¨tre est une longueur : il se mesure en cm, m, kmâ€¦
+
+Ã€ RETENIR : pÃ©rimÃ¨tre = on fait le tour et on additionne tous les cÃ´tÃ©s.',
+  lesson_ar = 'Ø§Ù„Ù…Ø­ÙŠØ·
+
+Ù…Ø§ Ù‡Ùˆ Ø§Ù„Ù…Ø­ÙŠØ·ØŸ
+Ø§Ù„Ù…Ø­ÙŠØ· Ù‡Ùˆ Ø·ÙˆÙ„ Ø§Ù„Ø¯ÙˆØ±Ø§Ù† Ø­ÙˆÙ„ Ø§Ù„Ø´ÙƒÙ„. Ø¥Ø°Ø§ Ù…Ø´ÙŠØª Ø­ÙˆÙ„ Ø£Ø±Ø¶ØŒ ÙØ§Ù„Ù…Ø³Ø§ÙØ© Ø§Ù„ØªÙŠ Ù‚Ø·Ø¹ØªÙ‡Ø§ Ù‡ÙŠ Ù…Ø­ÙŠØ·Ù‡Ø§.
+
+ÙƒÙŠÙ Ù†Ø­Ø³Ø¨Ù‡
+Ù†Ø¬Ù…Ø¹ Ø£Ø·ÙˆØ§Ù„ ÙƒÙ„ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹.
+â€¢ Ù…Ø«Ù„Ø« Ø£Ø¶Ù„Ø§Ø¹Ù‡ 3 Ùˆ4 Ùˆ5 Ø³Ù…: Ø§Ù„Ù…Ø­ÙŠØ· = 3 + 4 + 5 = 12 Ø³Ù….
+â€¢ Ù…Ø±Ø¨Ø¹ Ø¶Ù„Ø¹Ù‡ 5 Ø³Ù…: Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹ Ø§Ù„Ø£Ø±Ø¨Ø¹Ø© Ù…ØªØ³Ø§ÙˆÙŠØ© â† 5 + 5 + 5 + 5 = 20 Ø³Ù…ØŒ
+  Ø£Ùˆ Ø£Ø³Ø±Ø¹: 4 Ã— 5 = 20 Ø³Ù….
+â€¢ Ù…Ø³ØªØ·ÙŠÙ„ 6 Ø³Ù… Ùˆ4 Ø³Ù…: 6 + 4 + 6 + 4 = 20 Ø³Ù…ØŒ Ø£Ùˆ 2 Ã— (6 + 4) = 20 Ø³Ù….
+
+Ø§Ù„ÙˆØ­Ø¯Ø©
+Ø§Ù„Ù…Ø­ÙŠØ· Ø·ÙˆÙ„: ÙŠÙÙ‚Ø§Ø³ Ø¨Ø§Ù„Ø³Ù… ÙˆØ§Ù„Ù… ÙˆØ§Ù„ÙƒÙ…â€¦
+
+ØªØ°ÙƒØ±: Ø§Ù„Ù…Ø­ÙŠØ· = Ù†Ø¯ÙˆØ± Ø­ÙˆÙ„ Ø§Ù„Ø´ÙƒÙ„ ÙˆÙ†Ø¬Ù…Ø¹ ÙƒÙ„ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'perimetre';
+
+update public.chapters c set
+  lesson_fr = 'RÃ‰SOUDRE DES PROBLÃˆMES
+
+LES 3 Ã‰TAPES
+1. LIRE l''Ã©noncÃ© et bien comprendre la question.
+2. CHOISIR la bonne opÃ©ration.
+3. CALCULER et Ã©crire une phrase-rÃ©ponse avec l''unitÃ©.
+
+LES MOTS QUI AIDENT
+â€¢ Â« en tout Â», Â« ensemble Â», Â« au total Â» â†’ addition (+).
+â€¢ Â« reste Â», Â« il enlÃ¨ve Â», Â« de moins Â» â†’ soustraction (âˆ’).
+â€¢ Â« chaque â€¦ fois Â», Â« par paquets de Â» â†’ multiplication (Ã—).
+â€¢ Â« partager Â», Â« rÃ©partir Ã©galement Â» â†’ division (Ã·).
+
+EXEMPLE
+Â« Un fermier a 4 caisses de 8 oranges. Combien d''oranges en tout ? Â»
+Mot clÃ© : Â« en tout Â» + Â« caisses de Â» â†’ 4 Ã— 8 = 32.
+RÃ©ponse : le fermier a 32 oranges.
+
+Ã€ RETENIR : on Ã©crit toujours une phrase-rÃ©ponse complÃ¨te avec l''unitÃ©
+(oranges, DA, cmâ€¦).',
+  lesson_ar = 'Ø­Ù„ Ø§Ù„Ù…Ø´ÙƒÙ„Ø§Øª
+
+Ø§Ù„Ø®Ø·ÙˆØ§Øª Ø§Ù„Ø«Ù„Ø§Ø«
+1. Ù†Ù‚Ø±Ø£ Ø§Ù„Ù†Øµ ÙˆÙ†ÙÙ‡Ù… Ø§Ù„Ø³Ø¤Ø§Ù„ Ø¬ÙŠØ¯Ù‹Ø§.
+2. Ù†Ø®ØªØ§Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ØµØ­ÙŠØ­Ø©.
+3. Ù†Ø­Ø³Ø¨ ÙˆÙ†ÙƒØªØ¨ Ø¬Ù…Ù„Ø© Ø§Ù„Ø¬ÙˆØ§Ø¨ Ù…Ø¹ Ø§Ù„ÙˆØ­Ø¯Ø©.
+
+Ø§Ù„ÙƒÙ„Ù…Ø§Øª Ø§Ù„Ù…Ø³Ø§Ø¹Ø¯Ø©
+â€¢ Â«ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Â»ØŒ Â«Ù…Ø¹Ù‹Ø§Â» â† Ø§Ù„Ø¬Ù…Ø¹ (+).
+â€¢ Â«Ø§Ù„Ø¨Ø§Ù‚ÙŠÂ»ØŒ Â«ÙŠÙØ²ÙŠÙ„Â»ØŒ Â«Ø£Ù‚Ù„ Ø¨Ù€Â» â† Ø§Ù„Ø·Ø±Ø­ (âˆ’).
+â€¢ Â«ÙƒÙ„ â€¦ Ù…Ø±Ø©Â»ØŒ Â«Ù…Ø¬Ù…ÙˆØ¹Ø§Øª Ù…Ù†Â» â† Ø§Ù„Ø¶Ø±Ø¨ (Ã—).
+â€¢ Â«Ù†Ù‚Ø³Ù…Â»ØŒ Â«Ù†ÙˆØ²Ù‘Ø¹ Ø¨Ø§Ù„ØªØ³Ø§ÙˆÙŠÂ» â† Ø§Ù„Ù‚Ø³Ù…Ø© (Ã·).
+
+Ù…Ø«Ø§Ù„
+Â«ÙÙ„Ø§Ø­ Ù„Ø¯ÙŠÙ‡ 4 ØµÙ†Ø§Ø¯ÙŠÙ‚ Ù…Ù† 8 Ø¨Ø±ØªÙ‚Ø§Ù„Ø§Øª. ÙƒÙ… Ø¨Ø±ØªÙ‚Ø§Ù„Ø© ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹ØŸÂ»
+Ø§Ù„ÙƒÙ„Ù…Ø© Ø§Ù„Ù…ÙØªØ§Ø­ÙŠØ©: Â«ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Â» + Â«ØµÙ†Ø§Ø¯ÙŠÙ‚ Ù…Ù†Â» â† 4 Ã— 8 = 32.
+Ø§Ù„Ø¬ÙˆØ§Ø¨: Ù„Ø¯Ù‰ Ø§Ù„ÙÙ„Ø§Ø­ 32 Ø¨Ø±ØªÙ‚Ø§Ù„Ø©.
+
+ØªØ°ÙƒØ±: Ù†ÙƒØªØ¨ Ø¯Ø§Ø¦Ù…Ù‹Ø§ Ø¬Ù…Ù„Ø© Ø¬ÙˆØ§Ø¨ ÙƒØ§Ù…Ù„Ø© Ù…Ø¹ Ø§Ù„ÙˆØ­Ø¯Ø© (Ø¨Ø±ØªÙ‚Ø§Ù„Ø©ØŒ Ø¯Ø¬ØŒ Ø³Ù…â€¦).'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'problemes';
+
+update public.chapters c set
+  lesson_fr = 'LES GRANDS NOMBRES
+
+LES CLASSES
+Un grand nombre se lit par classes de 3 chiffres :
+â€¦ | millions | milliers | unitÃ©s.
+Exemple : 1 254 630 = 1 million, 254 milliers, 630 unitÃ©s.
+
+LIRE ET Ã‰CRIRE
+On lit chaque classe puis on ajoute son nom : Â« un million deux cent
+cinquante-quatre mille six cent trente Â». On laisse un petit espace entre
+les classes pour lire plus facilement.
+
+VALEUR D''UN CHIFFRE
+Dans 1 254 630, le 2 vaut 200 000 (il est au rang des centaines de mille).
+
+COMPARER
+On compare classe par classe, en partant de la gauche.
+1 254 630 > 998 000 car il y a plus de classes (7 chiffres contre 6).
+
+Ã€ RETENIR : on regroupe les chiffres par 3 depuis la droite pour lire
+facilement les grands nombres.',
+  lesson_ar = 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„ÙƒØ¨ÙŠØ±Ø©
+
+Ø§Ù„Ø£Ù‚Ø³Ø§Ù…
+ÙŠÙÙ‚Ø±Ø£ Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„ÙƒØ¨ÙŠØ± Ø¨Ø£Ù‚Ø³Ø§Ù… Ù…Ù† 3 Ø£Ø±Ù‚Ø§Ù…:
+â€¦ | Ù…Ù„Ø§ÙŠÙŠÙ† | Ø¢Ù„Ø§Ù | ÙˆØ­Ø¯Ø§Øª.
+Ù…Ø«Ø§Ù„: 1254630 = Ù…Ù„ÙŠÙˆÙ† Ùˆ254 Ø£Ù„ÙÙ‹Ø§ Ùˆ630.
+
+Ø§Ù„Ù‚Ø±Ø§Ø¡Ø© ÙˆØ§Ù„ÙƒØªØ§Ø¨Ø©
+Ù†Ù‚Ø±Ø£ ÙƒÙ„ Ù‚Ø³Ù… Ø«Ù… Ù†Ø¶ÙŠÙ Ø§Ø³Ù…Ù‡: Â«Ù…Ù„ÙŠÙˆÙ† ÙˆÙ…Ø¦ØªØ§Ù† ÙˆØ£Ø±Ø¨Ø¹Ø© ÙˆØ®Ù…Ø³ÙˆÙ† Ø£Ù„ÙÙ‹Ø§ ÙˆØ³ØªÙ…Ø¦Ø© ÙˆØ«Ù„Ø§Ø«ÙˆÙ†Â».
+Ù†ØªØ±Ùƒ ÙØ±Ø§ØºÙ‹Ø§ ØµØºÙŠØ±Ù‹Ø§ Ø¨ÙŠÙ† Ø§Ù„Ø£Ù‚Ø³Ø§Ù… Ù„ØªØ³Ù‡ÙŠÙ„ Ø§Ù„Ù‚Ø±Ø§Ø¡Ø©.
+
+Ù‚ÙŠÙ…Ø© Ø§Ù„Ø±Ù‚Ù…
+ÙÙŠ 1254630ØŒ Ø§Ù„Ø±Ù‚Ù… 2 ÙŠØ³Ø§ÙˆÙŠ 200000 (ÙÙŠ Ù…Ø±ØªØ¨Ø© Ù…Ø¦Ø§Øª Ø§Ù„Ø¢Ù„Ø§Ù).
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø©
+Ù†Ù‚Ø§Ø±Ù† Ù‚Ø³Ù…Ù‹Ø§ Ù‚Ø³Ù…Ù‹Ø§ Ù…Ù† Ø§Ù„ÙŠØ³Ø§Ø±.
+1254630 > 998000 Ù„Ø£Ù† Ø£Ø±Ù‚Ø§Ù…Ù‡ Ø£ÙƒØ«Ø± (7 Ù…Ù‚Ø§Ø¨Ù„ 6).
+
+ØªØ°ÙƒØ±: Ù†Ø¬Ù…Ø¹ Ø§Ù„Ø£Ø±Ù‚Ø§Ù… Ø«Ù„Ø§Ø«Ø© Ø«Ù„Ø§Ø«Ø© Ù…Ù† Ø§Ù„ÙŠÙ…ÙŠÙ† Ù„Ù‚Ø±Ø§Ø¡Ø© Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„ÙƒØ¨ÙŠØ±Ø© Ø¨Ø³Ù‡ÙˆÙ„Ø©.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'grands-nombres';
+
+update public.chapters c set
+  lesson_fr = 'LES FRACTIONS
+
+UNE FRACTION, C''EST UN PARTAGE
+Quand on partage un gÃ¢teau en parts Ã©gales, chaque part est une fraction.
+3/4 (trois quarts) : on a coupÃ© en 4 parts et on en prend 3.
+â€¢ Le nombre du bas (dÃ©nominateur) = en combien de parts on coupe.
+â€¢ Le nombre du haut (numÃ©rateur) = combien de parts on prend.
+
+DES FRACTIONS QU''ON CONNAÃŽT
+â€¢ 1/2 = un demi (la moitiÃ©).
+â€¢ 1/4 = un quart.
+â€¢ 3/4 = trois quarts.
+
+COMPARER Ã€ 1
+â€¢ Si le haut est plus petit que le bas â†’ la fraction est plus petite que 1
+  (2/3 < 1).
+â€¢ Si le haut = le bas â†’ la fraction vaut 1 (4/4 = 1).
+
+Ã€ RETENIR : le dÃ©nominateur (en bas) dit en combien de parts on coupe ; le
+numÃ©rateur (en haut) dit combien on en prend.',
+  lesson_ar = 'Ø§Ù„ÙƒØ³ÙˆØ±
+
+Ø§Ù„ÙƒØ³Ø± ØªØ¬Ø²Ø¦Ø©
+Ø¹Ù†Ø¯Ù…Ø§ Ù†Ù‚Ø³Ù… ÙƒØ¹ÙƒØ© Ø¥Ù„Ù‰ Ø£Ø¬Ø²Ø§Ø¡ Ù…ØªØ³Ø§ÙˆÙŠØ©ØŒ ÙƒÙ„ Ø¬Ø²Ø¡ ÙƒØ³Ø±.
+3/4 (Ø«Ù„Ø§Ø«Ø© Ø£Ø±Ø¨Ø§Ø¹): Ù‚Ø·Ø¹Ù†Ø§Ù‡Ø§ Ø¥Ù„Ù‰ 4 Ø£Ø¬Ø²Ø§Ø¡ ÙˆØ£Ø®Ø°Ù†Ø§ 3.
+â€¢ Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø³ÙÙ„ÙŠ (Ø§Ù„Ù…Ù‚Ø§Ù…) = Ø¥Ù„Ù‰ ÙƒÙ… Ø¬Ø²Ø¡ Ù†Ù‚Ø·Ø¹.
+â€¢ Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ù„ÙˆÙŠ (Ø§Ù„Ø¨Ø³Ø·) = ÙƒÙ… Ø¬Ø²Ø¡Ù‹Ø§ Ù†Ø£Ø®Ø°.
+
+ÙƒØ³ÙˆØ± Ù†Ø¹Ø±ÙÙ‡Ø§
+â€¢ 1/2 = Ù†ØµÙ. â€¢ 1/4 = Ø±Ø¨Ø¹. â€¢ 3/4 = Ø«Ù„Ø§Ø«Ø© Ø£Ø±Ø¨Ø§Ø¹.
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø© Ø¨Ù€ 1
+â€¢ Ø¥Ø°Ø§ ÙƒØ§Ù† Ø§Ù„Ø£Ø¹Ù„Ù‰ Ø£ØµØºØ± Ù…Ù† Ø§Ù„Ø£Ø³ÙÙ„ â† Ø§Ù„ÙƒØ³Ø± Ø£ØµØºØ± Ù…Ù† 1 (2/3 < 1).
+â€¢ Ø¥Ø°Ø§ ØªØ³Ø§ÙˆÙ‰ Ø§Ù„Ø£Ø¹Ù„Ù‰ ÙˆØ§Ù„Ø£Ø³ÙÙ„ â† Ø§Ù„ÙƒØ³Ø± ÙŠØ³Ø§ÙˆÙŠ 1 (4/4 = 1).
+
+ØªØ°ÙƒØ±: Ø§Ù„Ù…Ù‚Ø§Ù… (Ø§Ù„Ø£Ø³ÙÙ„) ÙŠÙ‚ÙˆÙ„ Ø¥Ù„Ù‰ ÙƒÙ… Ø¬Ø²Ø¡ Ù†Ù‚Ø·Ø¹ØŒ ÙˆØ§Ù„Ø¨Ø³Ø· (Ø§Ù„Ø£Ø¹Ù„Ù‰) ÙŠÙ‚ÙˆÙ„ ÙƒÙ… Ù†Ø£Ø®Ø°.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'fractions';
+
+update public.chapters c set
+  lesson_fr = 'LES NOMBRES DÃ‰CIMAUX
+
+LA VIRGULE
+Un nombre dÃ©cimal a une partie entiÃ¨re et une partie dÃ©cimale sÃ©parÃ©es par
+une virgule. 3,5 : le 3 est la partie entiÃ¨re, le 5 est la partie dÃ©cimale.
+
+LES DIXIÃˆMES
+AprÃ¨s la virgule, le premier chiffre compte les DIXIÃˆMES.
+3,5 = 3 unitÃ©s et 5 dixiÃ¨mes.
+On peut le voir comme une fraction : 3,5 = 3 + 5/10.
+
+LIEN AVEC L''ARGENT ET LES MESURES
+â€¢ 2,50 DA = 2 dinars et 50 centimes.
+â€¢ 1,5 m = 1 mÃ¨tre et 50 centimÃ¨tres.
+
+COMPARER
+On compare d''abord la partie entiÃ¨re : 4,2 > 3,9.
+Si la partie entiÃ¨re est la mÃªme, on regarde aprÃ¨s la virgule : 3,7 > 3,2.
+
+Ã€ RETENIR : le premier chiffre aprÃ¨s la virgule, ce sont les dixiÃ¨mes.
+3,5 = 3,50 (on peut ajouter un zÃ©ro Ã  droite).',
+  lesson_ar = 'Ø§Ù„Ø£Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø¹Ø´Ø±ÙŠØ©
+
+Ø§Ù„ÙØ§ØµÙ„Ø©
+Ù„Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ø´Ø±ÙŠ Ø¬Ø²Ø¡ ØµØ­ÙŠØ­ ÙˆØ¬Ø²Ø¡ Ø¹Ø´Ø±ÙŠ ØªÙØµÙ„ Ø¨ÙŠÙ†Ù‡Ù…Ø§ ÙØ§ØµÙ„Ø©. 3.5: Ø§Ù„Ø¹Ø¯Ø¯ 3 Ø¬Ø²Ø¡ ØµØ­ÙŠØ­ ÙˆØ§Ù„Ø¹Ø¯Ø¯ 5 Ø¬Ø²Ø¡ Ø¹Ø´Ø±ÙŠ.
+
+Ø§Ù„Ø£Ø¹Ø´Ø§Ø±
+Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø©ØŒ Ø§Ù„Ø±Ù‚Ù… Ø§Ù„Ø£ÙˆÙ„ ÙŠØ¹Ø¯Ù‘ Ø§Ù„Ø£Ø¹Ø´Ø§Ø±.
+3.5 = 3 ÙˆØ­Ø¯Ø§Øª Ùˆ5 Ø£Ø¹Ø´Ø§Ø±.
+ÙˆÙŠÙ…ÙƒÙ† Ø±Ø¤ÙŠØªÙ‡ ÙƒÙƒØ³Ø±: 3.5 = 3 + 5/10.
+
+Ø§Ù„Ø¹Ù„Ø§Ù‚Ø© Ø¨Ø§Ù„Ù…Ø§Ù„ ÙˆØ§Ù„Ù‚ÙŠØ§Ø³
+â€¢ 2.50 Ø¯Ø¬ = 2 Ø¯ÙŠÙ†Ø§Ø± Ùˆ50 Ø³Ù†ØªÙŠÙ…Ù‹Ø§.
+â€¢ 1.5 Ù… = 1 Ù…ØªØ± Ùˆ50 Ø³Ù†ØªÙŠÙ…ØªØ±Ù‹Ø§.
+
+Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø©
+Ù†Ù‚Ø§Ø±Ù† Ø§Ù„Ø¬Ø²Ø¡ Ø§Ù„ØµØ­ÙŠØ­ Ø£ÙˆÙ„Ø§Ù‹: 4.2 > 3.9.
+Ø¥Ø°Ø§ ØªØ³Ø§ÙˆÙ‰ Ø§Ù„Ø¬Ø²Ø¡ Ø§Ù„ØµØ­ÙŠØ­ Ù†Ù†Ø¸Ø± Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø©: 3.7 > 3.2.
+
+ØªØ°ÙƒØ±: Ø£ÙˆÙ„ Ø±Ù‚Ù… Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø© Ù‡Ùˆ Ø§Ù„Ø£Ø¹Ø´Ø§Ø±. 3.5 = 3.50.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'decimaux';
+
+update public.chapters c set
+  lesson_fr = 'LES QUATRE OPÃ‰RATIONS
+
+LES QUATRE OPÃ‰RATIONS
+â€¢ Addition (+) : rÃ©unir. 45 + 27 = 72.
+â€¢ Soustraction (âˆ’) : enlever. 72 âˆ’ 27 = 45.
+â€¢ Multiplication (Ã—) : rÃ©pÃ©ter. 6 Ã— 7 = 42.
+â€¢ Division (Ã·) : partager. 42 Ã· 6 = 7.
+
+CE QUI SE VÃ‰RIFIE
+â€¢ L''addition et la soustraction se vÃ©rifient l''une l''autre.
+â€¢ La multiplication et la division se vÃ©rifient l''une l''autre.
+
+L''ORDRE DES CALCULS
+Quand il y a plusieurs opÃ©rations, on fait d''abord la multiplication et la
+division, ensuite l''addition et la soustraction.
+5 + 3 Ã— 2 = 5 + 6 = 11 (et non 16).
+
+CHOISIR LA BONNE OPÃ‰RATION
+On repÃ¨re les mots-clÃ©s : Â« en tout Â» (addition), Â« reste Â» (soustraction),
+Â« fois Â» (multiplication), Â« partager Â» (division).
+
+Ã€ RETENIR : dans un calcul mÃ©langÃ©, la multiplication et la division passent
+AVANT l''addition et la soustraction.',
+  lesson_ar = 'Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ø£Ø±Ø¨Ø¹
+
+Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ø£Ø±Ø¨Ø¹
+â€¢ Ø§Ù„Ø¬Ù…Ø¹ (+): Ø§Ù„Ø¶Ù…Ù‘. 45 + 27 = 72.
+â€¢ Ø§Ù„Ø·Ø±Ø­ (âˆ’): Ø§Ù„Ø¥Ø²Ø§Ù„Ø©. 72 âˆ’ 27 = 45.
+â€¢ Ø§Ù„Ø¶Ø±Ø¨ (Ã—): Ø§Ù„ØªÙƒØ±Ø§Ø±. 6 Ã— 7 = 42.
+â€¢ Ø§Ù„Ù‚Ø³Ù…Ø© (Ã·): Ø§Ù„ØªÙ‚Ø³ÙŠÙ…. 42 Ã· 6 = 7.
+
+Ù…Ø§ ÙŠØªØ­Ù‚Ù‚
+â€¢ Ø§Ù„Ø¬Ù…Ø¹ ÙˆØ§Ù„Ø·Ø±Ø­ ÙŠØªØ­Ù‚Ù‚ Ø£Ø­Ø¯Ù‡Ù…Ø§ Ø¨Ø§Ù„Ø¢Ø®Ø±.
+â€¢ Ø§Ù„Ø¶Ø±Ø¨ ÙˆØ§Ù„Ù‚Ø³Ù…Ø© ÙŠØªØ­Ù‚Ù‚ Ø£Ø­Ø¯Ù‡Ù…Ø§ Ø¨Ø§Ù„Ø¢Ø®Ø±.
+
+ØªØ±ØªÙŠØ¨ Ø§Ù„Ø­Ø³Ø§Ø¨
+Ø¹Ù†Ø¯ ÙˆØ¬ÙˆØ¯ Ø¹Ø¯Ø© Ø¹Ù…Ù„ÙŠØ§ØªØŒ Ù†Ø¨Ø¯Ø£ Ø¨Ø§Ù„Ø¶Ø±Ø¨ ÙˆØ§Ù„Ù‚Ø³Ù…Ø© Ø«Ù… Ø§Ù„Ø¬Ù…Ø¹ ÙˆØ§Ù„Ø·Ø±Ø­.
+5 + 3 Ã— 2 = 5 + 6 = 11 (ÙˆÙ„ÙŠØ³ 16).
+
+Ø§Ø®ØªÙŠØ§Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ© Ø§Ù„ØµØ­ÙŠØ­Ø©
+Ù†Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„ÙƒÙ„Ù…Ø§Øª Ø§Ù„Ù…ÙØªØ§Ø­ÙŠØ©: Â«ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Â» (Ø¬Ù…Ø¹)ØŒ Â«Ø§Ù„Ø¨Ø§Ù‚ÙŠÂ» (Ø·Ø±Ø­)ØŒ Â«Ù…Ø±Ø©Â» (Ø¶Ø±Ø¨)ØŒ Â«Ù†Ù‚Ø³Ù…Â» (Ù‚Ø³Ù…Ø©).
+
+ØªØ°ÙƒØ±: ÙÙŠ Ø§Ù„Ø­Ø³Ø§Ø¨ Ø§Ù„Ù…Ø®ØªÙ„Ø· Ø§Ù„Ø¶Ø±Ø¨ ÙˆØ§Ù„Ù‚Ø³Ù…Ø© Ù‚Ø¨Ù„ Ø§Ù„Ø¬Ù…Ø¹ ÙˆØ§Ù„Ø·Ø±Ø­.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'operations';
+
+update public.chapters c set
+  lesson_fr = 'LES AIRES
+
+C''EST QUOI UNE AIRE ?
+L''aire, c''est la SURFACE Ã  l''intÃ©rieur d''une figure, la place qu''elle
+occupe. On la mesure en cmÂ² (centimÃ¨tres carrÃ©s).
+
+L''AIRE DU CARRÃ‰
+On multiplie le cÃ´tÃ© par lui-mÃªme.
+CarrÃ© de cÃ´tÃ© 5 cm : A = 5 Ã— 5 = 25 cmÂ².
+
+L''AIRE DU RECTANGLE
+On multiplie la Longueur par la largeur.
+Rectangle de 6 cm sur 4 cm : A = 6 Ã— 4 = 24 cmÂ².
+
+NE PAS CONFONDRE AVEC LE PÃ‰RIMÃˆTRE
+â€¢ Le pÃ©rimÃ¨tre = le tour (en cm).
+â€¢ L''aire = l''intÃ©rieur (en cmÂ²).
+Deux jardins peuvent avoir le mÃªme tour mais pas la mÃªme surface !
+
+Ã€ RETENIR : aire du rectangle = Longueur Ã— largeur ; elle se mesure en cmÂ²
+(unitÃ©s carrÃ©es).',
+  lesson_ar = 'Ø§Ù„Ù…Ø³Ø§Ø­Ø§Øª
+
+Ù…Ø§ Ù‡ÙŠ Ø§Ù„Ù…Ø³Ø§Ø­Ø©ØŸ
+Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ù‡ÙŠ Ø§Ù„Ø³Ø·Ø­ Ø¯Ø§Ø®Ù„ Ø§Ù„Ø´ÙƒÙ„ØŒ Ø§Ù„Ù…ÙƒØ§Ù† Ø§Ù„Ø°ÙŠ ÙŠØ´ØºÙ„Ù‡. ØªÙÙ‚Ø§Ø³ Ø¨Ø§Ù„Ø³Ù…Â² (Ø³Ù†ØªÙŠÙ…ØªØ± Ù…Ø±Ø¨Ø¹).
+
+Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ù…Ø±Ø¨Ø¹
+Ù†Ø¶Ø±Ø¨ Ø§Ù„Ø¶Ù„Ø¹ ÙÙŠ Ù†ÙØ³Ù‡.
+Ù…Ø±Ø¨Ø¹ Ø¶Ù„Ø¹Ù‡ 5 Ø³Ù…: Ø§Ù„Ù…Ø³Ø§Ø­Ø© = 5 Ã— 5 = 25 Ø³Ù…Â².
+
+Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„
+Ù†Ø¶Ø±Ø¨ Ø§Ù„Ø·ÙˆÙ„ ÙÙŠ Ø§Ù„Ø¹Ø±Ø¶.
+Ù…Ø³ØªØ·ÙŠÙ„ 6 Ø³Ù… Ã— 4 Ø³Ù…: Ø§Ù„Ù…Ø³Ø§Ø­Ø© = 6 Ã— 4 = 24 Ø³Ù…Â².
+
+Ù„Ø§ Ù†Ø®Ù„Ø· Ù…Ø¹ Ø§Ù„Ù…Ø­ÙŠØ·
+â€¢ Ø§Ù„Ù…Ø­ÙŠØ· = Ø§Ù„Ø¯ÙˆØ±Ø§Ù† (Ø¨Ø§Ù„Ø³Ù…).
+â€¢ Ø§Ù„Ù…Ø³Ø§Ø­Ø© = Ø§Ù„Ø¯Ø§Ø®Ù„ (Ø¨Ø§Ù„Ø³Ù…Â²).
+Ø­Ø¯ÙŠÙ‚ØªØ§Ù† Ù‚Ø¯ ÙŠÙƒÙˆÙ† Ù„Ù‡Ù…Ø§ Ù†ÙØ³ Ø§Ù„Ù…Ø­ÙŠØ· Ù„ÙƒÙ† Ù„ÙŠØ³ Ù†ÙØ³ Ø§Ù„Ù…Ø³Ø§Ø­Ø©!
+
+ØªØ°ÙƒØ±: Ù…Ø³Ø§Ø­Ø© Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„ = Ø§Ù„Ø·ÙˆÙ„ Ã— Ø§Ù„Ø¹Ø±Ø¶ØŒ ÙˆØªÙÙ‚Ø§Ø³ Ø¨Ø§Ù„Ø³Ù…Â².'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'aires';
+
+update public.chapters c set
+  lesson_fr = 'LES ANGLES
+
+C''EST QUOI UN ANGLE ?
+Un angle, c''est l''Ã©cartement entre deux lignes (deux cÃ´tÃ©s) qui se
+rencontrent en un point (le sommet). Plus l''Ã©cartement est grand, plus
+l''angle est grand.
+
+LES TROIS ANGLES Ã€ CONNAÃŽTRE
+â€¢ L''ANGLE DROIT : c''est le coin d''une feuille, d''une fenÃªtre. On le
+  reconnaÃ®t avec l''Ã©querre. Il mesure 90Â°.
+â€¢ L''ANGLE AIGU : plus fermÃ© que l''angle droit (plus petit que 90Â°).
+â€¢ L''ANGLE OBTUS : plus ouvert que l''angle droit (plus grand que 90Â°).
+
+LE PETIT CARRÃ‰
+Pour montrer qu''un angle est droit, on dessine un petit carrÃ© dans le coin.
+
+L''Ã‰QUERRE
+L''Ã©querre sert Ã  tracer et Ã  vÃ©rifier les angles droits.
+
+Ã€ RETENIR : angle droit = coin parfait (comme la feuille) ; aigu = plus
+fermÃ© ; obtus = plus ouvert.',
+  lesson_ar = 'Ø§Ù„Ø²ÙˆØ§ÙŠØ§
+
+Ù…Ø§ Ù‡ÙŠ Ø§Ù„Ø²Ø§ÙˆÙŠØ©ØŸ
+Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ù‡ÙŠ Ø§Ù„Ø§Ù†ÙØ±Ø§Ø¬ Ø¨ÙŠÙ† Ø®Ø·ÙŠÙ† (Ø¶Ù„Ø¹ÙŠÙ†) ÙŠÙ„ØªÙ‚ÙŠØ§Ù† ÙÙŠ Ù†Ù‚Ø·Ø© (Ø§Ù„Ø±Ø£Ø³). ÙƒÙ„Ù…Ø§ Ø²Ø§Ø¯ Ø§Ù„Ø§Ù†ÙØ±Ø§Ø¬
+ÙƒØ¨Ø±Øª Ø§Ù„Ø²Ø§ÙˆÙŠØ©.
+
+Ø§Ù„Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ø«Ù„Ø§Ø« Ø§Ù„ÙˆØ§Ø¬Ø¨ Ù…Ø¹Ø±ÙØªÙ‡Ø§
+â€¢ Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©: Ù‡ÙŠ Ø²Ø§ÙˆÙŠØ© ÙˆØ±Ù‚Ø© Ø£Ùˆ Ù†Ø§ÙØ°Ø©. Ù†ØªØ¹Ø±Ù‘Ù Ø¹Ù„ÙŠÙ‡Ø§ Ø¨Ø§Ù„ÙƒÙˆØ³. ØªÙ‚ÙŠØ³ 90Â°.
+â€¢ Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ø­Ø§Ø¯Ø©: Ø£ÙƒØ«Ø± Ø§Ù†ØºÙ„Ø§Ù‚Ù‹Ø§ Ù…Ù† Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© (Ø£ØµØºØ± Ù…Ù† 90Â°).
+â€¢ Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù…Ù†ÙØ±Ø¬Ø©: Ø£ÙƒØ«Ø± Ø§Ù†ÙØªØ§Ø­Ù‹Ø§ Ù…Ù† Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© (Ø£ÙƒØ¨Ø± Ù…Ù† 90Â°).
+
+Ø§Ù„Ù…Ø±Ø¨Ø¹ Ø§Ù„ØµØºÙŠØ±
+Ù„Ø¨ÙŠØ§Ù† Ø£Ù† Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ù‚Ø§Ø¦Ù…Ø© Ù†Ø±Ø³Ù… Ù…Ø±Ø¨Ø¹Ù‹Ø§ ØµØºÙŠØ±Ù‹Ø§ ÙÙŠ Ø§Ù„Ø²Ø§ÙˆÙŠØ©.
+
+Ø§Ù„ÙƒÙˆØ³ (Ø§Ù„Ù…Ø«Ù„Ø« Ø§Ù„Ù‚Ø§Ø¦Ù…)
+Ø§Ù„ÙƒÙˆØ³ ÙŠÙØ³ØªØ¹Ù…Ù„ Ù„Ø±Ø³Ù… Ø§Ù„Ø²ÙˆØ§ÙŠØ§ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© ÙˆØ§Ù„ØªØ­Ù‚Ù‚ Ù…Ù†Ù‡Ø§.
+
+ØªØ°ÙƒØ±: Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© = Ø²Ø§ÙˆÙŠØ© ØªØ§Ù…Ø© (ÙƒØ§Ù„ÙˆØ±Ù‚Ø©)ØŒ Ø§Ù„Ø­Ø§Ø¯Ø© = Ø£ÙƒØ«Ø± Ø§Ù†ØºÙ„Ø§Ù‚Ù‹Ø§ØŒ Ø§Ù„Ù…Ù†ÙØ±Ø¬Ø© = Ø£ÙƒØ«Ø± Ø§Ù†ÙØªØ§Ø­Ù‹Ø§.'
+from public.subjects s
+where c.subject_id = s.id and s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'angles';
+
+-- ===== 3. Quiz banks =====
+
+-- 1AP
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans 34, combien y a-t-il de dizaines ?', 'ÙÙŠ Ø§Ù„Ø¹Ø¯Ø¯ 34ØŒ ÙƒÙ… Ø¹Ø´Ø±Ø©ØŸ',
+   '["3","4","34","7"]'::jsonb, '["3","4","34","7"]'::jsonb, 0,
+   'Le chiffre de gauche = 3 dizaines.', 'Ø±Ù‚Ù… Ø§Ù„ÙŠØ³Ø§Ø± = 3 Ø¹Ø´Ø±Ø§Øª.', 'easy', 1),
+  ('Quel nombre est le plus grand ?', 'Ø£ÙŠ Ø¹Ø¯Ø¯ Ø£ÙƒØ¨Ø±ØŸ',
+   '["52","47","39","50"]'::jsonb, '["52","47","39","50"]'::jsonb, 0,
+   '52 a 5 dizaines, c''est le plus grand.', '52 Ù„Ù‡ 5 Ø¹Ø´Ø±Ø§Øª ÙÙ‡Ùˆ Ø§Ù„Ø£ÙƒØ¨Ø±.', 'easy', 2),
+  ('Quel nombre vient juste aprÃ¨s 29 ?', 'Ù…Ø§ Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø°ÙŠ ÙŠØ£ØªÙŠ Ø¨Ø¹Ø¯ 29 Ù…Ø¨Ø§Ø´Ø±Ø©ØŸ',
+   '["30","28","40","31"]'::jsonb, '["30","28","40","31"]'::jsonb, 0,
+   'AprÃ¨s 29 vient 30.', 'Ø¨Ø¹Ø¯ 29 ÙŠØ£ØªÙŠ 30.', 'medium', 3),
+  ('ComplÃ¨te : 5 dizaines et 3 unitÃ©s = ?', 'Ø£ÙƒÙ…Ù„: 5 Ø¹Ø´Ø±Ø§Øª Ùˆ3 ÙˆØ­Ø¯Ø§Øª = ØŸ',
+   '["53","35","8","503"]'::jsonb, '["53","35","8","503"]'::jsonb, 0,
+   '5 dizaines = 50, plus 3 = 53.', '5 Ø¹Ø´Ø±Ø§Øª = 50 Ø²Ø§Ø¦Ø¯ 3 = 53.', 'medium', 4),
+  ('Range du plus petit au plus grand : 40, 14, 41', 'Ø±ØªÙ‘Ø¨ Ù…Ù† Ø§Ù„Ø£ØµØºØ± Ø¥Ù„Ù‰ Ø§Ù„Ø£ÙƒØ¨Ø±: 40ØŒ 14ØŒ 41',
+   '["14, 40, 41","40, 41, 14","41, 40, 14","14, 41, 40"]'::jsonb, '["14, 40, 41","40, 41, 14","41, 40, 14","14, 41, 40"]'::jsonb, 0,
+   '14 < 40 < 41.', '14 < 40 < 41.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'nombres-0-100'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Calcule : 3 + 2', 'Ø§Ø­Ø³Ø¨: 3 + 2',
+   '["5","6","4","1"]'::jsonb, '["5","6","4","1"]'::jsonb, 0, '3 + 2 = 5.', '3 + 2 = 5.', 'easy', 1),
+  ('Calcule : 6 + 4', 'Ø§Ø­Ø³Ø¨: 6 + 4',
+   '["10","9","11","2"]'::jsonb, '["10","9","11","2"]'::jsonb, 0, '6 + 4 = 10.', '6 + 4 = 10.', 'easy', 2),
+  ('Calcule : 7 + 0', 'Ø§Ø­Ø³Ø¨: 7 + 0',
+   '["7","0","8","70"]'::jsonb, '["7","0","8","70"]'::jsonb, 0, 'Ajouter 0 ne change rien.', 'Ø¥Ø¶Ø§ÙØ© 0 Ù„Ø§ ØªØºÙŠÙ‘Ø± Ø´ÙŠØ¦Ù‹Ø§.', 'medium', 3),
+  ('Calcule : 8 + 5', 'Ø§Ø­Ø³Ø¨: 8 + 5',
+   '["13","12","14","3"]'::jsonb, '["13","12","14","3"]'::jsonb, 0, '8 + 5 = 13.', '8 + 5 = 13.', 'medium', 4),
+  ('23 + 10 = ?', '23 + 10 = ØŸ',
+   '["33","24","32","13"]'::jsonb, '["33","24","32","13"]'::jsonb, 0, 'Ajouter 10 = +1 dizaine.', 'Ø¥Ø¶Ø§ÙØ© 10 = Ø¹Ø´Ø±Ø© ÙˆØ§Ø­Ø¯Ø©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'addition'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Calcule : 5 âˆ’ 2', 'Ø§Ø­Ø³Ø¨: 5 âˆ’ 2',
+   '["3","2","7","4"]'::jsonb, '["3","2","7","4"]'::jsonb, 0, '5 âˆ’ 2 = 3.', '5 âˆ’ 2 = 3.', 'easy', 1),
+  ('Calcule : 8 âˆ’ 0', 'Ø§Ø­Ø³Ø¨: 8 âˆ’ 0',
+   '["8","0","7","80"]'::jsonb, '["8","0","7","80"]'::jsonb, 0, 'Enlever 0 ne change rien.', 'Ø¥Ø²Ø§Ù„Ø© 0 Ù„Ø§ ØªØºÙŠÙ‘Ø± Ø´ÙŠØ¦Ù‹Ø§.', 'easy', 2),
+  ('Calcule : 6 âˆ’ 6', 'Ø§Ø­Ø³Ø¨: 6 âˆ’ 6',
+   '["0","6","12","1"]'::jsonb, '["0","6","12","1"]'::jsonb, 0, 'Un nombre moins lui-mÃªme = 0.', 'Ø¹Ø¯Ø¯ Ù†Ø§Ù‚Øµ Ù†ÙØ³Ù‡ = 0.', 'medium', 3),
+  ('Calcule : 10 âˆ’ 4', 'Ø§Ø­Ø³Ø¨: 10 âˆ’ 4',
+   '["6","7","5","14"]'::jsonb, '["6","7","5","14"]'::jsonb, 0, '10 âˆ’ 4 = 6.', '10 âˆ’ 4 = 6.', 'medium', 4),
+  ('J''ai 9 billes, j''en perds 3. Il me resteâ€¦', 'Ù„Ø¯ÙŠÙ‘ 9 ÙƒØ±Ø§Øª ÙÙ‚Ø¯Øª 3. ÙŠØ¨Ù‚Ù‰â€¦',
+   '["6","12","3","9"]'::jsonb, '["6","12","3","9"]'::jsonb, 0, '9 âˆ’ 3 = 6.', '9 âˆ’ 3 = 6.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'soustraction'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Combien de cÃ´tÃ©s a un triangle ?', 'ÙƒÙ… Ø¶Ù„Ø¹Ù‹Ø§ Ù„Ù„Ù…Ø«Ù„Ø«ØŸ',
+   '["3","4","5","0"]'::jsonb, '["3","4","5","0"]'::jsonb, 0, 'Le triangle a 3 cÃ´tÃ©s.', 'Ù„Ù„Ù…Ø«Ù„Ø« 3 Ø£Ø¶Ù„Ø§Ø¹.', 'easy', 1),
+  ('Quelle forme n''a pas de coin ?', 'Ø£ÙŠ Ø´ÙƒÙ„ Ø¨Ù„Ø§ Ø²ÙˆØ§ÙŠØ§ØŸ',
+   '["le rond","le carrÃ©","le triangle","le rectangle"]'::jsonb, '["Ø§Ù„Ø¯Ø§Ø¦Ø±Ø©","Ø§Ù„Ù…Ø±Ø¨Ø¹","Ø§Ù„Ù…Ø«Ù„Ø«","Ø§Ù„Ù…Ø³ØªØ·ÙŠÙ„"]'::jsonb, 0,
+   'Le rond est tout arrondi, sans coin.', 'Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ù…Ø³ØªØ¯ÙŠØ±Ø© Ø¨Ù„Ø§ Ø²ÙˆØ§ÙŠØ§.', 'easy', 2),
+  ('Combien de cÃ´tÃ©s a un carrÃ© ?', 'ÙƒÙ… Ø¶Ù„Ø¹Ù‹Ø§ Ù„Ù„Ù…Ø±Ø¨Ø¹ØŸ',
+   '["4","3","5","6"]'::jsonb, '["4","3","5","6"]'::jsonb, 0, 'Le carrÃ© a 4 cÃ´tÃ©s.', 'Ù„Ù„Ù…Ø±Ø¨Ø¹ 4 Ø£Ø¶Ù„Ø§Ø¹.', 'medium', 3),
+  ('Une porte a la forme d''unâ€¦', 'Ø§Ù„Ø¨Ø§Ø¨ Ù„Ù‡ Ø´ÙƒÙ„â€¦',
+   '["rectangle","rond","triangle","carrÃ©"]'::jsonb, '["Ù…Ø³ØªØ·ÙŠÙ„","Ø¯Ø§Ø¦Ø±Ø©","Ù…Ø«Ù„Ø«","Ù…Ø±Ø¨Ø¹"]'::jsonb, 0,
+   'La porte est un rectangle (cÃ´tÃ©s longs et courts).', 'Ø§Ù„Ø¨Ø§Ø¨ Ù…Ø³ØªØ·ÙŠÙ„.', 'medium', 4),
+  ('Le carrÃ© a tous ses cÃ´tÃ©sâ€¦', 'Ø§Ù„Ù…Ø±Ø¨Ø¹ ÙƒÙ„ Ø£Ø¶Ù„Ø§Ø¹Ù‡â€¦',
+   '["Ã©gaux","diffÃ©rents","arrondis","de 3"]'::jsonb, '["Ù…ØªØ³Ø§ÙˆÙŠØ©","Ù…Ø®ØªÙ„ÙØ©","Ù…Ø³ØªØ¯ÙŠØ±Ø©","Ø«Ù„Ø§Ø«Ø©"]'::jsonb, 0,
+   'Le carrÃ© a 4 cÃ´tÃ©s Ã©gaux.', 'Ø§Ù„Ù…Ø±Ø¨Ø¹ Ù„Ù‡ 4 Ø£Ø¶Ù„Ø§Ø¹ Ù…ØªØ³Ø§ÙˆÙŠØ©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '1AP' and s.slug = 'mathematiques' and c.slug = 'formes'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- 2AP
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans 356, combien de centaines ?', 'ÙÙŠ 356ØŒ ÙƒÙ… Ù…Ø¦Ø©ØŸ',
+   '["3","5","6","356"]'::jsonb, '["3","5","6","356"]'::jsonb, 0, 'Le chiffre de gauche = 3 centaines.', 'Ø±Ù‚Ù… Ø§Ù„ÙŠØ³Ø§Ø± = 3 Ù…Ø¦Ø§Øª.', 'easy', 1),
+  ('Quel nombre est le plus grand ?', 'Ø£ÙŠ Ø¹Ø¯Ø¯ Ø£ÙƒØ¨Ø±ØŸ',
+   '["420","399","350","401"]'::jsonb, '["420","399","350","401"]'::jsonb, 0, '420 a 4 centaines.', '420 Ù„Ù‡ 4 Ù…Ø¦Ø§Øª.', 'easy', 2),
+  ('100 = combien de dizaines ?', '100 = ÙƒÙ… Ø¹Ø´Ø±Ø©ØŸ',
+   '["10","100","1","1000"]'::jsonb, '["10","100","1","1000"]'::jsonb, 0, '100 = 10 dizaines.', '100 = 10 Ø¹Ø´Ø±Ø§Øª.', 'medium', 3),
+  ('Comment se lit 205 ?', 'ÙƒÙŠÙ ÙŠÙÙ‚Ø±Ø£ 205ØŸ',
+   '["deux cent cinq","deux cent cinquante","vingt-cinq","deux mille cinq"]'::jsonb, '["Ù…Ø¦ØªØ§Ù† ÙˆØ®Ù…Ø³Ø©","Ù…Ø¦ØªØ§Ù† ÙˆØ®Ù…Ø³ÙˆÙ†","Ø®Ù…Ø³Ø© ÙˆØ¹Ø´Ø±ÙˆÙ†","Ø£Ù„ÙØ§Ù† ÙˆØ®Ù…Ø³Ø©"]'::jsonb, 0,
+   '205 = deux cent cinq.', '205 = Ù…Ø¦ØªØ§Ù† ÙˆØ®Ù…Ø³Ø©.', 'medium', 4),
+  ('Range dans l''ordre croissant : 250, 205, 502', 'Ø±ØªÙ‘Ø¨ ØªØµØ§Ø¹Ø¯ÙŠÙ‹Ø§: 250ØŒ 205ØŒ 502',
+   '["205, 250, 502","250, 205, 502","502, 250, 205","205, 502, 250"]'::jsonb, '["205, 250, 502","250, 205, 502","502, 250, 205","205, 502, 250"]'::jsonb, 0,
+   '205 < 250 < 502.', '205 < 250 < 502.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'nombres-0-1000'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('27 + 15 = ?', '27 + 15 = ØŸ',
+   '["42","32","41","52"]'::jsonb, '["42","32","41","52"]'::jsonb, 0, '7+5=12 (retenue), puis 2+1+1=4 â†’ 42.', '7+5=12 Ø«Ù… 4 â†’ 42.', 'medium', 1),
+  ('Dans 8 + 5 = 13, la retenue estâ€¦', 'ÙÙŠ 8 + 5 = 13ØŒ Ø§Ù„Ø§Ø­ØªÙØ§Ø¸ Ù‡Ùˆâ€¦',
+   '["1","3","8","5"]'::jsonb, '["1","3","8","5"]'::jsonb, 0, 'On Ã©crit 3, on retient 1.', 'Ù†ÙƒØªØ¨ 3 ÙˆÙ†Ø­ØªÙØ¸ Ø¨Ù€ 1.', 'medium', 2),
+  ('45 + 5 = ?', '45 + 5 = ØŸ',
+   '["50","40","55","4"]'::jsonb, '["50","40","55","4"]'::jsonb, 0, '45 + 5 = 50.', '45 + 5 = 50.', 'easy', 3),
+  ('On commence l''addition par la colonne desâ€¦', 'Ù†Ø¨Ø¯Ø£ Ø§Ù„Ø¬Ù…Ø¹ Ù…Ù† Ø¹Ù…ÙˆØ¯â€¦',
+   '["unitÃ©s","dizaines","centaines","milliers"]'::jsonb, '["Ø§Ù„ÙˆØ­Ø¯Ø§Øª","Ø§Ù„Ø¹Ø´Ø±Ø§Øª","Ø§Ù„Ù…Ø¦Ø§Øª","Ø§Ù„Ø¢Ù„Ø§Ù"]'::jsonb, 0,
+   'On commence par les unitÃ©s (Ã  droite).', 'Ù†Ø¨Ø¯Ø£ Ø¨Ø§Ù„ÙˆØ­Ø¯Ø§Øª (ÙŠÙ…ÙŠÙ†Ù‹Ø§).', 'easy', 4),
+  ('38 + 24 = ?', '38 + 24 = ØŸ',
+   '["62","52","61","63"]'::jsonb, '["62","52","61","63"]'::jsonb, 0, '8+4=12, retenue; 3+2+1=6 â†’ 62.', '8+4=12 Ø«Ù… 6 â†’ 62.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'addition-retenue'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('42 âˆ’ 15 = ?', '42 âˆ’ 15 = ØŸ',
+   '["27","37","33","28"]'::jsonb, '["27","37","33","28"]'::jsonb, 0, 'On emprunte : 12âˆ’5=7, 3âˆ’1=2 â†’ 27.', 'Ù†Ø³ØªÙ„Ù: 27.', 'medium', 1),
+  ('Pour vÃ©rifier 42 âˆ’ 15 = 27, on calculeâ€¦', 'Ù„Ù„ØªØ­Ù‚Ù‚ Ù…Ù† 42 âˆ’ 15 = 27 Ù†Ø­Ø³Ø¨â€¦',
+   '["27 + 15","27 âˆ’ 15","42 + 15","42 + 27"]'::jsonb, '["27 + 15","27 âˆ’ 15","42 + 15","42 + 27"]'::jsonb, 0,
+   '27 + 15 = 42 : c''est juste.', '27 + 15 = 42: ØµØ­ÙŠØ­.', 'medium', 2),
+  ('50 âˆ’ 20 = ?', '50 âˆ’ 20 = ØŸ',
+   '["30","70","20","40"]'::jsonb, '["30","70","20","40"]'::jsonb, 0, '50 âˆ’ 20 = 30.', '50 âˆ’ 20 = 30.', 'easy', 3),
+  ('Le plus grand nombre se metâ€¦', 'Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙƒØ¨Ø± ÙŠÙˆØ¶Ø¹â€¦',
+   '["en haut","en bas","Ã  droite","au milieu"]'::jsonb, '["ÙÙŠ Ø§Ù„Ø£Ø¹Ù„Ù‰","ÙÙŠ Ø§Ù„Ø£Ø³ÙÙ„","ÙŠÙ…ÙŠÙ†Ù‹Ø§","ÙÙŠ Ø§Ù„ÙˆØ³Ø·"]'::jsonb, 0,
+   'Le plus grand nombre en haut.', 'Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø£ÙƒØ¨Ø± ÙÙŠ Ø§Ù„Ø£Ø¹Ù„Ù‰.', 'easy', 4),
+  ('63 âˆ’ 28 = ?', '63 âˆ’ 28 = ØŸ',
+   '["35","45","41","31"]'::jsonb, '["35","45","41","31"]'::jsonb, 0, 'On emprunte : 13âˆ’8=5, 5âˆ’2=3 â†’ 35.', 'Ù†Ø³ØªÙ„Ù: 35.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'soustraction-retenue'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('3 Ã— 4 veut direâ€¦', '3 Ã— 4 ØªØ¹Ù†ÙŠâ€¦',
+   '["4 + 4 + 4","3 + 4","4 âˆ’ 3","3 + 3"]'::jsonb, '["4 + 4 + 4","3 + 4","4 âˆ’ 3","3 + 3"]'::jsonb, 0,
+   '3 fois 4 = 4+4+4 = 12.', '3 Ù…Ø±Ø§Øª 4 = 12.', 'easy', 1),
+  ('7 Ã— 1 = ?', '7 Ã— 1 = ØŸ',
+   '["7","1","8","70"]'::jsonb, '["7","1","8","70"]'::jsonb, 0, 'Multiplier par 1 ne change rien.', 'Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ 1 Ù„Ø§ ÙŠØºÙŠÙ‘Ø±.', 'easy', 2),
+  ('8 Ã— 0 = ?', '8 Ã— 0 = ØŸ',
+   '["0","8","80","1"]'::jsonb, '["0","8","80","1"]'::jsonb, 0, 'Multiplier par 0 donne 0.', 'Ø§Ù„Ø¶Ø±Ø¨ ÙÙŠ 0 = 0.', 'medium', 3),
+  ('5 Ã— 3 = ?', '5 Ã— 3 = ØŸ',
+   '["15","8","10","53"]'::jsonb, '["15","8","10","53"]'::jsonb, 0, '5 Ã— 3 = 15.', '5 Ã— 3 = 15.', 'medium', 4),
+  ('6 Ã— 2 = ? (doubler 6)', '6 Ã— 2 = ØŸ (Ø¶Ø¹Ù 6)',
+   '["12","8","62","16"]'::jsonb, '["12","8","62","16"]'::jsonb, 0, 'Doubler 6 = 12.', 'Ø¶Ø¹Ù 6 = 12.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'multiplication'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('1 heure = combien de minutes ?', '1 Ø³Ø§Ø¹Ø© = ÙƒÙ… Ø¯Ù‚ÙŠÙ‚Ø©ØŸ',
+   '["60","100","30","24"]'::jsonb, '["60","100","30","24"]'::jsonb, 0, '1 heure = 60 minutes.', '1 Ø³Ø§Ø¹Ø© = 60 Ø¯Ù‚ÙŠÙ‚Ø©.', 'easy', 1),
+  ('1 mÃ¨tre = combien de centimÃ¨tres ?', '1 Ù…ØªØ± = ÙƒÙ… Ø³Ù†ØªÙŠÙ…ØªØ±ØŸ',
+   '["100","10","1000","60"]'::jsonb, '["100","10","1000","60"]'::jsonb, 0, '1 m = 100 cm.', '1 Ù… = 100 Ø³Ù….', 'easy', 2),
+  ('Combien de jours dans une semaine ?', 'ÙƒÙ… ÙŠÙˆÙ…Ù‹Ø§ ÙÙŠ Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹ØŸ',
+   '["7","12","30","365"]'::jsonb, '["7","12","30","365"]'::jsonb, 0, 'La semaine = 7 jours.', 'Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹ = 7 Ø£ÙŠØ§Ù….', 'medium', 3),
+  ('Qu''est-ce qui est le plus long ?', 'Ø£ÙŠÙ‡Ù…Ø§ Ø£Ø·ÙˆÙ„ØŸ',
+   '["1 m","50 cm","20 cm","99 cm"]'::jsonb, '["1 Ù…","50 Ø³Ù…","20 Ø³Ù…","99 Ø³Ù…"]'::jsonb, 0,
+   '1 m = 100 cm > 99 cm.', '1 Ù… = 100 Ø³Ù… > 99 Ø³Ù….', 'medium', 4),
+  ('Combien de mois dans une annÃ©e ?', 'ÙƒÙ… Ø´Ù‡Ø±Ù‹Ø§ ÙÙŠ Ø§Ù„Ø³Ù†Ø©ØŸ',
+   '["12","7","365","24"]'::jsonb, '["12","7","365","24"]'::jsonb, 0, 'L''annÃ©e = 12 mois.', 'Ø§Ù„Ø³Ù†Ø© = 12 Ø´Ù‡Ø±Ù‹Ø§.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '2AP' and s.slug = 'mathematiques' and c.slug = 'mesures-temps'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- 3AP
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans 4 573, combien de milliers ?', 'ÙÙŠ 4573ØŒ ÙƒÙ… Ø£Ù„ÙÙ‹Ø§ØŸ',
+   '["4","5","7","3"]'::jsonb, '["4","5","7","3"]'::jsonb, 0, 'Le chiffre de gauche = 4 milliers.', 'Ø±Ù‚Ù… Ø§Ù„ÙŠØ³Ø§Ø± = 4 Ø¢Ù„Ø§Ù.', 'easy', 1),
+  ('Quel nombre est le plus grand ?', 'Ø£ÙŠ Ø¹Ø¯Ø¯ Ø£ÙƒØ¨Ø±ØŸ',
+   '["3 001","2 999","3 000","2 998"]'::jsonb, '["3 001","2 999","3 000","2 998"]'::jsonb, 0, '3 001 a 3 milliers.', '3001 Ù„Ù‡ 3 Ø¢Ù„Ø§Ù.', 'easy', 2),
+  ('1 000 = combien de centaines ?', '1000 = ÙƒÙ… Ù…Ø¦Ø©ØŸ',
+   '["10","100","1","1000"]'::jsonb, '["10","100","1","1000"]'::jsonb, 0, '1 000 = 10 centaines.', '1000 = 10 Ù…Ø¦Ø§Øª.', 'medium', 3),
+  ('Comment se lit 4 573 ?', 'ÙƒÙŠÙ ÙŠÙÙ‚Ø±Ø£ 4573ØŸ',
+   '["quatre mille cinq cent soixante-treize","quatre cent cinquante-sept","quarante-cinq mille","quatre mille sept cent"]'::jsonb,
+   '["Ø£Ø±Ø¨Ø¹Ø© Ø¢Ù„Ø§Ù ÙˆØ®Ù…Ø³Ù…Ø¦Ø© ÙˆØ«Ù„Ø§Ø«Ø© ÙˆØ³Ø¨Ø¹ÙˆÙ†","Ø£Ø±Ø¨Ø¹Ù…Ø¦Ø© ÙˆØ³Ø¨Ø¹Ø© ÙˆØ®Ù…Ø³ÙˆÙ†","Ø®Ù…Ø³Ø© ÙˆØ£Ø±Ø¨Ø¹ÙˆÙ† Ø£Ù„ÙÙ‹Ø§","Ø£Ø±Ø¨Ø¹Ø© Ø¢Ù„Ø§Ù ÙˆØ³Ø¨Ø¹Ù…Ø¦Ø©"]'::jsonb, 0,
+   '4 573 = quatre mille cinq cent soixante-treize.', 'Ø£Ø±Ø¨Ø¹Ø© Ø¢Ù„Ø§Ù ÙˆØ®Ù…Ø³Ù…Ø¦Ø© ÙˆØ«Ù„Ø§Ø«Ø© ÙˆØ³Ø¨Ø¹ÙˆÙ†.', 'medium', 4),
+  ('3 500 se situe entreâ€¦', '3500 ÙŠÙ‚Ø¹ Ø¨ÙŠÙ†â€¦',
+   '["3 000 et 4 000","2 000 et 3 000","4 000 et 5 000","3 500 et 3 600"]'::jsonb, '["3000 Ùˆ4000","2000 Ùˆ3000","4000 Ùˆ5000","3500 Ùˆ3600"]'::jsonb, 0,
+   '3 500 est entre 3 000 et 4 000.', '3500 Ø¨ÙŠÙ† 3000 Ùˆ4000.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'nombres-10000'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('7 Ã— 8 = ?', '7 Ã— 8 = ØŸ',
+   '["56","54","63","49"]'::jsonb, '["56","54","63","49"]'::jsonb, 0, '7 Ã— 8 = 56.', '7 Ã— 8 = 56.', 'medium', 1),
+  ('6 Ã— 9 = ?', '6 Ã— 9 = ØŸ',
+   '["54","56","45","63"]'::jsonb, '["54","56","45","63"]'::jsonb, 0, '6 Ã— 9 = 54.', '6 Ã— 9 = 54.', 'medium', 2),
+  ('Dans la table de 5, les rÃ©sultats finissent parâ€¦', 'ÙÙŠ Ø¬Ø¯ÙˆÙ„ 5ØŒ Ø§Ù„Ù†ØªØ§Ø¦Ø¬ ØªÙ†ØªÙ‡ÙŠ Ø¨Ù€â€¦',
+   '["0 ou 5","1 ou 2","toujours 5","toujours 0"]'::jsonb, '["0 Ø£Ùˆ 5","1 Ø£Ùˆ 2","Ø¯Ø§Ø¦Ù…Ù‹Ø§ 5","Ø¯Ø§Ø¦Ù…Ù‹Ø§ 0"]'::jsonb, 0,
+   'Table de 5 : 5, 10, 15, 20â€¦', 'Ø¬Ø¯ÙˆÙ„ 5: 5ØŒ 10ØŒ 15ØŒ 20â€¦', 'easy', 3),
+  ('8 Ã— 10 = ?', '8 Ã— 10 = ØŸ',
+   '["80","18","800","88"]'::jsonb, '["80","18","800","88"]'::jsonb, 0, 'Table de 10 : on ajoute un 0.', 'Ø¬Ø¯ÙˆÙ„ 10: Ù†Ø¶ÙŠÙ ØµÙØ±Ù‹Ø§.', 'easy', 4),
+  ('Combien font 9 Ã— 9 ?', 'ÙƒÙ… ÙŠØ³Ø§ÙˆÙŠ 9 Ã— 9ØŸ',
+   '["81","72","90","99"]'::jsonb, '["81","72","90","99"]'::jsonb, 0, '9 Ã— 9 = 81.', '9 Ã— 9 = 81.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'tables'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('12 Ã· 3 = ?', '12 Ã· 3 = ØŸ',
+   '["4","3","6","9"]'::jsonb, '["4","3","6","9"]'::jsonb, 0, '12 partagÃ© en 3 = 4.', '12 Ø¹Ù„Ù‰ 3 = 4.', 'easy', 1),
+  ('20 Ã· 5 = ?', '20 Ã· 5 = ØŸ',
+   '["4","5","15","10"]'::jsonb, '["4","5","15","10"]'::jsonb, 0, '20 Ã· 5 = 4.', '20 Ã· 5 = 4.', 'easy', 2),
+  ('Si 3 Ã— 4 = 12, alors 12 Ã· 4 = ?', 'Ø¥Ø°Ø§ ÙƒØ§Ù† 3 Ã— 4 = 12 ÙØ¥Ù† 12 Ã· 4 = ØŸ',
+   '["3","4","12","8"]'::jsonb, '["3","4","12","8"]'::jsonb, 0, 'Division = contraire de multiplication.', 'Ø§Ù„Ù‚Ø³Ù…Ø© Ø¹ÙƒØ³ Ø§Ù„Ø¶Ø±Ø¨.', 'medium', 3),
+  ('On partage 15 bonbons entre 3 enfants. Chacun aâ€¦', 'Ù†Ù‚Ø³Ù… 15 Ø­Ù„ÙˆÙ‰ Ø¹Ù„Ù‰ 3 Ø£Ø·ÙØ§Ù„. Ù„ÙƒÙ„ ÙˆØ§Ø­Ø¯â€¦',
+   '["5","3","12","6"]'::jsonb, '["5","3","12","6"]'::jsonb, 0, '15 Ã· 3 = 5.', '15 Ã· 3 = 5.', 'medium', 4),
+  ('13 Ã· 4 : combien reste-t-il ?', '13 Ã· 4: ÙƒÙ… Ø§Ù„Ø¨Ø§Ù‚ÙŠØŸ',
+   '["1","3","0","2"]'::jsonb, '["1","3","0","2"]'::jsonb, 0, '4Ã—3=12, reste 1.', '4Ã—3=12ØŒ Ø§Ù„Ø¨Ø§Ù‚ÙŠ 1.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'division'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('PÃ©rimÃ¨tre d''un triangle de cÃ´tÃ©s 3, 4, 5 cm ?', 'Ù…Ø­ÙŠØ· Ù…Ø«Ù„Ø« Ø£Ø¶Ù„Ø§Ø¹Ù‡ 3 Ùˆ4 Ùˆ5 Ø³Ù…ØŸ',
+   '["12 cm","9 cm","15 cm","60 cm"]'::jsonb, '["12 Ø³Ù…","9 Ø³Ù…","15 Ø³Ù…","60 Ø³Ù…"]'::jsonb, 0, '3+4+5 = 12 cm.', '3+4+5 = 12 Ø³Ù….', 'easy', 1),
+  ('PÃ©rimÃ¨tre d''un carrÃ© de cÃ´tÃ© 5 cm ?', 'Ù…Ø­ÙŠØ· Ù…Ø±Ø¨Ø¹ Ø¶Ù„Ø¹Ù‡ 5 Ø³Ù…ØŸ',
+   '["20 cm","25 cm","10 cm","5 cm"]'::jsonb, '["20 Ø³Ù…","25 Ø³Ù…","10 Ø³Ù…","5 Ø³Ù…"]'::jsonb, 0, '4 Ã— 5 = 20 cm.', '4 Ã— 5 = 20 Ø³Ù….', 'easy', 2),
+  ('Le pÃ©rimÃ¨tre, c''estâ€¦', 'Ø§Ù„Ù…Ø­ÙŠØ· Ù‡Ùˆâ€¦',
+   '["le tour de la figure","l''intÃ©rieur","la hauteur","le nombre de cÃ´tÃ©s"]'::jsonb, '["Ø¯ÙˆØ±Ø§Ù† Ø§Ù„Ø´ÙƒÙ„","Ø§Ù„Ø¯Ø§Ø®Ù„","Ø§Ù„Ø§Ø±ØªÙØ§Ø¹","Ø¹Ø¯Ø¯ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹"]'::jsonb, 0,
+   'Le pÃ©rimÃ¨tre = le tour.', 'Ø§Ù„Ù…Ø­ÙŠØ· = Ø§Ù„Ø¯ÙˆØ±Ø§Ù†.', 'medium', 3),
+  ('Rectangle 6 cm et 4 cm : pÃ©rimÃ¨tre ?', 'Ù…Ø³ØªØ·ÙŠÙ„ 6 Ø³Ù… Ùˆ4 Ø³Ù…: Ø§Ù„Ù…Ø­ÙŠØ·ØŸ',
+   '["20 cm","24 cm","10 cm","48 cm"]'::jsonb, '["20 Ø³Ù…","24 Ø³Ù…","10 Ø³Ù…","48 Ø³Ù…"]'::jsonb, 0, '2Ã—(6+4)=20 cm.', '2Ã—(6+4)=20 Ø³Ù….', 'medium', 4),
+  ('Le pÃ©rimÃ¨tre se mesure enâ€¦', 'Ø§Ù„Ù…Ø­ÙŠØ· ÙŠÙÙ‚Ø§Ø³ Ø¨Ù€â€¦',
+   '["cm","cmÂ²","kg","litres"]'::jsonb, '["Ø³Ù…","Ø³Ù…Â²","ÙƒØº","Ù„ØªØ±Ø§Øª"]'::jsonb, 0, 'Le pÃ©rimÃ¨tre est une longueur (cm).', 'Ø§Ù„Ù…Ø­ÙŠØ· Ø·ÙˆÙ„ (Ø³Ù…).', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'perimetre'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Â« en tout Â» indique souventâ€¦', 'Â«ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Â» ØªØ¯Ù„ ØºØ§Ù„Ø¨Ù‹Ø§ Ø¹Ù„Ù‰â€¦',
+   '["une addition","une soustraction","une division","rien"]'::jsonb, '["Ø§Ù„Ø¬Ù…Ø¹","Ø§Ù„Ø·Ø±Ø­","Ø§Ù„Ù‚Ø³Ù…Ø©","Ù„Ø§ Ø´ÙŠØ¡"]'::jsonb, 0,
+   'Â« en tout Â» â†’ addition.', 'Â«ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹Â» â† Ø§Ù„Ø¬Ù…Ø¹.', 'easy', 1),
+  ('Â« partager Ã©galement Â» indiqueâ€¦', 'Â«Ù†ÙˆØ²Ù‘Ø¹ Ø¨Ø§Ù„ØªØ³Ø§ÙˆÙŠÂ» ØªØ¯Ù„ Ø¹Ù„Ù‰â€¦',
+   '["une division","une addition","une multiplication","une soustraction"]'::jsonb, '["Ø§Ù„Ù‚Ø³Ù…Ø©","Ø§Ù„Ø¬Ù…Ø¹","Ø§Ù„Ø¶Ø±Ø¨","Ø§Ù„Ø·Ø±Ø­"]'::jsonb, 0,
+   'Â« partager Â» â†’ division.', 'Â«Ù†Ù‚Ø³Ù…Â» â† Ø§Ù„Ù‚Ø³Ù…Ø©.', 'easy', 2),
+  ('4 caisses de 8 oranges : combien en tout ?', '4 ØµÙ†Ø§Ø¯ÙŠÙ‚ Ù…Ù† 8 Ø¨Ø±ØªÙ‚Ø§Ù„Ø§Øª: ÙƒÙ… ÙÙŠ Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹ØŸ',
+   '["32","12","4","24"]'::jsonb, '["32","12","4","24"]'::jsonb, 0, '4 Ã— 8 = 32.', '4 Ã— 8 = 32.', 'medium', 3),
+  ('Yacine a 50 DA, il dÃ©pense 30 DA. Il resteâ€¦', 'ÙŠØ§Ø³ÙŠÙ† Ù„Ø¯ÙŠÙ‡ 50 Ø¯Ø¬ Ø£Ù†ÙÙ‚ 30 Ø¯Ø¬. ÙŠØ¨Ù‚Ù‰â€¦',
+   '["20 DA","80 DA","30 DA","10 DA"]'::jsonb, '["20 Ø¯Ø¬","80 Ø¯Ø¬","30 Ø¯Ø¬","10 Ø¯Ø¬"]'::jsonb, 0, '50 âˆ’ 30 = 20 DA.', '50 âˆ’ 30 = 20 Ø¯Ø¬.', 'medium', 4),
+  ('Â« de moins que Â» indiqueâ€¦', 'Â«Ø£Ù‚Ù„ Ø¨Ù€Â» ØªØ¯Ù„ Ø¹Ù„Ù‰â€¦',
+   '["une soustraction","une addition","une multiplication","une division"]'::jsonb, '["Ø§Ù„Ø·Ø±Ø­","Ø§Ù„Ø¬Ù…Ø¹","Ø§Ù„Ø¶Ø±Ø¨","Ø§Ù„Ù‚Ø³Ù…Ø©"]'::jsonb, 0,
+   'Â« de moins Â» â†’ soustraction.', 'Â«Ø£Ù‚Ù„ Ø¨Ù€Â» â† Ø§Ù„Ø·Ø±Ø­.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '3AP' and s.slug = 'mathematiques' and c.slug = 'problemes'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+-- 4AP
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans 1 254 630, que vaut le chiffre 2 ?', 'ÙÙŠ 1254630ØŒ ÙƒÙ… ÙŠØ³Ø§ÙˆÙŠ Ø§Ù„Ø±Ù‚Ù… 2ØŸ',
+   '["200 000","2 000","20 000","2 000 000"]'::jsonb, '["200 000","2 000","20 000","2 000 000"]'::jsonb, 0,
+   'Le 2 est au rang des centaines de mille.', 'Ø§Ù„Ø±Ù‚Ù… 2 ÙÙŠ Ù…Ø±ØªØ¨Ø© Ù…Ø¦Ø§Øª Ø§Ù„Ø¢Ù„Ø§Ù.', 'medium', 1),
+  ('Quel est le plus grand ?', 'Ø£ÙŠ Ø¹Ø¯Ø¯ Ø£ÙƒØ¨Ø±ØŸ',
+   '["1 254 630","998 000","875 999","1 000 000"]'::jsonb, '["1 254 630","998 000","875 999","1 000 000"]'::jsonb, 0,
+   '1 254 630 a 7 chiffres.', '1254630 Ù„Ù‡ 7 Ø£Ø±Ù‚Ø§Ù….', 'easy', 2),
+  ('Un million s''Ã©critâ€¦', 'Ø§Ù„Ù…Ù„ÙŠÙˆÙ† ÙŠÙÙƒØªØ¨â€¦',
+   '["1 000 000","100 000","10 000","1 000"]'::jsonb, '["1 000 000","100 000","10 000","1 000"]'::jsonb, 0,
+   'Un million = 6 zÃ©ros.', 'Ø§Ù„Ù…Ù„ÙŠÙˆÙ† = 6 Ø£ØµÙØ§Ø±.', 'easy', 3),
+  ('On regroupe les chiffres parâ€¦ pour lire', 'Ù†Ø¬Ù…Ø¹ Ø§Ù„Ø£Ø±Ù‚Ø§Ù…â€¦ Ù„ØªØ³Ù‡ÙŠÙ„ Ø§Ù„Ù‚Ø±Ø§Ø¡Ø©',
+   '["3","2","4","5"]'::jsonb, '["3","2","4","5"]'::jsonb, 0,
+   'Par classes de 3 chiffres.', 'Ø¨Ø£Ù‚Ø³Ø§Ù… Ù…Ù† 3 Ø£Ø±Ù‚Ø§Ù….', 'medium', 4),
+  ('Combien de chiffres a le nombre "deux cent mille" ?', 'ÙƒÙ… Ø±Ù‚Ù…Ù‹Ø§ Ù„Ù„Ø¹Ø¯Ø¯ Â«Ù…Ø¦ØªØ§ Ø£Ù„ÙÂ»ØŸ',
+   '["6","5","4","7"]'::jsonb, '["6","5","4","7"]'::jsonb, 0,
+   '200 000 a 6 chiffres.', '200000 Ù„Ù‡ 6 Ø£Ø±Ù‚Ø§Ù….', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'grands-nombres'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans 3/4, quel est le dÃ©nominateur ?', 'ÙÙŠ 3/4ØŒ Ù…Ø§ Ø§Ù„Ù…Ù‚Ø§Ù…ØŸ',
+   '["4","3","7","1"]'::jsonb, '["4","3","7","1"]'::jsonb, 0, 'Le nombre du bas = dÃ©nominateur.', 'Ø§Ù„Ø¹Ø¯Ø¯ Ø§Ù„Ø³ÙÙ„ÙŠ = Ø§Ù„Ù…Ù‚Ø§Ù….', 'easy', 1),
+  ('Quelle fraction est la moitiÃ© ?', 'Ø£ÙŠ ÙƒØ³Ø± ÙŠÙ…Ø«Ù„ Ø§Ù„Ù†ØµÙØŸ',
+   '["1/2","1/4","3/4","2/3"]'::jsonb, '["1/2","1/4","3/4","2/3"]'::jsonb, 0, '1/2 = la moitiÃ©.', '1/2 = Ø§Ù„Ù†ØµÙ.', 'easy', 2),
+  ('4/4 vautâ€¦', '4/4 ÙŠØ³Ø§ÙˆÙŠâ€¦',
+   '["1","4","0","1/2"]'::jsonb, '["1","4","0","1/2"]'::jsonb, 0, 'Haut = bas â†’ la fraction vaut 1.', 'Ø§Ù„Ø¨Ø³Ø· = Ø§Ù„Ù…Ù‚Ø§Ù… â† ÙŠØ³Ø§ÙˆÙŠ 1.', 'medium', 3),
+  ('Une pizza en 4 parts, j''en prends 3 :', 'Ø¨ÙŠØªØ²Ø§ ÙÙŠ 4 Ø£Ø¬Ø²Ø§Ø¡ Ø¢Ø®Ø° 3:',
+   '["3/4","4/3","3/1","1/4"]'::jsonb, '["3/4","4/3","3/1","1/4"]'::jsonb, 0, '3 parts sur 4 = 3/4.', '3 Ù…Ù† 4 = 3/4.', 'medium', 4),
+  ('2/3 comparÃ© Ã  1 :', '2/3 Ù…Ù‚Ø§Ø±Ù†Ø© Ø¨Ù€ 1:',
+   '["plus petit que 1","plus grand que 1","Ã©gal Ã  1","Ã©gal Ã  2"]'::jsonb, '["Ø£ØµØºØ± Ù…Ù† 1","Ø£ÙƒØ¨Ø± Ù…Ù† 1","ÙŠØ³Ø§ÙˆÙŠ 1","ÙŠØ³Ø§ÙˆÙŠ 2"]'::jsonb, 0,
+   'Haut < bas â†’ plus petit que 1.', 'Ø§Ù„Ø¨Ø³Ø· < Ø§Ù„Ù…Ù‚Ø§Ù… â† Ø£ØµØºØ± Ù…Ù† 1.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'fractions'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Dans 3,5, quelle est la partie dÃ©cimale ?', 'ÙÙŠ 3.5ØŒ Ù…Ø§ Ø§Ù„Ø¬Ø²Ø¡ Ø§Ù„Ø¹Ø´Ø±ÙŠØŸ',
+   '["5","3","35","0"]'::jsonb, '["5","3","35","0"]'::jsonb, 0, 'AprÃ¨s la virgule = 5.', 'Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø© = 5.', 'easy', 1),
+  ('Le premier chiffre aprÃ¨s la virgule, ce sont lesâ€¦', 'Ø£ÙˆÙ„ Ø±Ù‚Ù… Ø¨Ø¹Ø¯ Ø§Ù„ÙØ§ØµÙ„Ø© Ù‡Ùˆâ€¦',
+   '["dixiÃ¨mes","unitÃ©s","dizaines","centiÃ¨mes"]'::jsonb, '["Ø§Ù„Ø£Ø¹Ø´Ø§Ø±","Ø§Ù„ÙˆØ­Ø¯Ø§Øª","Ø§Ù„Ø¹Ø´Ø±Ø§Øª","Ø£Ø¬Ø²Ø§Ø¡ Ø§Ù„Ù…Ø¦Ø©"]'::jsonb, 0,
+   '1er aprÃ¨s la virgule = dixiÃ¨mes.', 'Ø£ÙˆÙ„ Ø±Ù‚Ù… = Ø§Ù„Ø£Ø¹Ø´Ø§Ø±.', 'medium', 2),
+  ('2,50 DA = ?', '2.50 Ø¯Ø¬ = ØŸ',
+   '["2 dinars et 50 centimes","250 dinars","2 dinars et 5 centimes","25 dinars"]'::jsonb, '["2 Ø¯ÙŠÙ†Ø§Ø± Ùˆ50 Ø³Ù†ØªÙŠÙ…Ù‹Ø§","250 Ø¯ÙŠÙ†Ø§Ø±Ù‹Ø§","2 Ø¯ÙŠÙ†Ø§Ø± Ùˆ5 Ø³Ù†ØªÙŠÙ…Ø§Øª","25 Ø¯ÙŠÙ†Ø§Ø±Ù‹Ø§"]'::jsonb, 0,
+   '2,50 = 2 dinars et 50 centimes.', '2.50 = 2 Ø¯ÙŠÙ†Ø§Ø± Ùˆ50 Ø³Ù†ØªÙŠÙ…Ù‹Ø§.', 'medium', 3),
+  ('Compare : 4,2 â€¦ 3,9', 'Ù‚Ø§Ø±Ù†: 4.2 â€¦ 3.9',
+   '["4,2 > 3,9","4,2 < 3,9","4,2 = 3,9","impossible"]'::jsonb, '["4.2 > 3.9","4.2 < 3.9","4.2 = 3.9","Ù…Ø³ØªØ­ÙŠÙ„"]'::jsonb, 0,
+   'Partie entiÃ¨re 4 > 3.', 'Ø§Ù„Ø¬Ø²Ø¡ Ø§Ù„ØµØ­ÙŠØ­ 4 > 3.', 'easy', 4),
+  ('3,5 est Ã©gal Ã â€¦', '3.5 ÙŠØ³Ø§ÙˆÙŠâ€¦',
+   '["3,50","3,05","35","0,35"]'::jsonb, '["3.50","3.05","35","0.35"]'::jsonb, 0,
+   'On peut ajouter un zÃ©ro Ã  droite.', 'ÙŠÙ…ÙƒÙ† Ø¥Ø¶Ø§ÙØ© ØµÙØ± Ø¹Ù„Ù‰ Ø§Ù„ÙŠÙ…ÙŠÙ†.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'decimaux'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Calcule : 5 + 3 Ã— 2', 'Ø§Ø­Ø³Ø¨: 5 + 3 Ã— 2',
+   '["11","16","13","10"]'::jsonb, '["11","16","13","10"]'::jsonb, 0, 'Multiplication d''abord.', 'Ø§Ù„Ø¶Ø±Ø¨ Ø£ÙˆÙ„Ø§Ù‹.', 'medium', 1),
+  ('Le contraire de la multiplication estâ€¦', 'Ø¹ÙƒØ³ Ø§Ù„Ø¶Ø±Ø¨ Ù‡Ùˆâ€¦',
+   '["la division","l''addition","la soustraction","rien"]'::jsonb, '["Ø§Ù„Ù‚Ø³Ù…Ø©","Ø§Ù„Ø¬Ù…Ø¹","Ø§Ù„Ø·Ø±Ø­","Ù„Ø§ Ø´ÙŠØ¡"]'::jsonb, 0,
+   'Division = contraire de Ã—.', 'Ø§Ù„Ù‚Ø³Ù…Ø© Ø¹ÙƒØ³ Ø§Ù„Ø¶Ø±Ø¨.', 'easy', 2),
+  ('45 + 27 = ?', '45 + 27 = ØŸ',
+   '["72","62","71","73"]'::jsonb, '["72","62","71","73"]'::jsonb, 0, '45 + 27 = 72.', '45 + 27 = 72.', 'easy', 3),
+  ('Dans un calcul mÃ©langÃ©, on fait d''abordâ€¦', 'ÙÙŠ Ø­Ø³Ø§Ø¨ Ù…Ø®ØªÙ„Ø· Ù†Ø¨Ø¯Ø£ Ø¨Ù€â€¦',
+   '["Ã— et Ã·","+ et âˆ’","de gauche Ã  droite","au hasard"]'::jsonb, '["Ã— ÙˆÃ·","+ Ùˆâˆ’","Ù…Ù† Ø§Ù„ÙŠØ³Ø§Ø±","Ø¹Ø´ÙˆØ§Ø¦ÙŠÙ‹Ø§"]'::jsonb, 0,
+   'Multiplication/division avant addition/soustraction.', 'Ø§Ù„Ø¶Ø±Ø¨ ÙˆØ§Ù„Ù‚Ø³Ù…Ø© Ù‚Ø¨Ù„ Ø§Ù„Ø¬Ù…Ø¹ ÙˆØ§Ù„Ø·Ø±Ø­.', 'medium', 4),
+  ('6 Ã— 7 = ?', '6 Ã— 7 = ØŸ',
+   '["42","36","48","13"]'::jsonb, '["42","36","48","13"]'::jsonb, 0, '6 Ã— 7 = 42.', '6 Ã— 7 = 42.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'operations'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Aire d''un carrÃ© de cÃ´tÃ© 5 cm ?', 'Ù…Ø³Ø§Ø­Ø© Ù…Ø±Ø¨Ø¹ Ø¶Ù„Ø¹Ù‡ 5 Ø³Ù…ØŸ',
+   '["25 cmÂ²","20 cmÂ²","10 cmÂ²","25 cm"]'::jsonb, '["25 Ø³Ù…Â²","20 Ø³Ù…Â²","10 Ø³Ù…Â²","25 Ø³Ù…"]'::jsonb, 0, '5 Ã— 5 = 25 cmÂ².', '5 Ã— 5 = 25 Ø³Ù…Â².', 'easy', 1),
+  ('Aire d''un rectangle 6 cm Ã— 4 cm ?', 'Ù…Ø³Ø§Ø­Ø© Ù…Ø³ØªØ·ÙŠÙ„ 6 Ø³Ù… Ã— 4 Ø³Ù…ØŸ',
+   '["24 cmÂ²","20 cmÂ²","10 cmÂ²","24 cm"]'::jsonb, '["24 Ø³Ù…Â²","20 Ø³Ù…Â²","10 Ø³Ù…Â²","24 Ø³Ù…"]'::jsonb, 0, '6 Ã— 4 = 24 cmÂ².', '6 Ã— 4 = 24 Ø³Ù…Â².', 'easy', 2),
+  ('L''aire se mesure enâ€¦', 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© ØªÙÙ‚Ø§Ø³ Ø¨Ù€â€¦',
+   '["cmÂ²","cm","kg","min"]'::jsonb, '["Ø³Ù…Â²","Ø³Ù…","ÙƒØº","Ø¯Ù‚ÙŠÙ‚Ø©"]'::jsonb, 0, 'L''aire est une surface : cmÂ².', 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ø³Ø·Ø­: Ø³Ù…Â².', 'medium', 3),
+  ('L''aire, c''estâ€¦', 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ù‡ÙŠâ€¦',
+   '["l''intÃ©rieur de la figure","le tour","le nombre de cÃ´tÃ©s","la hauteur"]'::jsonb, '["Ø¯Ø§Ø®Ù„ Ø§Ù„Ø´ÙƒÙ„","Ø§Ù„Ø¯ÙˆØ±Ø§Ù†","Ø¹Ø¯Ø¯ Ø§Ù„Ø£Ø¶Ù„Ø§Ø¹","Ø§Ù„Ø§Ø±ØªÙØ§Ø¹"]'::jsonb, 0,
+   'L''aire = la surface intÃ©rieure.', 'Ø§Ù„Ù…Ø³Ø§Ø­Ø© = Ø§Ù„Ø³Ø·Ø­ Ø§Ù„Ø¯Ø§Ø®Ù„ÙŠ.', 'medium', 4),
+  ('Aire d''un carrÃ© de cÃ´tÃ© 10 cm ?', 'Ù…Ø³Ø§Ø­Ø© Ù…Ø±Ø¨Ø¹ Ø¶Ù„Ø¹Ù‡ 10 Ø³Ù…ØŸ',
+   '["100 cmÂ²","40 cmÂ²","20 cmÂ²","1000 cmÂ²"]'::jsonb, '["100 Ø³Ù…Â²","40 Ø³Ù…Â²","20 Ø³Ù…Â²","1000 Ø³Ù…Â²"]'::jsonb, 0, '10 Ã— 10 = 100 cmÂ².', '10 Ã— 10 = 100 Ø³Ù…Â².', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'aires'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+insert into public.quiz_questions (chapter_id, prompt_fr, prompt_ar, options_fr, options_ar, correct_index, explanation_fr, explanation_ar, difficulty, sort_order)
+select c.id, v.* from public.chapters c join public.subjects s on s.id = c.subject_id
+cross join (values
+  ('Un angle droit ressemble au coin d''uneâ€¦', 'Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© ØªØ´Ø¨Ù‡ Ø²Ø§ÙˆÙŠØ©â€¦',
+   '["feuille","balle","assiette","roue"]'::jsonb, '["ÙˆØ±Ù‚Ø©","ÙƒØ±Ø©","ØµØ­Ù†","Ø¹Ø¬Ù„Ø©"]'::jsonb, 0,
+   'L''angle droit = coin d''une feuille.', 'Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© = Ø²Ø§ÙˆÙŠØ© ÙˆØ±Ù‚Ø©.', 'easy', 1),
+  ('Un angle plus fermÃ© que l''angle droit estâ€¦', 'Ø²Ø§ÙˆÙŠØ© Ø£ÙƒØ«Ø± Ø§Ù†ØºÙ„Ø§Ù‚Ù‹Ø§ Ù…Ù† Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ù‡ÙŠâ€¦',
+   '["aigu","obtus","plat","rond"]'::jsonb, '["Ø­Ø§Ø¯Ø©","Ù…Ù†ÙØ±Ø¬Ø©","Ù…Ø³ØªÙ‚ÙŠÙ…Ø©","Ø¯Ø§Ø¦Ø±ÙŠØ©"]'::jsonb, 0,
+   'Plus fermÃ© = aigu.', 'Ø£ÙƒØ«Ø± Ø§Ù†ØºÙ„Ø§Ù‚Ù‹Ø§ = Ø­Ø§Ø¯Ø©.', 'easy', 2),
+  ('Un angle plus ouvert que l''angle droit estâ€¦', 'Ø²Ø§ÙˆÙŠØ© Ø£ÙƒØ«Ø± Ø§Ù†ÙØªØ§Ø­Ù‹Ø§ Ù…Ù† Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ù‡ÙŠâ€¦',
+   '["obtus","aigu","droit","nul"]'::jsonb, '["Ù…Ù†ÙØ±Ø¬Ø©","Ø­Ø§Ø¯Ø©","Ù‚Ø§Ø¦Ù…Ø©","Ù…Ø¹Ø¯ÙˆÙ…Ø©"]'::jsonb, 0,
+   'Plus ouvert = obtus.', 'Ø£ÙƒØ«Ø± Ø§Ù†ÙØªØ§Ø­Ù‹Ø§ = Ù…Ù†ÙØ±Ø¬Ø©.', 'medium', 3),
+  ('Quel outil sert Ã  tracer un angle droit ?', 'Ø£ÙŠ Ø£Ø¯Ø§Ø© ØªØ±Ø³Ù… Ø²Ø§ÙˆÙŠØ© Ù‚Ø§Ø¦Ù…Ø©ØŸ',
+   '["l''Ã©querre","la rÃ¨gle seule","le compas","la gomme"]'::jsonb, '["Ø§Ù„ÙƒÙˆØ³","Ø§Ù„Ù…Ø³Ø·Ø±Ø© ÙˆØ­Ø¯Ù‡Ø§","Ø§Ù„Ø¨Ø±ÙƒØ§Ø±","Ø§Ù„Ù…Ù…Ø­Ø§Ø©"]'::jsonb, 0,
+   'L''Ã©querre trace/vÃ©rifie l''angle droit.', 'Ø§Ù„ÙƒÙˆØ³ ÙŠØ±Ø³Ù… Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©.', 'medium', 4),
+  ('Pour montrer un angle droit, on dessineâ€¦', 'Ù„Ø¨ÙŠØ§Ù† Ø§Ù„Ø²Ø§ÙˆÙŠØ© Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ù†Ø±Ø³Ù…â€¦',
+   '["un petit carrÃ©","un rond","une flÃ¨che","une croix"]'::jsonb, '["Ù…Ø±Ø¨Ø¹Ù‹Ø§ ØµØºÙŠØ±Ù‹Ø§","Ø¯Ø§Ø¦Ø±Ø©","Ø³Ù‡Ù…Ù‹Ø§","ØµÙ„ÙŠØ¨Ù‹Ø§"]'::jsonb, 0,
+   'Un petit carrÃ© dans le coin.', 'Ù…Ø±Ø¨Ø¹Ù‹Ø§ ØµØºÙŠØ±Ù‹Ø§ ÙÙŠ Ø§Ù„Ø²Ø§ÙˆÙŠØ©.', 'hard', 5)
+) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
+where s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'angles'
+  and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
