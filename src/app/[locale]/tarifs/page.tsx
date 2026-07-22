@@ -1,18 +1,45 @@
 import { useTranslations } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { PageShell } from "@/components/landing/PageShell";
 import { CheckIcon } from "@/components/Icon";
+import { createServerClient } from "@/lib/supabase/server";
 
-export default function TarifsPage() {
+interface DbPlan {
+  id: string;
+  name_fr: string;
+  name_ar: string | null;
+  amount_dzd: number;
+  period: string;
+  description_fr: string | null;
+  description_ar: string | null;
+}
+
+export default async function TarifsPage() {
+  const locale = await getLocale();
+  // Public read (anon policy allows active plans). Prices/names come from the
+  // DB so admins can edit them in /admin/tarifs; feature bullets stay in i18n.
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("plans")
+    .select("id, name_fr, name_ar, amount_dzd, period, description_fr, description_ar, active")
+    .eq("active", true);
+  const plans = new Map<string, DbPlan>();
+  for (const p of (data ?? []) as DbPlan[]) plans.set(p.id, p);
+
   return (
     <PageShell active="tarifs">
       <Hero />
-      <Plans />
+      <Plans plans={plans} isAr={locale === "ar"} />
       <ComparisonTable />
       <TrustBar />
       <FAQTeaser />
     </PageShell>
   );
+}
+
+function fmtPrice(n: number): string {
+  return n.toLocaleString("fr-DZ");
 }
 
 function Hero() {
@@ -31,16 +58,21 @@ function Hero() {
   );
 }
 
-function Plans() {
+function Plans({ plans, isAr }: { plans: Map<string, DbPlan>; isAr: boolean }) {
   const t = useTranslations("Pricing");
+
+  // DB price/name if the plan exists, else fall back to the i18n defaults.
+  const eleve = plans.get("eleve_monthly");
+  const famille = plans.get("famille_monthly");
+
   return (
     <section className="py-20 bg-surface">
       <div className="container-x">
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           <Plan
             planId="eleve_monthly"
-            name={t("eleve_name")}
-            price={t("eleve_price")}
+            name={eleve ? ((isAr && eleve.name_ar) || eleve.name_fr) : t("eleve_name")}
+            price={eleve ? fmtPrice(eleve.amount_dzd) : t("eleve_price")}
             currency={t("eleve_currency")}
             period={t("per_month")}
             features={[t("eleve_f1"), t("eleve_f2"), t("eleve_f3"), t("eleve_f4")]}
@@ -48,8 +80,8 @@ function Plans() {
           />
           <Plan
             planId="famille_monthly"
-            name={t("famille_name")}
-            price={t("famille_price")}
+            name={famille ? ((isAr && famille.name_ar) || famille.name_fr) : t("famille_name")}
+            price={famille ? fmtPrice(famille.amount_dzd) : t("famille_price")}
             currency={t("famille_currency")}
             period={t("per_month")}
             features={[
@@ -82,6 +114,11 @@ function Plans() {
             cta={t("ecole_cta")}
           />
         </div>
+        <p className="text-center text-xs text-fg-faint mt-6">
+          {isAr
+            ? "الأسعار بالدينار الجزائري، تشمل جميع الرسوم."
+            : "Prix en dinars algériens, toutes taxes comprises."}
+        </p>
       </div>
     </section>
   );
