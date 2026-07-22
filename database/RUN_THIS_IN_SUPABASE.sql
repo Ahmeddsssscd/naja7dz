@@ -1,3 +1,2076 @@
+-- ===== FILE: 20260504_001_early_access_signups.sql =====
+-- ===============================================================
+-- Migration: 20260504_001_early_access_signups
+-- Purpose:  Pre-launch waitlist signups from the landing page
+-- Apply:    Paste this SQL into Supabase â†’ SQL Editor â†’ Run
+-- ===============================================================
+
+create table if not exists public.early_access_signups (
+  id uuid primary key default gen_random_uuid(),
+  email text not null,
+  locale text not null default 'fr' check (locale in ('fr','ar')),
+  source text,
+  created_at timestamptz not null default now(),
+  -- Same email can sign up only once
+  constraint early_access_signups_email_unique unique (email)
+);
+
+-- Index for "recent signups" queries in the future admin dashboard
+create index if not exists idx_early_access_created_at
+  on public.early_access_signups (created_at desc);
+
+-- Enable Row Level Security (RLS) â€” locked by default, opened explicitly
+alter table public.early_access_signups enable row level security;
+
+-- Public can INSERT (so the landing page can save signups via anon key)
+-- but cannot read (so anon key cannot scrape the email list)
+-- idempotent guard for "anon can insert signups"
+drop policy if exists "anon can insert signups" on public.early_access_signups;
+create policy "anon can insert signups"
+  on public.early_access_signups
+  for insert
+  to anon
+  with check (true);
+
+-- Only service_role (server-side) can read â€” used by future admin dashboard
+-- idempotent guard for "service role full access"
+drop policy if exists "service role full access" on public.early_access_signups;
+create policy "service role full access"
+  on public.early_access_signups
+  for all
+  to service_role
+  using (true)
+  with check (true);
+
+-- Helpful comment for future you
+comment on table public.early_access_signups is
+  'Pre-launch waitlist. Email captured on landing page. Read access via service_role only.';
+
+
+-- ===== FILE: 20260505_002_payments_subscriptions.sql =====
+-- ===============================================================
+-- Migration: 20260505_002_payments_subscriptions
+-- Purpose:  Tables for Chargily checkout sessions, payments, and subscriptions
+-- Apply:    Paste into Supabase â†’ SQL Editor â†’ Run
+-- ===============================================================
+
+-- ===== Plans (catalog) =====
+create table if not exists public.plans (
+  id text primary key,             -- 'eleve_monthly', 'famille_annual', 'pack_bac', etc.
+  name_fr text not null,
+  name_ar text,
+  amount_dzd integer not null,     -- price in DZD (no decimals â€” Chargily expects integers)
+  period text not null check (period in ('monthly', 'annual', 'one_time')),
+  description_fr text,
+  description_ar text,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+-- Seed the 5 plans from spec (with both FR + AR descriptions for the AR locale)
+insert into public.plans (id, name_fr, name_ar, amount_dzd, period, description_fr, description_ar) values
+  ('eleve_monthly', 'Ã‰lÃ¨ve â€” Mensuel', 'ØªÙ„Ù…ÙŠØ° â€” Ø´Ù‡Ø±ÙŠ', 990, 'monthly',
+    '1 enfant, toutes matiÃ¨res, accÃ¨s complet',
+    'Ø·ÙÙ„ ÙˆØ§Ø­Ø¯ØŒ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…ÙˆØ§Ø¯ØŒ ÙˆØµÙˆÙ„ ÙƒØ§Ù…Ù„'),
+  ('eleve_annual', 'Ã‰lÃ¨ve â€” Annuel', 'ØªÙ„Ù…ÙŠØ° â€” Ø³Ù†ÙˆÙŠ', 7400, 'annual',
+    '1 enfant, paiement annuel (-38%)',
+    'Ø·ÙÙ„ ÙˆØ§Ø­Ø¯ØŒ Ø¯ÙØ¹ Ø³Ù†ÙˆÙŠ (-38%)'),
+  ('famille_monthly', 'Famille â€” Mensuel', 'Ø¹Ø§Ø¦Ù„Ø© â€” Ø´Ù‡Ø±ÙŠ', 1990, 'monthly',
+    'Jusqu''Ã  4 enfants + espace parents complet',
+    'Ø­ØªÙ‰ 4 Ø£Ø·ÙØ§Ù„ + ÙØ¶Ø§Ø¡ Ø§Ù„Ø¢Ø¨Ø§Ø¡ ÙƒØ§Ù…Ù„'),
+  ('famille_annual', 'Famille â€” Annuel', 'Ø¹Ø§Ø¦Ù„Ø© â€” Ø³Ù†ÙˆÙŠ', 14900, 'annual',
+    'Jusqu''Ã  4 enfants, paiement annuel (-38%)',
+    'Ø­ØªÙ‰ 4 Ø£Ø·ÙØ§Ù„ØŒ Ø¯ÙØ¹ Ø³Ù†ÙˆÙŠ (-38%)'),
+  ('pack_bac', 'Pack Bac 90 jours', 'Ø­Ø²Ù…Ø© Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§ 90 ÙŠÙˆÙ…', 9000, 'one_time',
+    'Programme intensif de prÃ©paration au Bac',
+    'Ø¨Ø±Ù†Ø§Ù…Ø¬ Ù…ÙƒØ«Ù Ù„Ù„ØªØ­Ø¶ÙŠØ± Ù„Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§')
+on conflict (id) do nothing;
+
+-- ===== Checkout sessions (created when user clicks "Pay") =====
+create table if not exists public.checkout_sessions (
+  id uuid primary key default gen_random_uuid(),
+  plan_id text not null references public.plans(id),
+  email text not null,
+  customer_name text,
+  customer_phone text,
+  amount_dzd integer not null,
+  status text not null default 'pending' check (status in ('pending', 'paid', 'failed', 'cancelled', 'expired')),
+  -- Chargily refs
+  chargily_checkout_id text,
+  chargily_payment_id text,
+  -- Locale of the user when they checked out (so we know which language emails to send)
+  locale text not null default 'fr' check (locale in ('fr', 'ar')),
+  source text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  paid_at timestamptz
+);
+
+create index if not exists idx_checkout_sessions_email on public.checkout_sessions (email);
+create index if not exists idx_checkout_sessions_chargily_id on public.checkout_sessions (chargily_checkout_id);
+create index if not exists idx_checkout_sessions_status_created on public.checkout_sessions (status, created_at desc);
+
+-- ===== Webhook events log (audit trail of every Chargily event) =====
+create table if not exists public.payment_events (
+  id uuid primary key default gen_random_uuid(),
+  event_type text not null,        -- 'checkout.paid', 'checkout.failed', etc.
+  chargily_event_id text,
+  payload jsonb not null,
+  signature text,
+  signature_valid boolean,
+  processed boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create unique index if not exists idx_payment_events_chargily_id
+  on public.payment_events (chargily_event_id)
+  where chargily_event_id is not null;
+
+-- ===== RLS â€” locked down by default =====
+alter table public.plans enable row level security;
+alter table public.checkout_sessions enable row level security;
+alter table public.payment_events enable row level security;
+
+-- Plans: anyone can read the catalog (public product info)
+-- idempotent guard for "anon can read active plans"
+drop policy if exists "anon can read active plans" on public.plans;
+create policy "anon can read active plans"
+  on public.plans for select
+  to anon, authenticated
+  using (active = true);
+
+-- Checkout sessions: only service_role can read/write (anon never touches them)
+-- idempotent guard for "service role full access on checkouts"
+drop policy if exists "service role full access on checkouts" on public.checkout_sessions;
+create policy "service role full access on checkouts"
+  on public.checkout_sessions for all
+  to service_role
+  using (true) with check (true);
+
+-- Payment events: service_role only
+-- idempotent guard for "service role full access on events"
+drop policy if exists "service role full access on events" on public.payment_events;
+create policy "service role full access on events"
+  on public.payment_events for all
+  to service_role
+  using (true) with check (true);
+
+-- ===== updated_at trigger for checkout_sessions =====
+create or replace function public.set_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_checkout_sessions_updated on public.checkout_sessions;
+create trigger trg_checkout_sessions_updated
+  before update on public.checkout_sessions
+  for each row execute function public.set_updated_at();
+
+comment on table public.plans is 'Subscription plan catalog. Source of truth for prices.';
+comment on table public.checkout_sessions is 'One row per checkout attempt. Updated by Chargily webhook.';
+comment on table public.payment_events is 'Audit log of every Chargily webhook received.';
+
+
+-- ===== FILE: 20260505_003_user_profiles_curriculum_quizzes.sql =====
+-- ===============================================================
+-- Migration: 20260505_003_user_profiles_curriculum_quizzes
+-- Purpose:  Tables for Stages 2-7: auth profiles, children,
+--           curriculum (grades/subjects/chapters), quizzes,
+--           tutor conversations, exams, kids games.
+-- Apply:    Paste into Supabase â†’ SQL Editor â†’ Run
+-- ===============================================================
+
+-- =========================================================
+-- 1. PARENT PROFILES â€” extends auth.users with parent fields
+-- =========================================================
+create table if not exists public.parent_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  full_name text not null,
+  phone text,
+  wilaya text,
+  language_pref text not null default 'fr' check (language_pref in ('fr', 'ar')),
+  onboarded boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- =========================================================
+-- 2. CHILDREN
+-- =========================================================
+create table if not exists public.children (
+  id uuid primary key default gen_random_uuid(),
+  parent_id uuid not null references auth.users(id) on delete cascade,
+  full_name text not null,
+  age integer check (age between 5 and 18),
+  grade text check (grade in ('1AP','2AP','3AP','4AP','5AP','1AM','2AM','3AM','4AM','1AS','2AS','3AS')),
+  filiere text check (filiere in ('sciences_exp','math','lettres','tech','gestion','tronc_commun')),
+  avatar_id text default 'default-1',
+  profile_visibility text not null default 'private' check (profile_visibility in ('private','public')),
+  daily_time_limit_minutes integer default 60,
+  lock_games_until_quizzes boolean default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_children_parent on public.children (parent_id);
+
+-- =========================================================
+-- 3. CURRICULUM â€” grades / subjects / chapters
+-- =========================================================
+create table if not exists public.grades (
+  code text primary key,
+  level_order integer not null,
+  name_fr text not null,
+  name_ar text
+);
+
+insert into public.grades (code, level_order, name_fr, name_ar) values
+  ('1AP', 1, '1Ã¨re annÃ©e primaire', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø£ÙˆÙ„Ù‰ Ø§Ø¨ØªØ¯Ø§Ø¦ÙŠ'),
+  ('2AP', 2, '2Ã¨me annÃ©e primaire', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø«Ø§Ù†ÙŠØ© Ø§Ø¨ØªØ¯Ø§Ø¦ÙŠ'),
+  ('3AP', 3, '3Ã¨me annÃ©e primaire', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø«Ø§Ù„Ø«Ø© Ø§Ø¨ØªØ¯Ø§Ø¦ÙŠ'),
+  ('4AP', 4, '4Ã¨me annÃ©e primaire', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø±Ø§Ø¨Ø¹Ø© Ø§Ø¨ØªØ¯Ø§Ø¦ÙŠ'),
+  ('5AP', 5, '5Ã¨me annÃ©e primaire', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø®Ø§Ù…Ø³Ø© Ø§Ø¨ØªØ¯Ø§Ø¦ÙŠ'),
+  ('1AM', 6, '1Ã¨re annÃ©e moyen', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø£ÙˆÙ„Ù‰ Ù…ØªÙˆØ³Ø·'),
+  ('2AM', 7, '2Ã¨me annÃ©e moyen', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø«Ø§Ù†ÙŠØ© Ù…ØªÙˆØ³Ø·'),
+  ('3AM', 8, '3Ã¨me annÃ©e moyen', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø«Ø§Ù„Ø«Ø© Ù…ØªÙˆØ³Ø·'),
+  ('4AM', 9, '4Ã¨me annÃ©e moyen â€” BEM', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø±Ø§Ø¨Ø¹Ø© Ù…ØªÙˆØ³Ø· â€” Ø§Ù„Ø¨ÙŠÙ…'),
+  ('1AS', 10, '1Ã¨re annÃ©e secondaire', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø£ÙˆÙ„Ù‰ Ø«Ø§Ù†ÙˆÙŠ'),
+  ('2AS', 11, '2Ã¨me annÃ©e secondaire', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø«Ø§Ù†ÙŠØ© Ø«Ø§Ù†ÙˆÙŠ'),
+  ('3AS', 12, '3Ã¨me annÃ©e secondaire â€” Bac', 'Ø§Ù„Ø³Ù†Ø© Ø§Ù„Ø«Ø§Ù„Ø«Ø© Ø«Ø§Ù†ÙˆÙŠ â€” Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§')
+on conflict (code) do nothing;
+
+create table if not exists public.subjects (
+  id uuid primary key default gen_random_uuid(),
+  grade_code text not null references public.grades(code) on delete cascade,
+  slug text not null,
+  name_fr text not null,
+  name_ar text,
+  icon text default 'book',
+  sort_order integer default 0,
+  unique (grade_code, slug)
+);
+
+create index if not exists idx_subjects_grade on public.subjects (grade_code);
+
+-- Seed core subjects per grade (we'll grow chapters in next sessions)
+insert into public.subjects (grade_code, slug, name_fr, name_ar, icon, sort_order) values
+  ('3AM', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('3AM', 'physique', 'Sciences physiques', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„ÙÙŠØ²ÙŠØ§Ø¦ÙŠØ©', 'atom', 2),
+  ('3AM', 'svt', 'Sciences naturelles', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©', 'leaf', 3),
+  ('3AM', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 4),
+  ('3AM', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 5),
+  ('3AM', 'anglais', 'Anglais', 'Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©', 'globe', 6),
+  ('3AM', 'histoire-geo', 'Histoire-gÃ©ographie', 'Ø§Ù„ØªØ§Ø±ÙŠØ® ÙˆØ§Ù„Ø¬ØºØ±Ø§ÙÙŠØ§', 'map', 7),
+  ('4AM', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('4AM', 'physique', 'Sciences physiques', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„ÙÙŠØ²ÙŠØ§Ø¦ÙŠØ©', 'atom', 2),
+  ('4AM', 'svt', 'Sciences naturelles', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©', 'leaf', 3),
+  ('4AM', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 4),
+  ('4AM', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 5),
+  ('4AM', 'anglais', 'Anglais', 'Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©', 'globe', 6),
+  ('3AS', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('3AS', 'physique', 'Sciences physiques', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„ÙÙŠØ²ÙŠØ§Ø¦ÙŠØ©', 'atom', 2),
+  ('3AS', 'svt', 'Sciences naturelles', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©', 'leaf', 3),
+  ('3AS', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 4),
+  ('3AS', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 5),
+  ('3AS', 'philosophie', 'Philosophie', 'Ø§Ù„ÙÙ„Ø³ÙØ©', 'lightbulb', 6),
+  ('3AS', 'anglais', 'Anglais', 'Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©', 'globe', 7)
+on conflict (grade_code, slug) do nothing;
+
+create table if not exists public.chapters (
+  id uuid primary key default gen_random_uuid(),
+  subject_id uuid not null references public.subjects(id) on delete cascade,
+  slug text not null,
+  title_fr text not null,
+  title_ar text,
+  description_fr text,
+  sort_order integer default 0,
+  unique (subject_id, slug)
+);
+
+create index if not exists idx_chapters_subject on public.chapters (subject_id);
+
+-- =========================================================
+-- 4. QUIZZES + ATTEMPTS
+-- =========================================================
+create table if not exists public.quizzes (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid references public.children(id) on delete set null,
+  chapter_id uuid references public.chapters(id) on delete set null,
+  type text not null default 'regular' check (type in ('regular','mistakes','exam_mock','diagnostic')),
+  score_pct numeric(5,2),
+  total_questions integer,
+  correct_count integer,
+  difficulty text default 'medium' check (difficulty in ('easy','medium','hard','adaptive')),
+  language text default 'fr' check (language in ('fr','ar')),
+  started_at timestamptz not null default now(),
+  completed_at timestamptz,
+  duration_seconds integer
+);
+
+create index if not exists idx_quizzes_child_started on public.quizzes (child_id, started_at desc);
+
+create table if not exists public.questions (
+  id uuid primary key default gen_random_uuid(),
+  quiz_id uuid not null references public.quizzes(id) on delete cascade,
+  prompt_fr text not null,
+  prompt_ar text,
+  question_type text not null default 'mcq' check (question_type in ('mcq','text','photo')),
+  options_json jsonb,
+  correct_answer text not null,
+  explanation_fr text,
+  explanation_ar text,
+  generated_by_ai boolean default true,
+  sort_order integer default 0
+);
+
+create index if not exists idx_questions_quiz on public.questions (quiz_id);
+
+create table if not exists public.attempts (
+  id uuid primary key default gen_random_uuid(),
+  question_id uuid not null references public.questions(id) on delete cascade,
+  child_id uuid references public.children(id) on delete cascade,
+  answer text,
+  is_correct boolean,
+  time_spent_seconds integer,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_attempts_child on public.attempts (child_id, created_at desc);
+
+-- =========================================================
+-- 5. TUTOR CONVERSATIONS
+-- =========================================================
+create table if not exists public.tutor_conversations (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid not null references public.children(id) on delete cascade,
+  title text,
+  language text default 'fr' check (language in ('fr','ar')),
+  started_at timestamptz not null default now(),
+  last_message_at timestamptz not null default now()
+);
+
+create index if not exists idx_tutor_conversations_child on public.tutor_conversations (child_id, last_message_at desc);
+
+create table if not exists public.tutor_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.tutor_conversations(id) on delete cascade,
+  role text not null check (role in ('user','assistant')),
+  content text not null,
+  photo_url text,
+  generated_at timestamptz not null default now()
+);
+
+create index if not exists idx_tutor_messages_conv on public.tutor_messages (conversation_id, generated_at);
+
+-- =========================================================
+-- 6. EXAMS (Bac/BEM archive + mock attempts)
+-- =========================================================
+create table if not exists public.exam_papers (
+  id uuid primary key default gen_random_uuid(),
+  exam_type text not null check (exam_type in ('bac','bem')),
+  year integer not null check (year between 1990 and 2100),
+  filiere text,
+  subject_slug text not null,
+  file_url text,
+  ocr_text text,
+  official boolean default false,
+  ai_solution_text text,
+  solution_verified_by_admin boolean default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_exam_papers_type_year on public.exam_papers (exam_type, year desc);
+
+create table if not exists public.mock_exams (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid not null references public.children(id) on delete cascade,
+  paper_id uuid references public.exam_papers(id) on delete set null,
+  started_at timestamptz not null default now(),
+  ends_at timestamptz,
+  completed_at timestamptz,
+  score_pct numeric(5,2),
+  locked boolean default true
+);
+
+-- =========================================================
+-- 7. MOTIVATIONAL SPEECHES (Bac countdown)
+-- =========================================================
+create table if not exists public.motivational_speeches (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid references public.children(id) on delete set null,
+  author_name text,
+  author_wilaya text,
+  content text not null,
+  status text not null default 'pending' check (status in ('pending','approved','rejected')),
+  scheduled_for date,
+  reviewed_by_admin uuid,
+  reviewed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+-- =========================================================
+-- 8. KIDS UNIVERSE â€” game progress + trophies
+-- =========================================================
+create table if not exists public.game_progress (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid not null references public.children(id) on delete cascade,
+  game_type text not null,
+  level integer default 1,
+  score integer default 0,
+  metadata_json jsonb,
+  completed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_game_progress_child on public.game_progress (child_id, created_at desc);
+
+create table if not exists public.trophies (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid not null references public.children(id) on delete cascade,
+  trophy_type text not null,
+  earned_at timestamptz not null default now(),
+  visible_on_profile boolean default true
+);
+
+-- =========================================================
+-- 9. ACTIVITY LOG (parent dashboard feed)
+-- =========================================================
+create table if not exists public.activity_logs (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid not null references public.children(id) on delete cascade,
+  activity_type text not null,
+  metadata_json jsonb,
+  occurred_at timestamptz not null default now()
+);
+
+create index if not exists idx_activity_logs_child on public.activity_logs (child_id, occurred_at desc);
+
+-- =========================================================
+-- 10. RLS POLICIES
+-- =========================================================
+alter table public.parent_profiles enable row level security;
+alter table public.children enable row level security;
+alter table public.grades enable row level security;
+alter table public.subjects enable row level security;
+alter table public.chapters enable row level security;
+alter table public.quizzes enable row level security;
+alter table public.questions enable row level security;
+alter table public.attempts enable row level security;
+alter table public.tutor_conversations enable row level security;
+alter table public.tutor_messages enable row level security;
+alter table public.exam_papers enable row level security;
+alter table public.mock_exams enable row level security;
+alter table public.motivational_speeches enable row level security;
+alter table public.game_progress enable row level security;
+alter table public.trophies enable row level security;
+alter table public.activity_logs enable row level security;
+
+-- Parent profiles: parent can read/write their own
+-- idempotent guard for "parent reads own profile"
+drop policy if exists "parent reads own profile" on public.parent_profiles;
+create policy "parent reads own profile" on public.parent_profiles
+  for select to authenticated using (user_id = auth.uid());
+-- idempotent guard for "parent updates own profile"
+drop policy if exists "parent updates own profile" on public.parent_profiles;
+create policy "parent updates own profile" on public.parent_profiles
+  for update to authenticated using (user_id = auth.uid());
+-- idempotent guard for "parent inserts own profile"
+drop policy if exists "parent inserts own profile" on public.parent_profiles;
+create policy "parent inserts own profile" on public.parent_profiles
+  for insert to authenticated with check (user_id = auth.uid());
+
+-- Children: parent can manage own children
+-- idempotent guard for "parent reads own children"
+drop policy if exists "parent reads own children" on public.children;
+create policy "parent reads own children" on public.children
+  for select to authenticated using (parent_id = auth.uid());
+-- idempotent guard for "parent inserts own children"
+drop policy if exists "parent inserts own children" on public.children;
+create policy "parent inserts own children" on public.children
+  for insert to authenticated with check (parent_id = auth.uid());
+-- idempotent guard for "parent updates own children"
+drop policy if exists "parent updates own children" on public.children;
+create policy "parent updates own children" on public.children
+  for update to authenticated using (parent_id = auth.uid());
+-- idempotent guard for "parent deletes own children"
+drop policy if exists "parent deletes own children" on public.children;
+create policy "parent deletes own children" on public.children
+  for delete to authenticated using (parent_id = auth.uid());
+
+-- Curriculum: anyone authenticated can read
+-- idempotent guard for "auth reads grades"
+drop policy if exists "auth reads grades" on public.grades;
+create policy "auth reads grades" on public.grades for select to authenticated using (true);
+-- idempotent guard for "auth reads subjects"
+drop policy if exists "auth reads subjects" on public.subjects;
+create policy "auth reads subjects" on public.subjects for select to authenticated using (true);
+-- idempotent guard for "auth reads chapters"
+drop policy if exists "auth reads chapters" on public.chapters;
+create policy "auth reads chapters" on public.chapters for select to authenticated using (true);
+-- idempotent guard for "anon reads grades"
+drop policy if exists "anon reads grades" on public.grades;
+create policy "anon reads grades" on public.grades for select to anon using (true);
+-- idempotent guard for "anon reads subjects"
+drop policy if exists "anon reads subjects" on public.subjects;
+create policy "anon reads subjects" on public.subjects for select to anon using (true);
+-- idempotent guard for "anon reads chapters"
+drop policy if exists "anon reads chapters" on public.chapters;
+create policy "anon reads chapters" on public.chapters for select to anon using (true);
+
+-- Quizzes/questions/attempts: parent reads child's, service role full access
+-- idempotent guard for "parent reads child quizzes"
+drop policy if exists "parent reads child quizzes" on public.quizzes;
+create policy "parent reads child quizzes" on public.quizzes
+  for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role quizzes"
+drop policy if exists "service role quizzes" on public.quizzes;
+create policy "service role quizzes" on public.quizzes
+  for all to service_role using (true) with check (true);
+-- idempotent guard for "service role questions"
+drop policy if exists "service role questions" on public.questions;
+create policy "service role questions" on public.questions
+  for all to service_role using (true) with check (true);
+-- idempotent guard for "service role attempts"
+drop policy if exists "service role attempts" on public.attempts;
+create policy "service role attempts" on public.attempts
+  for all to service_role using (true) with check (true);
+
+-- Tutor conversations
+-- idempotent guard for "parent reads child convs"
+drop policy if exists "parent reads child convs" on public.tutor_conversations;
+create policy "parent reads child convs" on public.tutor_conversations
+  for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role tutor conv"
+drop policy if exists "service role tutor conv" on public.tutor_conversations;
+create policy "service role tutor conv" on public.tutor_conversations
+  for all to service_role using (true) with check (true);
+-- idempotent guard for "service role tutor msg"
+drop policy if exists "service role tutor msg" on public.tutor_messages;
+create policy "service role tutor msg" on public.tutor_messages
+  for all to service_role using (true) with check (true);
+
+-- Exam papers: anyone authenticated reads (published exams are public per ONEC)
+-- idempotent guard for "auth reads exam papers"
+drop policy if exists "auth reads exam papers" on public.exam_papers;
+create policy "auth reads exam papers" on public.exam_papers
+  for select to authenticated using (true);
+-- idempotent guard for "service role exam papers"
+drop policy if exists "service role exam papers" on public.exam_papers;
+create policy "service role exam papers" on public.exam_papers
+  for all to service_role using (true) with check (true);
+-- idempotent guard for "service role mock exams"
+drop policy if exists "service role mock exams" on public.mock_exams;
+create policy "service role mock exams" on public.mock_exams
+  for all to service_role using (true) with check (true);
+
+-- Speeches: anyone authenticated reads approved ones; child submits theirs
+-- idempotent guard for "auth reads approved speeches"
+drop policy if exists "auth reads approved speeches" on public.motivational_speeches;
+create policy "auth reads approved speeches" on public.motivational_speeches
+  for select to authenticated using (status = 'approved');
+-- idempotent guard for "service role speeches"
+drop policy if exists "service role speeches" on public.motivational_speeches;
+create policy "service role speeches" on public.motivational_speeches
+  for all to service_role using (true) with check (true);
+
+-- Games: parent reads child's, service role full access
+-- idempotent guard for "parent reads child games"
+drop policy if exists "parent reads child games" on public.game_progress;
+create policy "parent reads child games" on public.game_progress
+  for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role games"
+drop policy if exists "service role games" on public.game_progress;
+create policy "service role games" on public.game_progress
+  for all to service_role using (true) with check (true);
+
+-- idempotent guard for "parent reads child trophies"
+drop policy if exists "parent reads child trophies" on public.trophies;
+create policy "parent reads child trophies" on public.trophies
+  for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role trophies"
+drop policy if exists "service role trophies" on public.trophies;
+create policy "service role trophies" on public.trophies
+  for all to service_role using (true) with check (true);
+
+-- Activity logs
+-- idempotent guard for "parent reads child activity"
+drop policy if exists "parent reads child activity" on public.activity_logs;
+create policy "parent reads child activity" on public.activity_logs
+  for select to authenticated using (child_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role activity"
+drop policy if exists "service role activity" on public.activity_logs;
+create policy "service role activity" on public.activity_logs
+  for all to service_role using (true) with check (true);
+
+-- updated_at trigger for parent_profiles
+drop trigger if exists trg_parent_profiles_updated on public.parent_profiles;
+create trigger trg_parent_profiles_updated
+  before update on public.parent_profiles
+  for each row execute function public.set_updated_at();
+
+comment on table public.parent_profiles is 'Profile data for authenticated parents. Linked to auth.users.';
+comment on table public.children is 'Children belonging to a parent. RLS-scoped to parent_id = auth.uid().';
+
+
+-- ===== FILE: 20260505_004_admin_role_and_subjects_seed.sql =====
+-- ===============================================================
+-- Migration: 20260505_004_admin_role_and_more_seeds
+-- Adds: is_admin column, indexes, and additional curriculum seeds
+-- Apply: paste into Supabase â†’ SQL Editor â†’ Run
+-- ===============================================================
+
+-- 1. Admin role on parent_profiles
+alter table public.parent_profiles
+  add column if not exists is_admin boolean not null default false;
+
+create index if not exists idx_parent_profiles_admin
+  on public.parent_profiles (is_admin) where is_admin = true;
+
+-- After running this, mark yourself admin with:
+--   update public.parent_profiles set is_admin = true where user_id = '<your-user-id>';
+
+-- 2. Seed subjects for primary grades (1AP-5AP) and BEM grades (1AM-2AM)
+insert into public.subjects (grade_code, slug, name_fr, name_ar, icon, sort_order) values
+  ('1AP', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('1AP', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 2),
+  ('1AP', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 3),
+  ('1AP', 'eveil', 'Ã‰veil scientifique', 'Ø§Ù„Ø¥ÙŠÙ‚Ø§Ø¸ Ø§Ù„Ø¹Ù„Ù…ÙŠ', 'leaf', 4),
+  ('2AP', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('2AP', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 2),
+  ('2AP', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 3),
+  ('3AP', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('3AP', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 2),
+  ('3AP', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 3),
+  ('3AP', 'eveil', 'Ã‰veil scientifique', 'Ø§Ù„Ø¥ÙŠÙ‚Ø§Ø¸ Ø§Ù„Ø¹Ù„Ù…ÙŠ', 'leaf', 4),
+  ('4AP', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('4AP', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 2),
+  ('4AP', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 3),
+  ('4AP', 'eveil', 'Ã‰veil scientifique', 'Ø§Ù„Ø¥ÙŠÙ‚Ø§Ø¸ Ø§Ù„Ø¹Ù„Ù…ÙŠ', 'leaf', 4),
+  ('4AP', 'histoire-geo', 'Histoire-gÃ©ographie', 'Ø§Ù„ØªØ§Ø±ÙŠØ® ÙˆØ§Ù„Ø¬ØºØ±Ø§ÙÙŠØ§', 'map', 5),
+  ('5AP', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('5AP', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 2),
+  ('5AP', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 3),
+  ('5AP', 'eveil', 'Ã‰veil scientifique', 'Ø§Ù„Ø¥ÙŠÙ‚Ø§Ø¸ Ø§Ù„Ø¹Ù„Ù…ÙŠ', 'leaf', 4),
+  ('1AM', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('1AM', 'physique', 'Sciences physiques', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„ÙÙŠØ²ÙŠØ§Ø¦ÙŠØ©', 'atom', 2),
+  ('1AM', 'svt', 'Sciences naturelles', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©', 'leaf', 3),
+  ('1AM', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 4),
+  ('1AM', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 5),
+  ('1AM', 'anglais', 'Anglais', 'Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©', 'globe', 6),
+  ('2AM', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('2AM', 'physique', 'Sciences physiques', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„ÙÙŠØ²ÙŠØ§Ø¦ÙŠØ©', 'atom', 2),
+  ('2AM', 'svt', 'Sciences naturelles', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©', 'leaf', 3),
+  ('2AM', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 4),
+  ('2AM', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 5),
+  ('2AM', 'anglais', 'Anglais', 'Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©', 'globe', 6),
+  ('1AS', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('1AS', 'physique', 'Sciences physiques', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„ÙÙŠØ²ÙŠØ§Ø¦ÙŠØ©', 'atom', 2),
+  ('1AS', 'svt', 'Sciences naturelles', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©', 'leaf', 3),
+  ('1AS', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 4),
+  ('1AS', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 5),
+  ('1AS', 'anglais', 'Anglais', 'Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©', 'globe', 6),
+  ('2AS', 'mathematiques', 'MathÃ©matiques', 'Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª', 'sigma', 1),
+  ('2AS', 'physique', 'Sciences physiques', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„ÙÙŠØ²ÙŠØ§Ø¦ÙŠØ©', 'atom', 2),
+  ('2AS', 'svt', 'Sciences naturelles', 'Ø§Ù„Ø¹Ù„ÙˆÙ… Ø§Ù„Ø·Ø¨ÙŠØ¹ÙŠØ©', 'leaf', 3),
+  ('2AS', 'arabe', 'Arabe', 'Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', 'book-arabic', 4),
+  ('2AS', 'francais', 'FranÃ§ais', 'Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©', 'book', 5)
+on conflict (grade_code, slug) do nothing;
+
+-- 3. Writing prompts seed (per age range)
+create table if not exists public.writing_prompts (
+  id uuid primary key default gen_random_uuid(),
+  age_min integer not null,
+  age_max integer not null,
+  prompt_fr text not null,
+  prompt_ar text,
+  type text default 'free' check (type in ('free', 'structured')),
+  active boolean default true,
+  created_at timestamptz default now()
+);
+
+alter table public.writing_prompts enable row level security;
+-- idempotent guard for "auth reads writing prompts"
+drop policy if exists "auth reads writing prompts" on public.writing_prompts;
+create policy "auth reads writing prompts" on public.writing_prompts
+  for select to authenticated using (active = true);
+-- idempotent guard for "service role writing prompts"
+drop policy if exists "service role writing prompts" on public.writing_prompts;
+create policy "service role writing prompts" on public.writing_prompts
+  for all to service_role using (true) with check (true);
+
+insert into public.writing_prompts (age_min, age_max, prompt_fr, prompt_ar, type) values
+  (5, 8, 'DÃ©cris ton plat prÃ©fÃ©rÃ© en 3 phrases.', 'ØµÙ Ø·Ø¨Ù‚Ùƒ Ø§Ù„Ù…ÙØ¶Ù„ ÙÙŠ 3 Ø¬Ù…Ù„.', 'free'),
+  (5, 8, 'Raconte ce que tu as fait ce matin.', 'Ø§Ø­ÙƒÙ Ù…Ø§ ÙØ¹Ù„ØªÙŽÙ‡ Ù‡Ø°Ø§ Ø§Ù„ØµØ¨Ø§Ø­.', 'free'),
+  (8, 11, 'DÃ©cris ta wilaya en 5 lignes.', 'ØµÙ ÙˆÙ„Ø§ÙŠØªÙƒ ÙÙŠ 5 Ø£Ø³Ø·Ø±.', 'free'),
+  (8, 11, 'Raconte un souvenir d''enfance.', 'Ø§Ø­ÙƒÙ Ø°ÙƒØ±Ù‰ Ø·ÙÙˆÙ„Ø©.', 'free'),
+  (11, 14, 'Imagine que tu es un explorateur dans le Sahara. Raconte ta journÃ©e.', 'ØªØ®ÙŠÙ„ Ø£Ù†Ùƒ Ù…Ø³ØªÙƒØ´Ù ÙÙŠ Ø§Ù„ØµØ­Ø±Ø§Ø¡. Ø§Ø­ÙƒÙ ÙŠÙˆÙ…Ùƒ.', 'free'),
+  (11, 14, 'Quel est le rÃ´le de la famille dans ton Ã©ducation ?', 'Ù…Ø§ Ø¯ÙˆØ± Ø§Ù„Ø¹Ø§Ø¦Ù„Ø© ÙÙŠ ØªØ±Ø¨ÙŠØªÙƒØŸ', 'structured'),
+  (14, 18, 'Le baccalaurÃ©at : pression ou opportunitÃ© ? Argumente.', 'Ø§Ù„Ø¨ÙƒØ§Ù„ÙˆØ±ÙŠØ§: Ø¶ØºØ· Ø£Ù… ÙØ±ØµØ©ØŸ Ù†Ø§Ù‚Ø´.', 'structured'),
+  (14, 18, 'DÃ©cris une journÃ©e idÃ©ale dans 10 ans.', 'ØµÙ ÙŠÙˆÙ…Ø§Ù‹ Ù…Ø«Ø§Ù„ÙŠØ§Ù‹ Ø¨Ø¹Ø¯ 10 Ø³Ù†ÙˆØ§Øª.', 'free'),
+  (14, 18, 'Si tu pouvais changer une chose en AlgÃ©rie, ce serait quoi ?', 'Ù„Ùˆ Ø§Ø³ØªØ·Ø¹Øª ØªØºÙŠÙŠØ± Ø´ÙŠØ¡ ÙÙŠ Ø§Ù„Ø¬Ø²Ø§Ø¦Ø±ØŒ Ù…Ø§ Ù‡ÙˆØŸ', 'structured')
+on conflict do nothing;
+
+-- 4. Study groups + members tables
+create table if not exists public.study_groups (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  owner_id uuid not null references public.children(id) on delete cascade,
+  invite_code text not null unique default substr(md5(random()::text), 1, 8),
+  max_members integer not null default 10,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.group_members (
+  group_id uuid not null references public.study_groups(id) on delete cascade,
+  child_id uuid not null references public.children(id) on delete cascade,
+  joined_at timestamptz default now(),
+  primary key (group_id, child_id)
+);
+
+create table if not exists public.group_messages (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references public.study_groups(id) on delete cascade,
+  sender_id uuid not null references public.children(id) on delete cascade,
+  content text not null,
+  ai_moderation_status text default 'pending' check (ai_moderation_status in ('pending', 'approved', 'flagged', 'blocked')),
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_group_messages_group on public.group_messages (group_id, created_at desc);
+
+alter table public.study_groups enable row level security;
+alter table public.group_members enable row level security;
+alter table public.group_messages enable row level security;
+
+-- idempotent guard for "service role groups"
+drop policy if exists "service role groups" on public.study_groups;
+create policy "service role groups" on public.study_groups for all to service_role using (true) with check (true);
+-- idempotent guard for "service role members"
+drop policy if exists "service role members" on public.group_members;
+create policy "service role members" on public.group_members for all to service_role using (true) with check (true);
+-- idempotent guard for "service role messages"
+drop policy if exists "service role messages" on public.group_messages;
+create policy "service role messages" on public.group_messages for all to service_role using (true) with check (true);
+
+-- 5. Teacher profiles
+create table if not exists public.teacher_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  full_name text not null,
+  school text,
+  subjects text[],
+  bio text,
+  verified boolean default false,
+  created_at timestamptz default now()
+);
+
+alter table public.teacher_profiles enable row level security;
+-- idempotent guard for "teacher reads own"
+drop policy if exists "teacher reads own" on public.teacher_profiles;
+create policy "teacher reads own" on public.teacher_profiles for select to authenticated using (user_id = auth.uid());
+-- idempotent guard for "teacher updates own"
+drop policy if exists "teacher updates own" on public.teacher_profiles;
+create policy "teacher updates own" on public.teacher_profiles for update to authenticated using (user_id = auth.uid());
+-- idempotent guard for "service role teachers"
+drop policy if exists "service role teachers" on public.teacher_profiles;
+create policy "service role teachers" on public.teacher_profiles for all to service_role using (true) with check (true);
+
+-- 6. Helpful indexes for activity / KPIs
+create index if not exists idx_attempts_child_correct on public.attempts (child_id, is_correct);
+create index if not exists idx_quizzes_child_completed on public.quizzes (child_id, completed_at desc) where completed_at is not null;
+
+comment on column public.parent_profiles.is_admin is 'Manually set in Supabase SQL editor for admin users.';
+
+
+-- ===== FILE: 20260505_005_parental_controls_friends_support.sql =====
+-- ===============================================================
+-- Migration 005 â€” parental controls, friend requests, support, trophies
+-- Apply: paste into Supabase SQL Editor â†’ Run
+-- ===============================================================
+
+-- 1. Per-child parental controls
+create table if not exists public.parent_controls (
+  child_id uuid primary key references public.children(id) on delete cascade,
+  parent_id uuid not null references auth.users(id) on delete cascade,
+  daily_time_limit_minutes integer default 60 check (daily_time_limit_minutes between 0 and 720),
+  lock_games_until_quizzes boolean default false,
+  allowed_kids_universe boolean default true,
+  allowed_social boolean default false,
+  bedtime_start time,
+  bedtime_end time,
+  updated_at timestamptz default now()
+);
+
+alter table public.parent_controls enable row level security;
+-- idempotent guard for "parent reads own child controls"
+drop policy if exists "parent reads own child controls" on public.parent_controls;
+create policy "parent reads own child controls" on public.parent_controls
+  for select to authenticated using (parent_id = auth.uid());
+-- idempotent guard for "parent updates own child controls"
+drop policy if exists "parent updates own child controls" on public.parent_controls;
+create policy "parent updates own child controls" on public.parent_controls
+  for all to authenticated using (parent_id = auth.uid()) with check (parent_id = auth.uid());
+
+drop trigger if exists trg_parent_controls_updated on public.parent_controls;
+create trigger trg_parent_controls_updated
+  before update on public.parent_controls
+  for each row execute function public.set_updated_at();
+
+-- 2. Support messages from contact form
+create table if not exists public.support_messages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  name text not null,
+  email text not null,
+  subject text not null,
+  message text not null,
+  locale text default 'fr' check (locale in ('fr','ar')),
+  status text default 'open' check (status in ('open','in_progress','resolved')),
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_support_status_created on public.support_messages (status, created_at desc);
+
+alter table public.support_messages enable row level security;
+-- idempotent guard for "service role support"
+drop policy if exists "service role support" on public.support_messages;
+create policy "service role support" on public.support_messages
+  for all to service_role using (true) with check (true);
+
+-- 3. Logic riddles + wilayas + quran content
+create table if not exists public.logic_riddles (
+  id uuid primary key default gen_random_uuid(),
+  question_fr text not null,
+  question_ar text,
+  answer text not null,
+  hint_fr text,
+  age_min integer default 7,
+  age_max integer default 12,
+  active boolean default true,
+  created_at timestamptz default now()
+);
+
+alter table public.logic_riddles enable row level security;
+-- idempotent guard for "auth reads riddles"
+drop policy if exists "auth reads riddles" on public.logic_riddles;
+create policy "auth reads riddles" on public.logic_riddles for select to authenticated using (active);
+-- idempotent guard for "service role riddles"
+drop policy if exists "service role riddles" on public.logic_riddles;
+create policy "service role riddles" on public.logic_riddles for all to service_role using (true) with check (true);
+
+insert into public.logic_riddles (question_fr, question_ar, answer, hint_fr) values
+  ('Plus tu en prends, plus tu en laisses derriÃ¨re toi. Qui suis-je ?', 'ÙƒÙ„Ù…Ø§ Ø£Ø®Ø°Øª Ø£ÙƒØ«Ø± ØªØ±ÙƒØª Ø£ÙƒØ«Ø± Ø®Ù„ÙÙƒ. Ù…Ù† Ø£Ù†Ø§ØŸ', 'pas', 'On les compte en marchant'),
+  ('Je n''ai pas de bouche, mais je parle. Pas d''oreilles, mais j''Ã©coute. Qui suis-je ?', 'Ù„ÙŠØ³ Ù„ÙŠ ÙÙ… Ù„ÙƒÙ†Ù†ÙŠ Ø£ØªÙƒÙ„Ù…ØŒ ÙˆÙ„Ø§ Ø£Ø°Ù†ÙŠÙ† Ù„ÙƒÙ†Ù†ÙŠ Ø£Ø³Ù…Ø¹. Ù…Ù† Ø£Ù†Ø§ØŸ', 'Ã©cho', 'On me trouve dans les montagnes'),
+  ('Si tu m''as, tu veux me partager. Si tu me partages, tu ne m''as plus. Qui suis-je ?', 'Ø¥Ø°Ø§ Ø­ØµÙ„Øª Ø¹Ù„ÙŠ ØªØ±ÙŠØ¯ Ù…Ø´Ø§Ø±ÙƒØªÙŠØŒ ÙˆØ¥Ø°Ø§ Ø´Ø§Ø±ÙƒØªÙ†ÙŠ ÙÙ‚Ø¯ØªÙ†ÙŠ. Ù…Ø§ Ø£Ù†Ø§ØŸ', 'secret', 'C''est quelque chose qui ne se dit pas'),
+  ('Je peux voler sans ailes, je peux pleurer sans yeux. Qui suis-je ?', 'Ø£Ø·ÙŠØ± Ø¨Ù„Ø§ Ø£Ø¬Ù†Ø­Ø© ÙˆØ£Ø¨ÙƒÙŠ Ø¨Ù„Ø§ Ø¹ÙŠÙˆÙ†. Ù…Ù† Ø£Ù†Ø§ØŸ', 'nuage', 'Tu me regardes dans le ciel'),
+  ('Plus je sÃ¨che, plus je deviens humide. Qui suis-je ?', 'ÙƒÙ„Ù…Ø§ Ø¬ÙÙØª Ø£ØµØ¨Ø­Øª Ø£ÙƒØ«Ø± Ø¨Ù„Ù„Ø§Ù‹. Ù…Ù† Ø£Ù†Ø§ØŸ', 'serviette', 'AprÃ¨s la douche'),
+  ('J''ai 88 touches mais je ne ferme aucune porte. Qui suis-je ?', 'Ù„Ø¯ÙŠ 88 Ù…ÙØªØ§Ø­Ø§Ù‹ Ù„ÙƒÙ†Ù†ÙŠ Ù„Ø§ Ø£ÙØªØ­ Ø£ÙŠ Ø¨Ø§Ø¨. Ù…Ù† Ø£Ù†Ø§ØŸ', 'piano', 'Un instrument de musique'),
+  ('Quel est le mot franÃ§ais de 5 lettres qui contient deux fois la mÃªme lettre au dÃ©but et Ã  la fin ?', null, 'avale', 'Pense Ã  un verbe'),
+  ('Combien d''anniversaires un homme moyen a-t-il ?', 'ÙƒÙ… Ø¹ÙŠØ¯ Ù…ÙŠÙ„Ø§Ø¯ Ù„Ù„Ø¥Ù†Ø³Ø§Ù† Ø§Ù„Ø¹Ø§Ø¯ÙŠØŸ', '1', 'RÃ©flÃ©chis : il naÃ®t combien de fois ?'),
+  ('Je commence par P, fini par E, et je contiens des milliers de lettres. Qui suis-je ?', 'Ø£Ø¨Ø¯Ø£ Ø¨Ø­Ø±Ù P ÙˆØ£Ù†ØªÙ‡ÙŠ Ø¨Ø­Ø±Ù E ÙˆØ£Ø­ØªÙˆÙŠ Ø¹Ù„Ù‰ Ø¢Ù„Ø§Ù Ø§Ù„Ø­Ø±ÙˆÙ. Ù…Ø§ Ø£Ù†Ø§ØŸ', 'poste', 'On y va pour envoyer du courrier'),
+  ('Plus tu m''enlÃ¨ves, plus je grandis. Qui suis-je ?', 'ÙƒÙ„Ù…Ø§ Ø£Ø²Ù„Øª Ù…Ù†ÙŠ Ø£ÙƒØ¨Ø± Ø£ÙƒØ«Ø±. Ù…Ø§ Ø£Ù†Ø§ØŸ', 'trou', 'Avec une pelle')
+on conflict do nothing;
+
+-- 4. Wilayas (58)
+create table if not exists public.wilayas (
+  code integer primary key,
+  name_fr text not null,
+  name_ar text not null,
+  region_fr text,
+  fact_fr text
+);
+
+insert into public.wilayas (code, name_fr, name_ar, region_fr, fact_fr) values
+  (1, 'Adrar', 'Ø£Ø¯Ø±Ø§Ø±', 'Sud', 'Connue pour ses oasis et son architecture en pisÃ©.'),
+  (2, 'Chlef', 'Ø§Ù„Ø´Ù„Ù', 'Nord', 'SituÃ©e dans la vallÃ©e du ChÃ©liff.'),
+  (3, 'Laghouat', 'Ø§Ù„Ø£ØºÙˆØ§Ø·', 'Hauts plateaux', 'Porte du Sahara, cÃ©lÃ¨bre pour ses palmiers.'),
+  (4, 'Oum El Bouaghi', 'Ø£Ù… Ø§Ù„Ø¨ÙˆØ§Ù‚ÙŠ', 'Est', 'Riche en sites archÃ©ologiques numides.'),
+  (5, 'Batna', 'Ø¨Ø§ØªÙ†Ø©', 'AurÃ¨s', 'Capitale des AurÃ¨s, prÃ¨s de Timgad.'),
+  (6, 'BÃ©jaÃ¯a', 'Ø¨Ø¬Ø§ÙŠØ©', 'Kabylie', 'Ville cÃ´tiÃ¨re historique, ancien royaume hammadide.'),
+  (7, 'Biskra', 'Ø¨Ø³ÙƒØ±Ø©', 'Sud-est', 'Reine des Zibans, oasis de palmiers.'),
+  (8, 'BÃ©char', 'Ø¨Ø´Ø§Ø±', 'Sud-ouest', 'Porte du Sahara occidental.'),
+  (9, 'Blida', 'Ø§Ù„Ø¨Ù„ÙŠØ¯Ø©', 'Nord', 'SurnommÃ©e la ville des Roses.'),
+  (10, 'Bouira', 'Ø§Ù„Ø¨ÙˆÙŠØ±Ø©', 'Centre', 'Au pied du Djurdjura.'),
+  (11, 'Tamanrasset', 'ØªÙ…Ù†Ø±Ø§Ø³Øª', 'Sud', 'Capitale du Hoggar, terre touarÃ¨gue.'),
+  (12, 'TÃ©bessa', 'ØªØ¨Ø³Ø©', 'Est', 'Riche en vestiges romains.'),
+  (13, 'Tlemcen', 'ØªÙ„Ù…Ø³Ø§Ù†', 'Ouest', 'Ancienne capitale zianide, ville de l''art andalou.'),
+  (14, 'Tiaret', 'ØªÙŠØ§Ø±Øª', 'Hauts plateaux', 'Berceau de la dynastie rostÃ©mide.'),
+  (15, 'Tizi Ouzou', 'ØªÙŠØ²ÙŠ ÙˆØ²Ùˆ', 'Kabylie', 'Capitale de la Grande Kabylie.'),
+  (16, 'Alger', 'Ø§Ù„Ø¬Ø²Ø§Ø¦Ø±', 'Centre', 'Capitale du pays, surnommÃ©e El Behdja.'),
+  (17, 'Djelfa', 'Ø§Ù„Ø¬Ù„ÙØ©', 'Hauts plateaux', 'RÃ©gion de pastoralisme et steppes.'),
+  (18, 'Jijel', 'Ø¬ÙŠØ¬Ù„', 'Nord', 'CÃ´te sauvage, plages et grottes.'),
+  (19, 'SÃ©tif', 'Ø³Ø·ÙŠÙ', 'Hauts plateaux', 'Connue pour ses ruines romaines de Djemila.'),
+  (20, 'SaÃ¯da', 'Ø³Ø¹ÙŠØ¯Ø©', 'Ouest', 'RÃ©gion agricole et thermale.'),
+  (21, 'Skikda', 'Ø³ÙƒÙŠÙƒØ¯Ø©', 'Est', 'Port pÃ©trolier important.'),
+  (22, 'Sidi Bel AbbÃ¨s', 'Ø³ÙŠØ¯ÙŠ Ø¨Ù„Ø¹Ø¨Ø§Ø³', 'Ouest', 'Ville coloniale historique.'),
+  (23, 'Annaba', 'Ø¹Ù†Ø§Ø¨Ø©', 'Est', 'Anciennement Hippone, ville de Saint Augustin.'),
+  (24, 'Guelma', 'Ù‚Ø§Ù„Ù…Ø©', 'Est', 'ThÃ©Ã¢tre romain bien conservÃ©.'),
+  (25, 'Constantine', 'Ù‚Ø³Ù†Ø·ÙŠÙ†Ø©', 'Est', 'Ville des ponts suspendus.'),
+  (26, 'MÃ©dÃ©a', 'Ø§Ù„Ù…Ø¯ÙŠØ©', 'Centre', 'Vignobles historiques et plateaux.'),
+  (27, 'Mostaganem', 'Ù…Ø³ØªØºØ§Ù†Ù…', 'Ouest', 'Port mÃ©diterranÃ©en et plages.'),
+  (28, 'M''Sila', 'Ø§Ù„Ù…Ø³ÙŠÙ„Ø©', 'Hauts plateaux', 'Lac salÃ© de Chott El Hodna.'),
+  (29, 'Mascara', 'Ù…Ø¹Ø³ÙƒØ±', 'Ouest', 'Ville natale de l''Ã‰mir Abdelkader.'),
+  (30, 'Ouargla', 'ÙˆØ±Ù‚Ù„Ø©', 'Sahara', 'Ville saharienne, oasis pÃ©troliÃ¨re.'),
+  (31, 'Oran', 'ÙˆÙ‡Ø±Ø§Ù†', 'Ouest', 'La Radieuse, deuxiÃ¨me ville du pays.'),
+  (32, 'El Bayadh', 'Ø§Ù„Ø¨ÙŠØ¶', 'Hauts plateaux', 'RÃ©gion de monts et d''oasis.'),
+  (33, 'Illizi', 'Ø¥Ù„ÙŠØ²ÙŠ', 'Sahara', 'Sahara central, art rupestre du Tassili.'),
+  (34, 'Bordj Bou Arreridj', 'Ø¨Ø±Ø¬ Ø¨ÙˆØ¹Ø±ÙŠØ±ÙŠØ¬', 'Hauts plateaux', 'Hub d''Ã©lectronique.'),
+  (35, 'BoumerdÃ¨s', 'Ø¨ÙˆÙ…Ø±Ø¯Ø§Ø³', 'Centre', 'CÃ´te est d''Alger.'),
+  (36, 'El Tarf', 'Ø§Ù„Ø·Ø§Ø±Ù', 'Est', 'FrontiÃ¨re avec la Tunisie, parc national.'),
+  (37, 'Tindouf', 'ØªÙ†Ø¯ÙˆÙ', 'Sud-ouest', 'FrontiÃ¨re avec le Sahara occidental.'),
+  (38, 'Tissemsilt', 'ØªÙŠØ³Ù…Ø³ÙŠÙ„Øª', 'Centre', 'RÃ©gion de l''Ouarsenis.'),
+  (39, 'El Oued', 'Ø§Ù„ÙˆØ§Ø¯ÙŠ', 'Sahara', 'Ville aux mille coupoles.'),
+  (40, 'Khenchela', 'Ø®Ù†Ø´Ù„Ø©', 'AurÃ¨s', 'Au cÅ“ur des AurÃ¨s.'),
+  (41, 'Souk Ahras', 'Ø³ÙˆÙ‚ Ø£Ù‡Ø±Ø§Ø³', 'Est', 'Ville natale de Saint Augustin.'),
+  (42, 'Tipaza', 'ØªÙŠØ¨Ø§Ø²Ø©', 'Centre', 'Ruines romaines patrimoine UNESCO.'),
+  (43, 'Mila', 'Ù…ÙŠÙ„Ø©', 'Est', 'RÃ©gion agricole et historique.'),
+  (44, 'AÃ¯n Defla', 'Ø¹ÙŠÙ† Ø§Ù„Ø¯ÙÙ„Ù‰', 'Centre', 'VallÃ©e du ChÃ©liff, agriculture.'),
+  (45, 'NaÃ¢ma', 'Ø§Ù„Ù†Ø¹Ø§Ù…Ø©', 'Ouest', 'Steppes et Ã©levage.'),
+  (46, 'AÃ¯n TÃ©mouchent', 'Ø¹ÙŠÙ† ØªÙ…ÙˆØ´Ù†Øª', 'Ouest', 'CÃ´te mÃ©diterranÃ©enne.'),
+  (47, 'GhardaÃ¯a', 'ØºØ±Ø¯Ø§ÙŠØ©', 'Sud', 'VallÃ©e du M''zab, patrimoine UNESCO.'),
+  (48, 'Relizane', 'ØºÙ„ÙŠØ²Ø§Ù†', 'Ouest', 'Plaine du ChÃ©liff.'),
+  (49, 'Timimoun', 'ØªÙŠÙ…ÙŠÙ…ÙˆÙ†', 'Sud', 'Oasis rouge du Gourara.'),
+  (50, 'Bordj Badji Mokhtar', 'Ø¨Ø±Ø¬ Ø¨Ø§Ø¬ÙŠ Ù…Ø®ØªØ§Ø±', 'Sahara', 'FrontiÃ¨re avec le Mali.'),
+  (51, 'Ouled Djellal', 'Ø£ÙˆÙ„Ø§Ø¯ Ø¬Ù„Ø§Ù„', 'Sud-est', 'RÃ©gion des Ziban.'),
+  (52, 'BÃ©ni AbbÃ¨s', 'Ø¨Ù†ÙŠ Ø¹Ø¨Ø§Ø³', 'Sud-ouest', 'Oasis verte au cÅ“ur du Sahara.'),
+  (53, 'In Salah', 'Ø¹ÙŠÙ† ØµØ§Ù„Ø­', 'Sahara', 'Au cÅ“ur du dÃ©sert.'),
+  (54, 'In Guezzam', 'Ø¹ÙŠÙ† Ù‚Ø²Ø§Ù…', 'Sahara', 'FrontiÃ¨re avec le Niger.'),
+  (55, 'Touggourt', 'ØªÙ‚Ø±Øª', 'Sahara', 'Oasis de palmiers.'),
+  (56, 'Djanet', 'Ø¬Ø§Ù†Øª', 'Sahara', 'Tassili N''Ajjer, art rupestre.'),
+  (57, 'El M''Ghair', 'Ø§Ù„Ù…ØºÙŠØ±', 'Sud-est', 'RÃ©gion saharienne.'),
+  (58, 'El Meniaa', 'Ø§Ù„Ù…Ù†ÙŠØ¹Ø©', 'Sahara', 'Oasis du Mzab.')
+on conflict (code) do nothing;
+
+alter table public.wilayas enable row level security;
+-- idempotent guard for "anyone reads wilayas"
+drop policy if exists "anyone reads wilayas" on public.wilayas;
+create policy "anyone reads wilayas" on public.wilayas for select to anon, authenticated using (true);
+
+-- 5. Quran surahs (114) â€” minimal seed
+create table if not exists public.quran_surahs (
+  number integer primary key,
+  name_ar text not null,
+  name_translit text not null,
+  name_fr text,
+  ayah_count integer not null,
+  revelation_place text check (revelation_place in ('mecca','medina'))
+);
+
+alter table public.quran_surahs enable row level security;
+-- idempotent guard for "anyone reads surahs"
+drop policy if exists "anyone reads surahs" on public.quran_surahs;
+create policy "anyone reads surahs" on public.quran_surahs for select to anon, authenticated using (true);
+
+-- Insert all 114 surahs (compact form)
+insert into public.quran_surahs (number, name_ar, name_translit, name_fr, ayah_count, revelation_place) values
+  (1, 'Ø§Ù„ÙØ§ØªØ­Ø©','Al-Fatiha','L''Ouverture',7,'mecca'),
+  (2, 'Ø§Ù„Ø¨Ù‚Ø±Ø©','Al-Baqara','La Vache',286,'medina'),
+  (3, 'Ø¢Ù„ Ø¹Ù…Ø±Ø§Ù†','Al-Imran','La Famille d''Imran',200,'medina'),
+  (4, 'Ø§Ù„Ù†Ø³Ø§Ø¡','An-Nisa','Les Femmes',176,'medina'),
+  (5, 'Ø§Ù„Ù…Ø§Ø¦Ø¯Ø©','Al-Maida','La Table Servie',120,'medina'),
+  (6, 'Ø§Ù„Ø£Ù†Ø¹Ø§Ù…','Al-Anam','Les Bestiaux',165,'mecca'),
+  (7, 'Ø§Ù„Ø£Ø¹Ø±Ø§Ù','Al-Araf','Les Hauteurs',206,'mecca'),
+  (8, 'Ø§Ù„Ø£Ù†ÙØ§Ù„','Al-Anfal','Le Butin',75,'medina'),
+  (9, 'Ø§Ù„ØªÙˆØ¨Ø©','At-Tawba','Le Repentir',129,'medina'),
+  (10, 'ÙŠÙˆÙ†Ø³','Yunus','Jonas',109,'mecca'),
+  (11, 'Ù‡ÙˆØ¯','Hud','Houd',123,'mecca'),
+  (12, 'ÙŠÙˆØ³Ù','Yusuf','Joseph',111,'mecca'),
+  (13, 'Ø§Ù„Ø±Ø¹Ø¯','Ar-Rad','Le Tonnerre',43,'medina'),
+  (14, 'Ø¥Ø¨Ø±Ø§Ù‡ÙŠÙ…','Ibrahim','Abraham',52,'mecca'),
+  (15, 'Ø§Ù„Ø­Ø¬Ø±','Al-Hijr','Al-Hijr',99,'mecca'),
+  (16, 'Ø§Ù„Ù†Ø­Ù„','An-Nahl','Les Abeilles',128,'mecca'),
+  (17, 'Ø§Ù„Ø¥Ø³Ø±Ø§Ø¡','Al-Isra','Le Voyage Nocturne',111,'mecca'),
+  (18, 'Ø§Ù„ÙƒÙ‡Ù','Al-Kahf','La Caverne',110,'mecca'),
+  (19, 'Ù…Ø±ÙŠÙ…','Maryam','Marie',98,'mecca'),
+  (20, 'Ø·Ù‡','Ta-Ha','Ta-Ha',135,'mecca'),
+  (108, 'Ø§Ù„ÙƒÙˆØ«Ø±','Al-Kawthar','L''Abondance',3,'mecca'),
+  (109, 'Ø§Ù„ÙƒØ§ÙØ±ÙˆÙ†','Al-Kafirun','Les InfidÃ¨les',6,'mecca'),
+  (110, 'Ø§Ù„Ù†ØµØ±','An-Nasr','Le Secours',3,'medina'),
+  (111, 'Ø§Ù„Ù…Ø³Ø¯','Al-Masad','Les Fibres',5,'mecca'),
+  (112, 'Ø§Ù„Ø¥Ø®Ù„Ø§Øµ','Al-Ikhlas','Le MonothÃ©isme Pur',4,'mecca'),
+  (113, 'Ø§Ù„ÙÙ„Ù‚','Al-Falaq','L''Aube Naissante',5,'mecca'),
+  (114, 'Ø§Ù„Ù†Ø§Ø³','An-Nas','Les Hommes',6,'mecca')
+on conflict (number) do nothing;
+
+-- 6. Manners (adab) lessons
+create table if not exists public.adab_lessons (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  title_fr text not null,
+  title_ar text,
+  body_fr text not null,
+  body_ar text,
+  age_min integer default 5,
+  age_max integer default 12,
+  sort_order integer default 0
+);
+
+alter table public.adab_lessons enable row level security;
+-- idempotent guard for "anyone reads adab"
+drop policy if exists "anyone reads adab" on public.adab_lessons;
+create policy "anyone reads adab" on public.adab_lessons for select to anon, authenticated using (true);
+
+insert into public.adab_lessons (slug, title_fr, title_ar, body_fr, body_ar, sort_order) values
+  ('saluer', 'Saluer', 'Ø§Ù„Ø³Ù„Ø§Ù…', 'Quand tu rencontres quelqu''un, dis Â« Assalamu alaykum Â» ou Â« Bonjour Â». Le sourire est aussi un cadeau.', 'Ø¹Ù†Ø¯Ù…Ø§ ØªÙ„ØªÙ‚ÙŠ Ø¨Ø´Ø®ØµØŒ Ù‚Ù„ "Ø§Ù„Ø³Ù„Ø§Ù… Ø¹Ù„ÙŠÙƒÙ…" Ø£Ùˆ "ØµØ¨Ø§Ø­ Ø§Ù„Ø®ÙŠØ±". Ø§Ù„Ø§Ø¨ØªØ³Ø§Ù…Ø© Ø£ÙŠØ¶Ø§Ù‹ Ù‡Ø¯ÙŠØ©.', 1),
+  ('respect-parents', 'Respecter ses parents', 'Ø§Ø­ØªØ±Ø§Ù… Ø§Ù„ÙˆØ§Ù„Ø¯ÙŠÙ†', 'Tes parents te veulent du bien. Ã‰coute-les avec respect, mÃªme si tu n''es pas d''accord.', 'ÙˆØ§Ù„Ø¯Ø§Ùƒ ÙŠØ±ÙŠØ¯Ø§Ù† Ù„Ùƒ Ø§Ù„Ø®ÙŠØ±. Ø£ØµØºÙ Ø¥Ù„ÙŠÙ‡Ù…Ø§ Ø¨Ø§Ø­ØªØ±Ø§Ù…ØŒ Ø­ØªÙ‰ Ù„Ùˆ Ù„Ù… ØªØªÙÙ‚ Ù…Ø¹Ù‡Ù…Ø§.', 2),
+  ('verite', 'Dire la vÃ©ritÃ©', 'Ù‚ÙˆÙ„ Ø§Ù„Ø­Ù‚ÙŠÙ‚Ø©', 'La vÃ©ritÃ© te rend libre. MÃªme si elle est dure, dire la vÃ©ritÃ© est toujours mieux que mentir.', 'Ø§Ù„Ø­Ù‚ÙŠÙ‚Ø© ØªØ­Ø±Ø±Ùƒ. Ø­ØªÙ‰ Ù„Ùˆ ÙƒØ§Ù†Øª ØµØ¹Ø¨Ø©ØŒ Ù‚ÙˆÙ„ Ø§Ù„Ø­Ù‚ÙŠÙ‚Ø© Ø¯Ø§Ø¦Ù…Ø§Ù‹ Ø£ÙØ¶Ù„ Ù…Ù† Ø§Ù„ÙƒØ°Ø¨.', 3),
+  ('partage', 'Partager', 'Ø§Ù„Ù…Ø´Ø§Ø±ÙƒØ©', 'Quand tu partages avec tes amis ou ta famille, tu reÃ§ois plus de joie que tu n''en donnes.', 'Ø¹Ù†Ø¯Ù…Ø§ ØªØ´Ø§Ø±Ùƒ Ø£ØµØ¯Ù‚Ø§Ø¡Ùƒ Ø£Ùˆ Ø¹Ø§Ø¦Ù„ØªÙƒØŒ ØªÙƒØ³Ø¨ ÙØ±Ø­Ø§Ù‹ Ø£ÙƒØ«Ø± Ù…Ù…Ø§ ØªØ¹Ø·ÙŠ.', 4),
+  ('patience', 'Avoir de la patience', 'Ø§Ù„ØµØ¨Ø±', 'Tout ne s''obtient pas tout de suite. La patience est la clÃ© de toutes les rÃ©ussites.', 'Ù„Ø§ ÙŠØ£ØªÙŠ ÙƒÙ„ Ø´ÙŠØ¡ Ø¹Ù„Ù‰ Ø§Ù„ÙÙˆØ±. Ø§Ù„ØµØ¨Ø± Ù‡Ùˆ Ù…ÙØªØ§Ø­ ÙƒÙ„ Ø§Ù„Ù†Ø¬Ø§Ø­Ø§Øª.', 5),
+  ('proprete', 'ÃŠtre propre', 'Ø§Ù„Ù†Ø¸Ø§ÙØ©', 'Te laver les mains, brosser tes dents, ranger ta chambre â€” la propretÃ© est une moitiÃ© de la foi.', 'ØºØ³Ù„ Ø§Ù„ÙŠØ¯ÙŠÙ† ÙˆØªÙØ±ÙŠØ´ Ø§Ù„Ø£Ø³Ù†Ø§Ù† ÙˆØªØ±ØªÙŠØ¨ Ø§Ù„ØºØ±ÙØ© â€” Ø§Ù„Ù†Ø¸Ø§ÙØ© Ù…Ù† Ø§Ù„Ø¥ÙŠÙ…Ø§Ù†.', 6),
+  ('aider', 'Aider les autres', 'Ù…Ø³Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¢Ø®Ø±ÙŠÙ†', 'Aider une personne Ã¢gÃ©e Ã  traverser la rue, partager ton goÃ»ter avec un ami â€” chaque petit geste compte.', 'Ù…Ø³Ø§Ø¹Ø¯Ø© Ø´Ø®Øµ ÙƒØ¨ÙŠØ± ÙÙŠ Ø¹Ø¨ÙˆØ± Ø§Ù„Ø´Ø§Ø±Ø¹ØŒ Ø£Ùˆ Ù…Ø´Ø§Ø±ÙƒØ© ÙˆØ¬Ø¨ØªÙƒ Ù…Ø¹ ØµØ¯ÙŠÙ‚ â€” ÙƒÙ„ Ù„ÙØªØ© ØµØºÙŠØ±Ø© ØªÙ‡Ù….', 7),
+  ('voisin', 'Respecter les voisins', 'Ø§Ø­ØªØ±Ø§Ù… Ø§Ù„Ø¬Ø§Ø±', 'Tes voisins font partie de ta famille Ã©largie. Salue-les, aide-les, et ne fais pas de bruit la nuit.', 'Ø¬ÙŠØ±Ø§Ù†Ùƒ Ø¬Ø²Ø¡ Ù…Ù† Ø¹Ø§Ø¦Ù„ØªÙƒ. Ø­ÙŠÙ‡Ù… ÙˆØ³Ø§Ø¹Ø¯Ù‡Ù… ÙˆÙ„Ø§ ØªØ²Ø¹Ø¬Ù‡Ù… ÙÙŠ Ø§Ù„Ù„ÙŠÙ„.', 8)
+on conflict (slug) do nothing;
+
+-- 7. Quran progress tracker per child (referenced by /api/quran/progress)
+create table if not exists public.quran_progress (
+  id uuid primary key default gen_random_uuid(),
+  student_id uuid not null references public.children(id) on delete cascade,
+  surah_number integer not null,
+  verses_memorized integer default 0,
+  last_practiced timestamptz default now(),
+  created_at timestamptz default now()
+);
+
+create unique index if not exists uq_quran_progress_student_surah
+  on public.quran_progress (student_id, surah_number);
+
+alter table public.quran_progress enable row level security;
+-- idempotent guard for "parent reads child quran"
+drop policy if exists "parent reads child quran" on public.quran_progress;
+create policy "parent reads child quran" on public.quran_progress
+  for select to authenticated using (student_id in (select id from public.children where parent_id = auth.uid()));
+-- idempotent guard for "service role quran"
+drop policy if exists "service role quran" on public.quran_progress;
+create policy "service role quran" on public.quran_progress
+  for all to service_role using (true) with check (true);
+
+-- 8. Auth audit log (login attempts, password changes)
+create table if not exists public.auth_audit (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  event_type text not null,
+  ip text,
+  user_agent text,
+  success boolean default true,
+  created_at timestamptz default now()
+);
+create index if not exists idx_auth_audit_user on public.auth_audit (user_id, created_at desc);
+alter table public.auth_audit enable row level security;
+-- idempotent guard for "service role audit"
+drop policy if exists "service role audit" on public.auth_audit;
+create policy "service role audit" on public.auth_audit for all to service_role using (true) with check (true);
+
+comment on table public.parent_controls is 'Per-child screen time and feature limits, set by parent.';
+
+
+-- ===== FILE: 20260507_006_quiz_questions_and_flags.sql =====
+-- ===============================================================
+-- Migration: 20260507_006_quiz_questions_and_flags
+-- Adds:
+--   1. quiz_questions  â€” bank of questions per chapter (admin-managed)
+--   2. feature_flags   â€” admin-toggleable global feature switches
+-- ===============================================================
+
+-- ===== 1. Quiz question bank =====
+create table if not exists public.quiz_questions (
+  id uuid primary key default gen_random_uuid(),
+  chapter_id uuid not null references public.chapters(id) on delete cascade,
+  prompt_fr text not null,
+  prompt_ar text,
+  -- options is an array of strings. correct_index is 0-based.
+  options_fr jsonb not null,
+  options_ar jsonb,
+  correct_index integer not null,
+  explanation_fr text,
+  explanation_ar text,
+  difficulty text not null default 'medium' check (difficulty in ('easy','medium','hard')),
+  active boolean not null default true,
+  sort_order integer default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_quiz_questions_chapter
+  on public.quiz_questions (chapter_id, active, sort_order);
+
+alter table public.quiz_questions enable row level security;
+
+-- Authenticated users can read active questions (so the student player can
+-- fetch them via the user session).
+drop policy if exists "auth read active questions" on public.quiz_questions;
+create policy "auth read active questions"
+  on public.quiz_questions for select to authenticated
+  using (active = true);
+
+-- service_role does everything (admin CRUD goes through service role).
+drop policy if exists "service role full access on quiz_questions" on public.quiz_questions;
+create policy "service role full access on quiz_questions"
+  on public.quiz_questions for all to service_role
+  using (true) with check (true);
+
+-- updated_at trigger
+drop trigger if exists trg_quiz_questions_updated on public.quiz_questions;
+create trigger trg_quiz_questions_updated
+  before update on public.quiz_questions
+  for each row execute function public.set_updated_at();
+
+comment on table public.quiz_questions is
+  'Question bank â€” student quiz player picks N random questions per chapter from this pool.';
+
+-- ===== 2. Feature flags =====
+-- A simple key/value table the admin can toggle. The app reads these once
+-- per request and gates UI features (kid-universe tiles, social, etc).
+create table if not exists public.feature_flags (
+  key text primary key,
+  enabled boolean not null default true,
+  label_fr text not null,
+  description_fr text,
+  group_name text,
+  sort_order integer default 0,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.feature_flags enable row level security;
+
+-- Anyone can read flags â€” they affect what UI to show.
+drop policy if exists "anon read feature flags" on public.feature_flags;
+create policy "anon read feature flags"
+  on public.feature_flags for select to anon, authenticated
+  using (true);
+
+drop policy if exists "service role full access on feature_flags" on public.feature_flags;
+create policy "service role full access on feature_flags"
+  on public.feature_flags for all to service_role
+  using (true) with check (true);
+
+drop trigger if exists trg_feature_flags_updated on public.feature_flags;
+create trigger trg_feature_flags_updated
+  before update on public.feature_flags
+  for each row execute function public.set_updated_at();
+
+-- Seed default flags. Idempotent via ON CONFLICT.
+insert into public.feature_flags (key, enabled, label_fr, description_fr, group_name, sort_order) values
+  ('kids_coloring',     true, 'Coloriage',         'Page /petits/coloriage', 'kids',  10),
+  ('kids_maths',        true, 'Jeux de maths',     'Number Ninja & Souk',     'kids',  20),
+  ('kids_smart',        true, 'Jeux malins',       'Sudoku, mÃ©moire, motifs', 'kids',  30),
+  ('kids_reading',      true, 'Lis avec moi',      'Coran et lecture guidÃ©e', 'kids',  40),
+  ('kids_world',        true, 'Le monde rÃ©el',     'Heure, wilayas, maniÃ¨res','kids',  50),
+  ('kids_quran',        true, 'Suivi Coran',       'Tracker des sourates',    'kids',  60),
+  ('kids_riddle',       true, 'Ã‰nigme du jour',    'Logique pour 7-12 ans',   'kids',  70),
+  ('eleve_tutor',       false,'Tuteur IA',         'DÃ©sactivÃ© tant que la clÃ© Claude n''est pas configurÃ©e','eleve', 10),
+  ('eleve_homework_ai', false,'Aide aux devoirs IA','DÃ©sactivÃ© tant que la clÃ© Claude n''est pas configurÃ©e','eleve', 20),
+  ('eleve_groupes',     false,'Groupes d''Ã©tude',  'Activable aprÃ¨s configuration de la modÃ©ration','eleve', 30),
+  ('eleve_calligraphie',true, 'Calligraphie arabe','Pratique de l''Ã©criture',  'eleve', 40),
+  ('eleve_redaction',   true, 'RÃ©daction du jour', 'Sujets quotidiens d''Ã©criture','eleve', 50),
+  ('eleve_bac',         true, 'Bac & BEM',         'Archive des sujets',       'eleve', 60),
+  ('parent_reports',    false,'Rapports PDF',      'DÃ©sactivÃ© tant que Resend SMTP n''est pas configurÃ©','parent', 10)
+on conflict (key) do nothing;
+
+comment on table public.feature_flags is
+  'Admin-toggleable feature switches. App reads once per page render.';
+
+
+-- ===== FILE: 20260507_007_subscriptions_and_user_link.sql =====
+-- ===============================================================
+-- Migration: 20260507_007_subscriptions_and_user_link
+-- Adds:
+--   1. checkout_sessions.user_id  (link payments to auth users)
+--   2. subscriptions table        (active plan + expiry per user)
+--   3. plans.tier + plans.duration_days (access-control + auto-expiry)
+--   4. RPC: activate_subscription_from_checkout(checkout_id) â€” atomic
+--      function used by webhook + post-payment recovery
+-- ===============================================================
+
+-- ===== 1. Link checkouts to users =====
+alter table public.checkout_sessions
+  add column if not exists user_id uuid references auth.users(id) on delete set null;
+
+create index if not exists idx_checkout_sessions_user_id
+  on public.checkout_sessions (user_id, created_at desc);
+
+-- ===== 2. plans: add tier (full vs bac-only) and duration =====
+alter table public.plans
+  add column if not exists tier text not null default 'full'
+    check (tier in ('full', 'bac_only'));
+alter table public.plans
+  add column if not exists duration_days integer not null default 30;
+
+-- Seed correct durations + tier on existing plans.
+update public.plans set duration_days = 30,  tier = 'full'     where id = 'eleve_monthly';
+update public.plans set duration_days = 365, tier = 'full'     where id = 'eleve_annual';
+update public.plans set duration_days = 30,  tier = 'full'     where id = 'famille_monthly';
+update public.plans set duration_days = 365, tier = 'full'     where id = 'famille_annual';
+update public.plans set duration_days = 90,  tier = 'bac_only' where id = 'pack_bac';
+
+-- ===== 3. Subscriptions =====
+create table if not exists public.subscriptions (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  plan_id text not null references public.plans(id),
+  status text not null default 'active' check (status in ('active','expired','cancelled')),
+  started_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  last_checkout_id uuid references public.checkout_sessions(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_subscriptions_status_expires
+  on public.subscriptions (status, expires_at);
+
+alter table public.subscriptions enable row level security;
+
+-- Each user reads their own subscription.
+drop policy if exists "user reads own subscription" on public.subscriptions;
+create policy "user reads own subscription"
+  on public.subscriptions for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists "service role full access on subscriptions" on public.subscriptions;
+create policy "service role full access on subscriptions"
+  on public.subscriptions for all to service_role
+  using (true) with check (true);
+
+drop trigger if exists trg_subscriptions_updated on public.subscriptions;
+create trigger trg_subscriptions_updated
+  before update on public.subscriptions
+  for each row execute function public.set_updated_at();
+
+comment on table public.subscriptions is
+  'Active plan per user. One row per user. Updated by webhook on checkout.paid.';
+
+-- ===== 4. RPC: activate subscription from a paid checkout =====
+-- Idempotent: if user already has an active sub, extends it; otherwise creates.
+-- Called from the webhook AND from /checkout/success as a recovery path
+-- in case the webhook didn't fire yet.
+create or replace function public.activate_subscription_from_checkout(p_checkout_id uuid)
+returns table (user_id uuid, plan_id text, expires_at timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_id uuid;
+  v_email text;
+  v_plan_id text;
+  v_duration int;
+  v_status text;
+  v_expires timestamptz;
+begin
+  -- Pull the checkout. Must be paid.
+  select cs.user_id, cs.email, cs.plan_id, cs.status, p.duration_days
+    into v_user_id, v_email, v_plan_id, v_status, v_duration
+  from public.checkout_sessions cs
+  join public.plans p on p.id = cs.plan_id
+  where cs.id = p_checkout_id;
+
+  if not found or v_status <> 'paid' then
+    return;
+  end if;
+
+  -- If user_id wasn't set on the checkout, try to resolve from email.
+  if v_user_id is null and v_email is not null then
+    select id into v_user_id from auth.users where lower(email) = lower(v_email) limit 1;
+    if v_user_id is not null then
+      update public.checkout_sessions set user_id = v_user_id where id = p_checkout_id;
+    end if;
+  end if;
+
+  if v_user_id is null then
+    return;
+  end if;
+
+  -- Compute new expiry. If user has a subscription extending into the future,
+  -- add the new duration on top; otherwise start from now.
+  select s.expires_at into v_expires from public.subscriptions s where s.user_id = v_user_id;
+  if v_expires is null or v_expires < now() then
+    v_expires := now() + make_interval(days => v_duration);
+  else
+    v_expires := v_expires + make_interval(days => v_duration);
+  end if;
+
+  insert into public.subscriptions (user_id, plan_id, status, started_at, expires_at, last_checkout_id)
+  values (v_user_id, v_plan_id, 'active', now(), v_expires, p_checkout_id)
+  on conflict (user_id) do update
+    set plan_id          = excluded.plan_id,
+        status           = 'active',
+        expires_at       = excluded.expires_at,
+        last_checkout_id = excluded.last_checkout_id;
+
+  return query
+    select v_user_id, v_plan_id, v_expires;
+end
+$$;
+
+revoke all on function public.activate_subscription_from_checkout(uuid) from public;
+grant execute on function public.activate_subscription_from_checkout(uuid) to service_role;
+
+comment on function public.activate_subscription_from_checkout(uuid) is
+  'Idempotent activation. Webhook calls this on checkout.paid. /checkout/success calls it as recovery if the webhook is delayed.';
+
+
+-- ===== FILE: 20260507_008_idempotent_activate_rpc.sql =====
+-- ===============================================================
+-- Migration: 20260507_008_idempotent_activate_rpc
+-- Fixes: activate_subscription_from_checkout was incrementing expiry
+-- on every call. Each call should be a no-op if THIS specific checkout
+-- has already been activated.
+-- ===============================================================
+
+create or replace function public.activate_subscription_from_checkout(p_checkout_id uuid)
+returns table (out_user_id uuid, out_plan_id text, out_expires_at timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_id uuid;
+  v_email text;
+  v_plan_id text;
+  v_duration int;
+  v_status text;
+  v_expires timestamptz;
+  v_current_last_checkout uuid;
+  v_current_plan text;
+  v_current_expires timestamptz;
+begin
+  -- Pull the checkout. Must be paid.
+  select cs.user_id, cs.email, cs.plan_id, cs.status, p.duration_days
+    into v_user_id, v_email, v_plan_id, v_status, v_duration
+  from public.checkout_sessions cs
+  join public.plans p on p.id = cs.plan_id
+  where cs.id = p_checkout_id;
+
+  if not found or v_status <> 'paid' then
+    return;
+  end if;
+
+  -- If user_id wasn't set, resolve from email.
+  if v_user_id is null and v_email is not null then
+    select id into v_user_id from auth.users where lower(email) = lower(v_email) limit 1;
+    if v_user_id is not null then
+      update public.checkout_sessions set user_id = v_user_id where id = p_checkout_id;
+    end if;
+  end if;
+
+  if v_user_id is null then
+    return;
+  end if;
+
+  -- IDEMPOTENCY GUARD: if this exact checkout has already been activated for
+  -- this user, return the existing state without modifying.
+  select s.last_checkout_id, s.plan_id, s.expires_at
+    into v_current_last_checkout, v_current_plan, v_current_expires
+  from public.subscriptions s
+  where s.user_id = v_user_id;
+
+  if v_current_last_checkout = p_checkout_id then
+    return query select v_user_id, v_current_plan, v_current_expires;
+    return;
+  end if;
+
+  -- New activation (or extension via a NEW checkout). Compute expiry: extend
+  -- if user already has an active sub, otherwise start from now.
+  if v_current_expires is null or v_current_expires < now() then
+    v_expires := now() + make_interval(days => v_duration);
+  else
+    v_expires := v_current_expires + make_interval(days => v_duration);
+  end if;
+
+  insert into public.subscriptions (user_id, plan_id, status, started_at, expires_at, last_checkout_id)
+  values (v_user_id, v_plan_id, 'active', now(), v_expires, p_checkout_id)
+  on conflict (user_id) do update
+    set plan_id          = excluded.plan_id,
+        status           = 'active',
+        expires_at       = excluded.expires_at,
+        last_checkout_id = excluded.last_checkout_id;
+
+  return query select v_user_id, v_plan_id, v_expires;
+end
+$$;
+
+
+-- ===== FILE: 20260507_009_stories_for_kids_lecture.sql =====
+-- ===============================================================
+-- Migration: 20260507_009_stories_for_kids_lecture
+-- Purpose: short reading content for /petits/lecture ("Lis avec moi")
+-- Each story has bilingual paragraphs and a difficulty hint so we can
+-- show age-appropriate items.
+-- ===============================================================
+
+create table if not exists public.stories (
+  id              uuid primary key default gen_random_uuid(),
+  slug            text unique not null,
+  title_fr        text not null,
+  title_ar        text not null,
+  cover_emoji     text default 'ðŸ“–',
+  difficulty      text not null default 'easy' check (difficulty in ('easy','medium','hard')),
+  -- Story body as ordered paragraphs in each language. JSON array of strings.
+  paragraphs_fr   jsonb not null default '[]'::jsonb,
+  paragraphs_ar   jsonb not null default '[]'::jsonb,
+  reading_minutes int default 3,
+  active          boolean not null default true,
+  sort_order      int default 0,
+  created_at      timestamptz not null default now()
+);
+
+create index if not exists stories_active_sort_idx on public.stories (active, sort_order);
+
+alter table public.stories enable row level security;
+
+-- Anyone authenticated can read active stories; admin gating happens at
+-- the app layer for editing.
+drop policy if exists "auth reads active stories" on public.stories;
+create policy "auth reads active stories"
+  on public.stories for select
+  using (auth.role() = 'authenticated' and active = true);
+
+drop policy if exists "service role full access stories" on public.stories;
+create policy "service role full access stories"
+  on public.stories for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+
+-- ===== FILE: 20260509_010_daily_streak.sql =====
+-- ===============================================================
+-- Migration: 20260509_010_daily_streak
+-- Adds daily streak tracking to children â€” ðŸ”¥ X jours counter on /eleve home.
+-- Increments by 1 if the child does any quiz/activity on a calendar day,
+-- resets to 0 if they skip a day.
+-- ===============================================================
+
+alter table public.children
+  add column if not exists current_streak int not null default 0,
+  add column if not exists longest_streak int not null default 0,
+  add column if not exists last_activity_date date;
+
+-- Helper RPC: idempotent â€” call it whenever a quiz is completed or an
+-- activity is logged. It bumps the streak iff this is a new calendar day,
+-- resets to 1 if there was a gap, and tracks longest_streak.
+create or replace function public.bump_child_streak(p_child_id uuid)
+returns table (out_streak int, out_longest int)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_today date := (now() at time zone 'Africa/Algiers')::date;
+  v_last  date;
+  v_curr  int;
+  v_long  int;
+  v_new_curr int;
+begin
+  select last_activity_date, current_streak, longest_streak
+    into v_last, v_curr, v_long
+  from public.children
+  where id = p_child_id;
+
+  if not found then
+    return; -- no row, no-op
+  end if;
+
+  if v_last is null or v_last < v_today - interval '1 day' then
+    -- First activity ever, OR a gap of 2+ days â†’ reset to 1.
+    v_new_curr := 1;
+  elsif v_last = v_today then
+    -- Already counted today â€” nothing to do.
+    v_new_curr := v_curr;
+  else
+    -- v_last = yesterday â†’ increment.
+    v_new_curr := v_curr + 1;
+  end if;
+
+  v_long := greatest(coalesce(v_long, 0), v_new_curr);
+
+  update public.children
+    set current_streak = v_new_curr,
+        longest_streak = v_long,
+        last_activity_date = v_today
+  where id = p_child_id;
+
+  return query select v_new_curr, v_long;
+end
+$$;
+
+
+-- ===== FILE: 20260509_011_fac_service_requests.sql =====
+-- ===============================================================
+-- Migration: 20260509_011_fac_service_requests
+-- Stores FacultÃ© section service-request submissions from logged-in users.
+--
+-- Plain table (no RLS by default â€” staff inbox app handles access).
+-- ===============================================================
+
+create table if not exists public.fac_service_requests (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references auth.users(id) on delete cascade,
+  email        text,
+  service      text not null check (service in ('orientation', 'dossier', 'memoire', 'bourse', 'autre')),
+  details      text not null,
+  phone        text,
+  status       text not null default 'new' check (status in ('new', 'in_progress', 'closed')),
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+create index if not exists idx_fac_service_requests_user
+  on public.fac_service_requests(user_id, created_at desc);
+
+create index if not exists idx_fac_service_requests_status
+  on public.fac_service_requests(status, created_at desc);
+
+-- RLS: user can read their own requests; only service_role inserts/updates.
+alter table public.fac_service_requests enable row level security;
+
+drop policy if exists "user reads own requests" on public.fac_service_requests;
+create policy "user reads own requests" on public.fac_service_requests
+  for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists "user inserts own requests" on public.fac_service_requests;
+create policy "user inserts own requests" on public.fac_service_requests
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+
+-- ===== FILE: 20260509_012_parent_questions.sql =====
+-- ===============================================================
+-- Migration: 20260509_012_parent_questions
+-- "Mode questions du parent" storage. Each row is a question + the
+-- template reply we returned + status so a tutor can follow up.
+-- ===============================================================
+
+create table if not exists public.parent_questions (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  question    text not null,
+  grade       text,
+  subject_fr  text,
+  subject_ar  text,
+  reply       jsonb,
+  status      text not null default 'answered_template' check (status in ('answered_template', 'tutor_pending', 'tutor_replied')),
+  tutor_reply text,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists idx_parent_questions_user
+  on public.parent_questions(user_id, created_at desc);
+
+create index if not exists idx_parent_questions_status
+  on public.parent_questions(status, created_at desc);
+
+alter table public.parent_questions enable row level security;
+
+drop policy if exists "user reads own questions" on public.parent_questions;
+create policy "user reads own questions" on public.parent_questions
+  for select to authenticated using (user_id = auth.uid());
+
+drop policy if exists "user inserts own questions" on public.parent_questions;
+create policy "user inserts own questions" on public.parent_questions
+  for insert to authenticated with check (user_id = auth.uid());
+
+
+-- ===== FILE: 20260509_013_teacher_mode.sql =====
+-- ===============================================================
+-- Migration: 20260509_013_teacher_mode
+-- Mode Enseignant â€” teachers create classes, import students by CSV,
+-- and assign devoirs (homework). MVP: just account + classes + student
+-- list + simple devoir assignment. Real grading wiring comes later.
+-- ===============================================================
+
+-- 1) Teacher profiles â€” extension of auth.users (one row per teacher).
+-- A user can be both a parent AND a teacher at the same time, so this is a
+-- separate table from parent_profiles instead of a role column.
+create table if not exists public.teacher_profiles (
+  user_id      uuid primary key references auth.users(id) on delete cascade,
+  full_name    text not null,
+  school_name  text,
+  wilaya       text,
+  phone        text,
+  bio          text,
+  verified     boolean not null default false,    -- staff confirms diploma later
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+-- 2) Classes â€” owned by a teacher. Year (2025-26 etc) + grade level.
+create table if not exists public.teacher_classes (
+  id           uuid primary key default gen_random_uuid(),
+  teacher_id   uuid not null references auth.users(id) on delete cascade,
+  name         text not null,                     -- e.g. "5AP-A â€” Ã‰cole Hassiba Ben Bouali"
+  grade        text not null,                     -- '1AP'..'3AS'
+  school_year  text not null default '2025-2026',
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+create index if not exists idx_teacher_classes_teacher
+  on public.teacher_classes(teacher_id, created_at desc);
+
+-- 3) Students â€” one row per student in a class. Imported via CSV (name,
+-- grade row in mass-paste). Optional link to an existing children.id (the
+-- kid's parent has a child registered in the platform).
+create table if not exists public.class_students (
+  id            uuid primary key default gen_random_uuid(),
+  class_id      uuid not null references public.teacher_classes(id) on delete cascade,
+  full_name     text not null,
+  numero        text,                            -- numero d'inscription (school-internal)
+  child_id      uuid references public.children(id) on delete set null,
+  notes         text,
+  created_at    timestamptz not null default now()
+);
+
+create index if not exists idx_class_students_class
+  on public.class_students(class_id, full_name);
+
+-- 4) Devoirs â€” homework assignments. Teacher picks N quiz_questions or
+-- a chapter, sets a due_at. We track student completion via a separate
+-- table (devoir_completions).
+create table if not exists public.teacher_devoirs (
+  id             uuid primary key default gen_random_uuid(),
+  class_id       uuid not null references public.teacher_classes(id) on delete cascade,
+  title          text not null,
+  description    text,
+  chapter_id     uuid,                           -- optional FK to chapters; not enforced
+  due_at         timestamptz,
+  created_at     timestamptz not null default now()
+);
+
+create index if not exists idx_teacher_devoirs_class
+  on public.teacher_devoirs(class_id, due_at);
+
+-- 5) RLS â€” only the teacher who created a row can read/edit it.
+alter table public.teacher_profiles enable row level security;
+alter table public.teacher_classes  enable row level security;
+alter table public.class_students   enable row level security;
+alter table public.teacher_devoirs  enable row level security;
+
+drop policy if exists "teacher manages own profile" on public.teacher_profiles;
+create policy "teacher manages own profile" on public.teacher_profiles
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+drop policy if exists "teacher manages own classes" on public.teacher_classes;
+create policy "teacher manages own classes" on public.teacher_classes
+  for all to authenticated
+  using (teacher_id = auth.uid())
+  with check (teacher_id = auth.uid());
+
+drop policy if exists "teacher manages own students" on public.class_students;
+create policy "teacher manages own students" on public.class_students
+  for all to authenticated
+  using (class_id in (select id from public.teacher_classes where teacher_id = auth.uid()))
+  with check (class_id in (select id from public.teacher_classes where teacher_id = auth.uid()));
+
+drop policy if exists "teacher manages own devoirs" on public.teacher_devoirs;
+create policy "teacher manages own devoirs" on public.teacher_devoirs
+  for all to authenticated
+  using (class_id in (select id from public.teacher_classes where teacher_id = auth.uid()))
+  with check (class_id in (select id from public.teacher_classes where teacher_id = auth.uid()));
+
+
+-- ===== FILE: 20260509_014_school_quote_requests.sql =====
+-- ===============================================================
+-- Migration: 20260509_014_school_quote_requests
+--
+-- Pack Ã‰cole quote requests. Filled by /ecole quote form. Anonymous-
+-- friendly (no auth.users FK) â€” schools shouldn't have to sign up to
+-- get a price. RLS denies all SELECT to anon/auth â€” staff reads via
+-- service-role from the admin tooling.
+-- ===============================================================
+
+create table if not exists public.school_quote_requests (
+  id                    uuid primary key default gen_random_uuid(),
+  school_name           text not null,
+  contact_name          text,
+  role                  text,
+  email                 text not null,
+  phone                 text,
+  wilaya                text,
+  student_count_bucket  text check (student_count_bucket is null or student_count_bucket in ('<100', '100-300', '300-600', '600-1000', '>1000')),
+  levels                text[] default '{}',
+  message               text,
+  status                text not null default 'new' check (status in ('new', 'contacted', 'won', 'lost', 'closed')),
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now()
+);
+
+create index if not exists idx_school_quote_requests_status
+  on public.school_quote_requests(status, created_at desc);
+
+create index if not exists idx_school_quote_requests_email
+  on public.school_quote_requests(email);
+
+-- RLS â€” public can INSERT (anonymous quote form), but nobody reads via
+-- the public client. Staff uses service-role key from the admin app.
+alter table public.school_quote_requests enable row level security;
+
+drop policy if exists "anyone can submit a quote request" on public.school_quote_requests;
+create policy "anyone can submit a quote request" on public.school_quote_requests
+  for insert to anon, authenticated
+  with check (true);
+
+
+-- ===== FILE: 20260509_015_marketplace.sql =====
+-- ===============================================================
+-- Migration: 20260509_015_marketplace
+--
+-- Helper marketplace for the /fac (UniversitÃ©) section.
+--
+-- 4 tables:
+--   1. helper_profiles    â€” public profile pages of students / professionals
+--                            who offer paid help (orientation, mÃ©moire, etc.).
+--                            Admin-approved before going public.
+--   2. service_requests    â€” a buyer (anyone signed-in) requests a service
+--                            from a helper. Two flows:
+--                              - "ask_student" : flat 400 DA fee, paid
+--                                upfront, gives access to one Q&A thread.
+--                              - "negotiate"   : free to open, price set
+--                                inside chat by the helper, paid via a
+--                                Chargily link the helper drops in chat.
+--   3. chat_threads        â€” buyer â†” helper conversation tied to a request.
+--   4. chat_messages       â€” individual messages in a thread.
+--
+-- All tables have RLS. Helpers see their own profiles + their own requests
+-- + the threads attached. Buyers see their own requests + their threads.
+-- Admin reads everything via service-role.
+-- ===============================================================
+
+-- ===== 1. helper_profiles =====
+create table if not exists public.helper_profiles (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references auth.users(id) on delete cascade,
+
+  -- Identity
+  display_name    text not null check (length(display_name) >= 2),
+  -- For privacy: stored full name â†’ on public pages we show "First L."
+  last_initial    text,
+
+  -- Helper type â€” "student" or "pro"
+  helper_type     text not null check (helper_type in ('student', 'pro')),
+
+  -- Student-specific
+  university_slug text,    -- 'usthb', 'enp', 'ensia' etc. â€” joins to UNIVERSITIES catalogue
+  study_year      int,     -- 1..7
+  field           text,    -- 'informatique', 'medecine', etc.
+
+  -- Pro-specific
+  profession      text,    -- 'tutor_math', 'memoire_writer', etc.
+  experience_years int,
+
+  -- What they offer
+  services        text[] default '{}', -- e.g. ['orientation','memoire','exercises']
+  bio             text,
+  hourly_rate_da  int,     -- optional indicative rate
+  responds_within text,    -- '1h', '24h', etc.
+
+  -- Photo
+  photo_url       text,
+
+  -- Approval gate
+  status          text not null default 'pending'
+    check (status in ('pending', 'approved', 'rejected', 'paused')),
+  rejection_note  text,
+
+  approved_at     timestamptz,
+  approved_by     uuid references auth.users(id),
+
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+
+  unique (user_id)
+);
+
+create index if not exists idx_helper_profiles_status
+  on public.helper_profiles(status, created_at desc);
+create index if not exists idx_helper_profiles_uni
+  on public.helper_profiles(university_slug, status);
+create index if not exists idx_helper_profiles_type
+  on public.helper_profiles(helper_type, status);
+
+-- ===== 2. service_requests =====
+create table if not exists public.service_requests (
+  id              uuid primary key default gen_random_uuid(),
+  buyer_id        uuid not null references auth.users(id) on delete cascade,
+  helper_id       uuid not null references public.helper_profiles(id) on delete cascade,
+
+  -- Flow type
+  flow            text not null check (flow in ('ask_student', 'negotiate')),
+
+  -- For ask_student: fixed price (400 DA, may be discounted 50% for subscribers)
+  -- For negotiate: NULL initially, set once helper proposes inside the chat
+  price_da        int,
+  subscriber_discount_applied boolean default false,
+
+  -- Status machine:
+  --  open       : request created, awaiting payment (ask_student) or
+  --               waiting for price proposal (negotiate)
+  --  paid       : buyer paid â†’ chat unlocked
+  --  completed  : helper marked the work done
+  --  cancelled  : either side cancelled
+  --  refunded   : admin manually refunded
+  status          text not null default 'open'
+    check (status in ('open', 'paid', 'completed', 'cancelled', 'refunded')),
+
+  -- Free-text initial brief from the buyer
+  brief           text,
+
+  -- Chargily payment reference (filled when buyer paid)
+  chargily_checkout_id  text,
+  paid_at         timestamptz,
+  completed_at    timestamptz,
+
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+create index if not exists idx_service_requests_buyer
+  on public.service_requests(buyer_id, created_at desc);
+create index if not exists idx_service_requests_helper
+  on public.service_requests(helper_id, created_at desc);
+create index if not exists idx_service_requests_status
+  on public.service_requests(status, created_at desc);
+
+-- ===== 3. chat_threads =====
+create table if not exists public.chat_threads (
+  id              uuid primary key default gen_random_uuid(),
+  request_id      uuid not null references public.service_requests(id) on delete cascade,
+  buyer_id        uuid not null references auth.users(id) on delete cascade,
+  helper_user_id  uuid not null references auth.users(id) on delete cascade,
+
+  last_message_at timestamptz not null default now(),
+  buyer_unread    int not null default 0,
+  helper_unread   int not null default 0,
+
+  created_at      timestamptz not null default now(),
+
+  unique (request_id)
+);
+
+create index if not exists idx_chat_threads_buyer
+  on public.chat_threads(buyer_id, last_message_at desc);
+create index if not exists idx_chat_threads_helper
+  on public.chat_threads(helper_user_id, last_message_at desc);
+
+-- ===== 4. chat_messages =====
+create table if not exists public.chat_messages (
+  id              uuid primary key default gen_random_uuid(),
+  thread_id       uuid not null references public.chat_threads(id) on delete cascade,
+  sender_id       uuid not null references auth.users(id) on delete cascade,
+
+  -- Message kind:
+  --  text   : regular text body
+  --  price  : helper proposes a price (body is JSON {amount:int, note:string})
+  --  pay    : auto-system message confirming payment received
+  --  system : misc system notice
+  kind            text not null default 'text'
+    check (kind in ('text', 'price', 'pay', 'system')),
+  body            text not null,
+
+  created_at      timestamptz not null default now()
+);
+
+create index if not exists idx_chat_messages_thread
+  on public.chat_messages(thread_id, created_at);
+
+-- ===== RLS =====
+alter table public.helper_profiles enable row level security;
+alter table public.service_requests enable row level security;
+alter table public.chat_threads enable row level security;
+alter table public.chat_messages enable row level security;
+
+-- helper_profiles: public can read approved profiles; owner reads own;
+-- owner inserts own; owner can update own (pre-approval edits).
+drop policy if exists "anyone reads approved helper profiles" on public.helper_profiles;
+create policy "anyone reads approved helper profiles" on public.helper_profiles
+  for select to anon, authenticated using (status = 'approved');
+
+drop policy if exists "owner reads own profile" on public.helper_profiles;
+create policy "owner reads own profile" on public.helper_profiles
+  for select to authenticated using (user_id = auth.uid());
+
+drop policy if exists "owner inserts own profile" on public.helper_profiles;
+create policy "owner inserts own profile" on public.helper_profiles
+  for insert to authenticated with check (user_id = auth.uid());
+
+drop policy if exists "owner updates own profile" on public.helper_profiles;
+create policy "owner updates own profile" on public.helper_profiles
+  for update to authenticated using (user_id = auth.uid());
+
+-- service_requests: buyer + helper see their rows; buyer inserts.
+drop policy if exists "request parties read" on public.service_requests;
+create policy "request parties read" on public.service_requests
+  for select to authenticated
+  using (
+    buyer_id = auth.uid()
+    or helper_id in (select id from public.helper_profiles where user_id = auth.uid())
+  );
+
+drop policy if exists "buyer inserts request" on public.service_requests;
+create policy "buyer inserts request" on public.service_requests
+  for insert to authenticated with check (buyer_id = auth.uid());
+
+-- chat_threads: buyer + helper read; system inserts via service-role.
+drop policy if exists "thread parties read" on public.chat_threads;
+create policy "thread parties read" on public.chat_threads
+  for select to authenticated
+  using (buyer_id = auth.uid() or helper_user_id = auth.uid());
+
+-- chat_messages: thread parties read; sender inserts.
+drop policy if exists "thread parties read messages" on public.chat_messages;
+create policy "thread parties read messages" on public.chat_messages
+  for select to authenticated
+  using (
+    thread_id in (
+      select id from public.chat_threads
+      where buyer_id = auth.uid() or helper_user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "thread party sends message" on public.chat_messages;
+create policy "thread party sends message" on public.chat_messages
+  for insert to authenticated
+  with check (
+    sender_id = auth.uid()
+    and thread_id in (
+      select id from public.chat_threads
+      where buyer_id = auth.uid() or helper_user_id = auth.uid()
+    )
+  );
+
+
+-- ===== FILE: 20260509_016_teacher_network.sql =====
+-- ===============================================================
+-- Migration: 20260509_016_teacher_network
+--
+-- Public-facing teacher profiles + a shared feed + peer-to-peer messaging
+-- between approved teachers.
+--
+-- Extends the existing teacher_profiles table with public-profile fields:
+--   - is_public      : teacher opted into the public reseau
+--   - status         : pending / approved / rejected (admin gates visibility)
+--   - bio_public     : longer bio shown on /enseignant/reseau/[id]
+--   - subjects       : array of subject codes ['math','fr','ar',...]
+--   - grades_taught  : array like ['1AP','2AP','3AS']
+--
+-- New tables:
+--   - teacher_posts  : feed items (resource shared, question asked, etc.)
+--   - teacher_dms    : direct messages between two teacher user_ids
+-- ===============================================================
+
+alter table public.teacher_profiles
+  add column if not exists is_public boolean not null default false,
+  add column if not exists status text not null default 'pending'
+    check (status in ('pending', 'approved', 'rejected', 'paused')),
+  add column if not exists bio_public text,
+  add column if not exists subjects text[] default '{}',
+  add column if not exists grades_taught text[] default '{}',
+  add column if not exists approved_at timestamptz,
+  add column if not exists approved_by uuid references auth.users(id);
+
+create index if not exists idx_teacher_profiles_status
+  on public.teacher_profiles(status, is_public);
+
+-- ===== teacher_posts =====
+create table if not exists public.teacher_posts (
+  id          uuid primary key default gen_random_uuid(),
+  author_id   uuid not null references auth.users(id) on delete cascade,
+  kind        text not null default 'note'
+    check (kind in ('note', 'resource', 'question', 'tip')),
+  title       text,
+  body        text not null,
+  -- Optional metadata (filtering / search)
+  subjects    text[] default '{}',
+  grades      text[] default '{}',
+  attachment_url text,
+  -- Visibility â€” for now always 'network' (other approved teachers)
+  visibility  text not null default 'network' check (visibility in ('network', 'private')),
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists idx_teacher_posts_recent
+  on public.teacher_posts(created_at desc);
+create index if not exists idx_teacher_posts_author
+  on public.teacher_posts(author_id, created_at desc);
+
+-- ===== teacher_dms =====
+-- Two approved teachers can message each other. Simple flat table â€” one
+-- row per message â€” no separate "thread" table; we group client-side by
+-- (sender, recipient) pair.
+create table if not exists public.teacher_dms (
+  id          uuid primary key default gen_random_uuid(),
+  sender_id   uuid not null references auth.users(id) on delete cascade,
+  recipient_id uuid not null references auth.users(id) on delete cascade,
+  body        text not null,
+  read_at     timestamptz,
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists idx_teacher_dms_pair
+  on public.teacher_dms(sender_id, recipient_id, created_at);
+create index if not exists idx_teacher_dms_recipient
+  on public.teacher_dms(recipient_id, created_at desc);
+
+-- ===== RLS =====
+alter table public.teacher_posts enable row level security;
+alter table public.teacher_dms enable row level security;
+
+-- teacher_posts: any approved teacher reads network posts; author inserts own.
+drop policy if exists "approved teachers read network posts" on public.teacher_posts;
+create policy "approved teachers read network posts" on public.teacher_posts
+  for select to authenticated
+  using (
+    visibility = 'network'
+    and exists (
+      select 1 from public.teacher_profiles
+      where user_id = auth.uid() and status = 'approved'
+    )
+  );
+
+drop policy if exists "approved teacher inserts post" on public.teacher_posts;
+create policy "approved teacher inserts post" on public.teacher_posts
+  for insert to authenticated
+  with check (
+    author_id = auth.uid()
+    and exists (
+      select 1 from public.teacher_profiles
+      where user_id = auth.uid() and status = 'approved'
+    )
+  );
+
+-- teacher_dms: only sender + recipient read; sender inserts (must be approved).
+drop policy if exists "dm parties read" on public.teacher_dms;
+create policy "dm parties read" on public.teacher_dms
+  for select to authenticated
+  using (sender_id = auth.uid() or recipient_id = auth.uid());
+
+drop policy if exists "approved teacher sends dm" on public.teacher_dms;
+create policy "approved teacher sends dm" on public.teacher_dms
+  for insert to authenticated
+  with check (
+    sender_id = auth.uid()
+    and exists (
+      select 1 from public.teacher_profiles
+      where user_id = auth.uid() and status = 'approved'
+    )
+    and exists (
+      select 1 from public.teacher_profiles
+      where user_id = recipient_id and status = 'approved'
+    )
+  );
+
+-- teacher_profiles: anyone reads approved + public profiles; owner reads own.
+-- (Update existing policies â€” drop old, recreate.)
+drop policy if exists "anyone reads approved teacher profiles" on public.teacher_profiles;
+create policy "anyone reads approved teacher profiles" on public.teacher_profiles
+  for select to anon, authenticated
+  using (status = 'approved' and is_public = true);
+
+
+-- ===== FILE: 20260721_017_full_curriculum_seed.sql =====
 -- ===============================================================
 -- Migration: 20260721_017_full_curriculum_seed
 --
@@ -811,6 +2884,7 @@ where s.grade_code = '3AS' and s.slug = 'mathematiques' and c.slug = 'suites-num
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
 
 
+-- ===== FILE: 20260721_018_lessons_maths_exam_years.sql =====
 -- ===============================================================
 -- Migration: 20260721_018_lessons_maths_exam_years
 --
@@ -1750,6 +3824,7 @@ from public.subjects s
 where c.subject_id = s.id and s.grade_code = '3AS' and s.slug = 'mathematiques' and c.slug = 'geometrie-espace';
 
 
+-- ===== FILE: 20260721_019_quiz_bank_expansion.sql =====
 -- ===============================================================
 -- Migration: 20260721_019_quiz_bank_expansion
 --
@@ -2336,6 +4411,7 @@ where s.grade_code = '3AS' and s.slug = 'mathematiques' and c.slug = 'geometrie-
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
 
 
+-- ===== FILE: 20260722_020_sciences_lessons_quizzes.sql =====
 -- ===============================================================
 -- Migration: 20260722_020_sciences_lessons_quizzes
 --
@@ -3450,6 +5526,7 @@ where s.grade_code = '3AS' and s.slug = 'physique' and c.slug = 'nucleaire'
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
 
 
+-- ===== FILE: 20260722_021_languages_lessons_quizzes.sql =====
 -- ===============================================================
 -- Migration: 20260722_021_languages_lessons_quizzes
 --
@@ -3966,6 +6043,7 @@ where s.grade_code = '3AS' and s.slug = 'anglais' and c.slug = 'astronomy'
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
 
 
+-- ===== FILE: 20260722_022_college_1am_2am_maths.sql =====
 -- ===============================================================
 -- Migration: 20260722_022_college_1am_2am_maths
 --
@@ -5075,6 +7153,7 @@ where s.grade_code = '2AM' and s.slug = 'mathematiques' and c.slug = 'statistiqu
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
 
 
+-- ===== FILE: 20260722_023_primaire_maths.sql =====
 -- ===============================================================
 -- Migration: 20260722_023_primaire_maths
 --
@@ -6363,3 +8442,203 @@ cross join (values
 ) as v(p_fr, p_ar, o_fr, o_ar, ci, e_fr, e_ar, diff, ord)
 where s.grade_code = '4AP' and s.slug = 'mathematiques' and c.slug = 'angles'
   and not exists (select 1 from public.quiz_questions q where q.chapter_id = c.id);
+
+
+-- ===== FILE: 20260722_024_kids_universe_optin.sql =====
+-- ===============================================================
+-- Migration: 20260722_024_kids_universe_optin
+--
+-- Kids Universe becomes opt-in. By default every child â€” including
+-- primary-school pupils â€” lands on the age-appropriate academic space
+-- (/eleve: lessons, quizzes, their year's program). A parent can turn the
+-- playful "Kids Universe" (/petits games) ON per child when they want it.
+--
+-- Idempotent.
+-- ===============================================================
+
+alter table public.children
+  add column if not exists kids_universe_enabled boolean not null default false;
+
+comment on column public.children.kids_universe_enabled is
+  'When true, this child may access /petits (Kids Universe games). Off by '
+  'default so primary pupils see age-appropriate academic content first.';
+
+
+-- ===== FILE: 20260722_025_weekly_study_plan.sql =====
+-- ===============================================================
+-- Migration: 20260722_025_weekly_study_plan
+--
+-- Weekly study planner. A student drags chapters of their grade onto days
+-- of the week and ticks them off as they go. Each item points at a chapter
+-- (module) so the student can jump straight into its lesson + quiz.
+--
+-- day_of_week: 0 = Samedi â€¦ 6 = Vendredi (Algerian week starts Saturday).
+-- Idempotent.
+-- ===============================================================
+
+create table if not exists public.weekly_plan_items (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid not null references public.children(id) on delete cascade,
+  chapter_id uuid not null references public.chapters(id) on delete cascade,
+  day_of_week smallint not null check (day_of_week between 0 and 6),
+  done boolean not null default false,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_weekly_plan_child
+  on public.weekly_plan_items (child_id, day_of_week, sort_order);
+
+alter table public.weekly_plan_items enable row level security;
+
+-- Service role only (all access goes through /api/plan after verifying the
+-- child belongs to the authenticated parent).
+drop policy if exists "service role weekly plan" on public.weekly_plan_items;
+create policy "service role weekly plan"
+  on public.weekly_plan_items for all to service_role
+  using (true) with check (true);
+
+comment on table public.weekly_plan_items is
+  'Student weekly study plan: chapters scheduled per day of week, tickable.';
+
+
+-- ===== FILE: 20260722_026_professors_booking.sql =====
+-- ===============================================================
+-- Migration: 20260722_026_professors_booking
+--
+-- BAC professors directory + booking requests.
+--   professors        â€” teachers available across the country (subject,
+--                       wilaya, in-person / online, where they teach)
+--   booking_requests  â€” a parent/student asks to book a professor; the team
+--                       follows up. No live scheduling/payment here.
+-- Idempotent.
+-- ===============================================================
+
+create table if not exists public.professors (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  subject text not null,               -- e.g. "MathÃ©matiques"
+  wilaya text not null,                -- e.g. "Alger"
+  teaches_at text,                     -- school / institution / "Cours particuliers"
+  mode text not null default 'both' check (mode in ('in_person', 'online', 'both')),
+  bio text,
+  hourly_rate_dzd integer,             -- optional indicative rate
+  photo_url text,
+  verified boolean not null default false,
+  active boolean not null default true,
+  sort_order integer default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_professors_filters
+  on public.professors (active, subject, wilaya);
+
+alter table public.professors enable row level security;
+
+-- Anyone can read active professors (public directory).
+drop policy if exists "anon read active professors" on public.professors;
+create policy "anon read active professors"
+  on public.professors for select to anon, authenticated
+  using (active = true);
+
+drop policy if exists "service role professors" on public.professors;
+create policy "service role professors"
+  on public.professors for all to service_role
+  using (true) with check (true);
+
+create table if not exists public.booking_requests (
+  id uuid primary key default gen_random_uuid(),
+  professor_id uuid not null references public.professors(id) on delete cascade,
+  parent_id uuid references auth.users(id) on delete set null,
+  student_name text,
+  grade text,
+  preferred_mode text check (preferred_mode in ('in_person', 'online', 'both')),
+  phone text,
+  message text,
+  status text not null default 'pending' check (status in ('pending', 'contacted', 'confirmed', 'cancelled')),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_booking_requests_prof
+  on public.booking_requests (professor_id, created_at desc);
+
+alter table public.booking_requests enable row level security;
+
+-- Authenticated users can create a booking request.
+drop policy if exists "auth insert booking" on public.booking_requests;
+create policy "auth insert booking"
+  on public.booking_requests for insert to authenticated
+  with check (true);
+
+drop policy if exists "service role bookings" on public.booking_requests;
+create policy "service role bookings"
+  on public.booking_requests for all to service_role
+  using (true) with check (true);
+
+-- ===== Seed a handful of example professors across the country =====
+-- Guarded: only seeds when the table is empty, so re-running never duplicates.
+insert into public.professors (full_name, subject, wilaya, teaches_at, mode, bio, hourly_rate_dzd, verified, sort_order)
+select * from (values
+  ('Pr. Karim Boudiaf',   'MathÃ©matiques', 'Alger',       'LycÃ©e El Idrissi Â· cours particuliers', 'both',   'Professeur de mathÃ©matiques, 15 ans d''expÃ©rience en prÃ©paration au BAC sciences et maths.', 1500, true, 1),
+  ('Pr. Nawal SaÃ¯di',     'Sciences physiques', 'Oran',   'LycÃ©e Pasteur',                         'both',   'SpÃ©cialiste de la physique-chimie du BAC, mÃ©thode axÃ©e sur les annales officielles.',      1400, true, 2),
+  ('Pr. Yacine Meddour',  'Sciences naturelles', 'Constantine', 'Cours particuliers',            'online', 'SVT pour BAC sciences expÃ©rimentales. Suivi personnalisÃ© en ligne.',                        1200, true, 3),
+  ('Pr. Amel Benkhaled',  'FranÃ§ais',      'SÃ©tif',        'LycÃ©e Kerouani',                        'both',   'PrÃ©paration Ã  l''Ã©preuve de franÃ§ais : comprÃ©hension, production Ã©crite, mÃ©thodologie.',    1000, true, 4),
+  ('Pr. Sofiane Herbi',   'MathÃ©matiques', 'Blida',        'Cours particuliers',                    'in_person', 'Maths pour 3AS toutes filiÃ¨res. Groupes rÃ©duits Ã  Blida.',                              1300, true, 5),
+  ('Pr. Lina Ait Ahmed',  'Anglais',       'Tizi Ouzou',   'LycÃ©e Fadhma N''Soumer',                'online', 'Anglais BAC : comprÃ©hension, expression et vocabulaire thÃ©matique.',                        1000, true, 6),
+  ('Pr. Rachid Zenati',   'Philosophie',   'Annaba',       'LycÃ©e Saint-Augustin',                  'both',   'MÃ©thodologie de la dissertation et du commentaire philosophique.',                          1100, true, 7),
+  ('Pr. Souad Belkacem',  'Sciences physiques', 'Alger',   'Cours particuliers',                    'online', 'Physique-chimie, prÃ©paration intensive aux examens blancs.',                                1400, true, 8)
+) as v(full_name, subject, wilaya, teaches_at, mode, bio, hourly_rate_dzd, verified, sort_order)
+where not exists (select 1 from public.professors);
+
+
+-- ===== FILE: 20260722_027_teacher_post_comments.sql =====
+-- ===============================================================
+-- Migration: 20260722_027_teacher_post_comments
+--
+-- Comments on the teacher community feed (teacher_posts from migration 016).
+-- Only approved teachers can read/write â€” same gate as the posts.
+-- Idempotent.
+-- ===============================================================
+
+create table if not exists public.teacher_post_comments (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references public.teacher_posts(id) on delete cascade,
+  author_id uuid not null references auth.users(id) on delete cascade,
+  body text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_teacher_comments_post
+  on public.teacher_post_comments (post_id, created_at);
+
+alter table public.teacher_post_comments enable row level security;
+
+-- Approved teachers can read comments.
+drop policy if exists "approved teachers read comments" on public.teacher_post_comments;
+create policy "approved teachers read comments" on public.teacher_post_comments
+  for select to authenticated
+  using (
+    exists (
+      select 1 from public.teacher_profiles tp
+      where tp.user_id = auth.uid() and tp.status = 'approved'
+    )
+  );
+
+-- Approved teachers can comment (as themselves).
+drop policy if exists "approved teachers write comments" on public.teacher_post_comments;
+create policy "approved teachers write comments" on public.teacher_post_comments
+  for insert to authenticated
+  with check (
+    author_id = auth.uid()
+    and exists (
+      select 1 from public.teacher_profiles tp
+      where tp.user_id = auth.uid() and tp.status = 'approved'
+    )
+  );
+
+drop policy if exists "service role teacher comments" on public.teacher_post_comments;
+create policy "service role teacher comments" on public.teacher_post_comments
+  for all to service_role using (true) with check (true);
+
+comment on table public.teacher_post_comments is
+  'Comments on teacher_posts. Read/write restricted to approved teachers.';
