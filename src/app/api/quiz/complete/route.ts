@@ -89,11 +89,22 @@ export async function POST(req: Request) {
   const ids = cleanPicks.map((p) => p.questionId);
   const { data: questions, error: qErr } = await admin
     .from("quiz_questions")
-    .select("id, correct_index, active")
+    .select("id, correct_index, active, chapter_id")
     .in("id", ids);
   if (qErr) {
     console.error("[quiz/complete] question lookup failed", qErr);
     return NextResponse.json({ error: "DB error" }, { status: 500 });
+  }
+  // All questions in a quiz come from one chapter — record it so the progress
+  // page can aggregate per subject. Use the most common chapter defensively.
+  const chapterCount = new Map<string, number>();
+  for (const q of questions ?? []) {
+    if (q.chapter_id) chapterCount.set(q.chapter_id, (chapterCount.get(q.chapter_id) ?? 0) + 1);
+  }
+  let chapterId: string | null = null;
+  let bestCount = 0;
+  for (const [cid, n] of chapterCount) {
+    if (n > bestCount) { bestCount = n; chapterId = cid; }
   }
   const correctById = new Map<string, number>();
   for (const q of questions ?? []) {
@@ -120,6 +131,7 @@ export async function POST(req: Request) {
     .from("quizzes")
     .insert({
       child_id: childId,
+      chapter_id: chapterId,
       type: "regular",
       score_pct: scorePct,
       total_questions: total,
