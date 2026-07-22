@@ -99,6 +99,41 @@ export default async function TeacherDashboard() {
         </div>
       </section>
 
+      {/* Teacher tools */}
+      <section className="pb-2 bg-surface">
+        <div className="container-x max-w-5xl">
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Link href="/enseignant/exercices" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
+              <div className="text-2xl mb-2">✏️</div>
+              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
+                {isAr ? "مولّد التمارين" : "Générateur d'exercices"}
+              </div>
+              <div className="text-xs text-fg-soft mt-1">
+                {isAr ? "أنشئ تمارين جاهزة لتلاميذك" : "Crée des exercices prêts pour tes élèves"}
+              </div>
+            </Link>
+            <Link href="/enseignant/communaute" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
+              <div className="text-2xl mb-2">💬</div>
+              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
+                {isAr ? "مجتمع الأساتذة" : "Communauté enseignants"}
+              </div>
+              <div className="text-xs text-fg-soft mt-1">
+                {isAr ? "شارك وتبادل مع زملائك" : "Partage et échange avec tes collègues"}
+              </div>
+            </Link>
+            <Link href="/enseignant/reseau" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
+              <div className="text-2xl mb-2">🌐</div>
+              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
+                {isAr ? "شبكة الأساتذة" : "Réseau enseignants"}
+              </div>
+              <div className="text-xs text-fg-soft mt-1">
+                {isAr ? "تصفّح ملفات الأساتذة" : "Parcours les profils d'enseignants"}
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Classes list */}
       <section className="py-12 bg-surface">
         <div className="container-x max-w-5xl">
