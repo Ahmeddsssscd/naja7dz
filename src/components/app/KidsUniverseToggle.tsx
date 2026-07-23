@@ -51,7 +51,7 @@ export function KidsUniverseToggle({
     <div className="flex items-center justify-between gap-3 bg-surface-2 border border-line rounded-xl px-4 py-3">
       <div className="min-w-0">
         <div className="text-sm font-medium text-fg flex items-center gap-1.5">
-          <span>🎨</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-fg-soft"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1.1.9-2 2-2h2.3c2.6 0 4.7-2.1 4.7-4.7C22 6.5 17.5 2 12 2z"/></svg>
           {isAr ? "عالم الصغار (ألعاب)" : "Univers des petits (jeux)"}
         </div>
         <div className="text-xs text-fg-soft mt-0.5">

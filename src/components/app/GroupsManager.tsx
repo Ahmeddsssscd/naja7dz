@@ -146,7 +146,7 @@ export function GroupsManager() {
           </div>
         ) : groups.length === 0 ? (
           <div className="bg-surface border border-line rounded-card p-8 text-center">
-            <div className="text-3xl mb-2">👥</div>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="mx-auto mb-2 text-fg-faint"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             <p className="text-fg-soft text-sm">
               {isAr ? "لست في أي مجموعة بعد." : "Tu n'es dans aucun groupe pour l'instant."}
             </p>

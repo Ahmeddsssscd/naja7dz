@@ -124,42 +124,22 @@ export default async function TeacherDashboard() {
       <section className="pb-2 bg-surface">
         <div className="container-x max-w-5xl">
           <div className="grid sm:grid-cols-3 gap-4">
-            <Link href="/enseignant/exercices" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
-              <div className="text-2xl mb-2">✏️</div>
-              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
-                {isAr ? "مولّد التمارين" : "Générateur d'exercices"}
-              </div>
-              <div className="text-xs text-fg-soft mt-1">
-                {isAr ? "أنشئ تمارين جاهزة لتلاميذك" : "Crée des exercices prêts pour tes élèves"}
-              </div>
-            </Link>
-            <Link href="/enseignant/communaute" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
-              <div className="text-2xl mb-2">💬</div>
-              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
-                {isAr ? "مجتمع الأساتذة" : "Communauté enseignants"}
-              </div>
-              <div className="text-xs text-fg-soft mt-1">
-                {isAr ? "شارك وتبادل مع زملائك" : "Partage et échange avec tes collègues"}
-              </div>
-            </Link>
-            <Link href="/enseignant/messages" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
-              <div className="text-2xl mb-2">📨</div>
-              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
-                {isAr ? "الرسائل والطلبات" : "Messages & demandes"}
-              </div>
-              <div className="text-xs text-fg-soft mt-1">
-                {isAr ? "طلبات التلاميذ ومراسلة الأساتذة" : "Demandes d'élèves + messages professeurs"}
-              </div>
-            </Link>
-            <Link href="/enseignant/reseau" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
-              <div className="text-2xl mb-2">🌐</div>
-              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
-                {isAr ? "شبكة الأساتذة" : "Réseau enseignants"}
-              </div>
-              <div className="text-xs text-fg-soft mt-1">
-                {isAr ? "تصفّح ملفات الأساتذة" : "Parcours les profils d'enseignants"}
-              </div>
-            </Link>
+            <ToolCard href="/enseignant/exercices"
+              title={isAr ? "مولّد التمارين" : "Générateur d'exercices"}
+              sub={isAr ? "أنشئ تمارين جاهزة لتلاميذك" : "Crée des exercices prêts pour tes élèves"}
+              icon={<path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />} />
+            <ToolCard href="/enseignant/communaute"
+              title={isAr ? "مجتمع الأساتذة" : "Communauté enseignants"}
+              sub={isAr ? "شارك وتبادل مع زملائك" : "Partage et échange avec tes collègues"}
+              icon={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>} />
+            <ToolCard href="/enseignant/messages"
+              title={isAr ? "الرسائل والطلبات" : "Messages & demandes"}
+              sub={isAr ? "طلبات التلاميذ ومراسلة الأساتذة" : "Demandes d'élèves + messages professeurs"}
+              icon={<><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7l-10 6L2 7" /></>} />
+            <ToolCard href="/enseignant/reseau"
+              title={isAr ? "شبكة الأساتذة" : "Réseau enseignants"}
+              sub={isAr ? "تصفّح ملفات الأساتذة" : "Parcours les profils d'enseignants"}
+              icon={<><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></>} />
           </div>
         </div>
       </section>
@@ -233,6 +213,18 @@ function Kpi({ label, value, icon }: { label: string; value: string; icon: React
       <div className="text-3xl font-bold text-fg leading-none">{value}</div>
       <div className="text-xs text-fg-faint uppercase tracking-wider mt-1.5">{label}</div>
     </div>
+  );
+}
+
+function ToolCard({ href, title, sub, icon }: { href: string; title: string; sub: string; icon: React.ReactNode }) {
+  return (
+    <Link href={href as never} className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
+      <span className="w-10 h-10 rounded-[10px] bg-surface-3 text-fg inline-flex items-center justify-center mb-3 group-hover:bg-gold group-hover:text-navy transition-colors">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+      </span>
+      <div className="font-semibold text-fg group-hover:text-gold transition-colors">{title}</div>
+      <div className="text-xs text-fg-soft mt-1">{sub}</div>
+    </Link>
   );
 }
 

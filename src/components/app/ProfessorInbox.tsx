@@ -183,7 +183,7 @@ function TabButton({ active, onClick, label, badge }: { active: boolean; onClick
 function Empty({ text, hint }: { text: string; hint: string }) {
   return (
     <div className="bg-surface border border-line rounded-card p-10 text-center">
-      <div className="text-3xl mb-2">💬</div>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="mx-auto mb-3 text-fg-faint"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
       <p className="text-fg-soft text-sm">{text}</p>
       <p className="text-fg-faint text-xs mt-1 max-w-sm mx-auto">{hint}</p>
     </div>

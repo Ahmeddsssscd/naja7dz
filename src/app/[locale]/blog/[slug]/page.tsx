@@ -42,7 +42,7 @@ export default async function ArticlePage({
 
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="text-6xl mb-5">{article.emoji}</div>
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-surface-3 flex items-center justify-center text-3xl font-bold text-gold">{article.title.charAt(0)}</div>
             <span className="text-xs font-semibold text-gold uppercase tracking-wider">
               {article.category}
             </span>
@@ -104,7 +104,7 @@ export default async function ArticlePage({
                   href={`/blog/${a.slug}` as never}
                   className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition-all group flex gap-4 items-start"
                 >
-                  <span className="text-3xl flex-shrink-0">{a.emoji}</span>
+                  <span className="w-10 h-10 flex-shrink-0 rounded-lg bg-surface-3 flex items-center justify-center text-lg font-bold text-fg-faint">{a.title.charAt(0)}</span>
                   <div>
                     <h3 className="text-sm font-bold text-fg leading-snug group-hover:text-gold transition-colors">
                       {a.title}

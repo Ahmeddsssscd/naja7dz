@@ -356,11 +356,11 @@ function AlgeriaStats() {
             </div>
           ))}
         </div>
-        {/* DZ flag accent */}
+        {/* Algerian identity accent */}
         <div className="flex justify-center mt-8 gap-3 items-center">
           <span className="h-px bg-white/10 w-16" />
           <span className="text-white/40 text-xs tracking-widest uppercase">
-            🇩🇿 &nbsp;Proudly Algerian
+            Fièrement algérien
           </span>
           <span className="h-px bg-white/10 w-16" />
         </div>

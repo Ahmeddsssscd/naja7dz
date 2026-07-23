@@ -117,7 +117,7 @@ export default async function OGImage() {
           }}
         >
           <span style={{ color: "#0F1B33", fontWeight: 600 }}>naja7dz.com</span>
-          <span style={{ color: "#D4A72C" }}>Fait avec ❤️ en Algérie</span>
+          <span style={{ color: "#D4A72C" }}>Conçu en Algérie</span>
         </div>
       </div>
     ),

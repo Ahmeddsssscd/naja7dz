@@ -46,7 +46,7 @@ export async function sendWelcomeEmail({
         </td></tr>
         <tr><td style="padding:40px">
           <h1 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0F1B33">
-            Bonjour ${displayName} ! 🎉
+            Bonjour ${displayName},
           </h1>
           <p style="margin:0 0 16px;color:#4B5563;font-size:16px;line-height:1.6">
             Ton abonnement <strong>Najaح</strong> est maintenant actif. Tu peux dès maintenant accéder à toutes les fonctionnalités de la plateforme.

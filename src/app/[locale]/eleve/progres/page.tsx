@@ -119,7 +119,7 @@ export default async function ProgressPage() {
 
       {quizCount === 0 ? (
         <div className="bg-surface border border-line rounded-card p-8 text-center">
-          <div className="text-4xl mb-3">📊</div>
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-3 text-fg-faint"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
           <p className="text-fg-soft text-sm mb-5">
             {isAr
               ? "لم تُنجز أي اختبار بعد. ابدأ اختبارًا لترى تقدّمك هنا!"

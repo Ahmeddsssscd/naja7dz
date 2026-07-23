@@ -41,7 +41,7 @@ export default async function BlogPage() {
             >
               <div className="md:flex">
                 <div className="md:w-2/5 bg-navy flex items-center justify-center py-12 md:py-0">
-                  <span className="text-7xl">{featured.emoji}</span>
+                  <span className="text-6xl font-bold text-gold">{featured.title.charAt(0)}</span>
                 </div>
                 <div className="md:w-3/5 p-7 md:p-9">
                   <span className="text-xs font-semibold text-gold uppercase tracking-wider">
@@ -70,7 +70,7 @@ export default async function BlogPage() {
                 className="bg-surface border border-line rounded-card overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 hover:border-transparent transition-all group flex flex-col"
               >
                 <div className="bg-surface-2 border-b border-line flex items-center justify-center py-8">
-                  <span className="text-5xl">{a.emoji}</span>
+                  <span className="text-4xl font-bold text-fg-faint">{a.title.charAt(0)}</span>
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <span className="text-[11px] font-semibold text-gold uppercase tracking-wider">

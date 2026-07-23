@@ -80,7 +80,7 @@ export default async function AdminOverview() {
     <AdminShell active="overview" adminName={profile.full_name}>
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-fg mb-1">
-          Bonjour {firstName} 👋
+          Bonjour {firstName}
         </h1>
         <p className="text-fg-soft">Voici l&apos;état de la plateforme en un coup d&apos;œil.</p>
       </div>

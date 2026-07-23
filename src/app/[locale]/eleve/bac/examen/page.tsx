@@ -105,8 +105,8 @@ export default async function MockExamPage({ searchParams }: PageProps) {
             href={{ pathname: "/eleve/bac/examen", query: { subject: "toutes" } } as never}
             className="bg-navy text-white rounded-card p-5 flex items-center gap-4 hover:shadow-card-hover transition-all block"
           >
-            <span className="w-12 h-12 rounded-xl bg-gold text-navy font-bold text-lg flex items-center justify-center flex-shrink-0">
-              ⚡
+            <span className="w-12 h-12 rounded-xl bg-gold text-navy flex items-center justify-center flex-shrink-0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
             </span>
             <div className="flex-1 min-w-0">
               <div className="font-bold">{isAr ? "كل المواد — امتحان شامل" : "Toutes matières — examen complet"}</div>

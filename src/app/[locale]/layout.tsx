@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CookieBanner } from "@/components/CookieBanner";
+import { SupportFab } from "@/components/SupportFab";
 import { StructuredData } from "@/components/StructuredData";
 import "../globals.css";
 
@@ -136,6 +137,7 @@ export default async function LocaleLayout({
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
             {children}
+            <SupportFab />
             <CookieBanner />
             <Toaster
               position="top-center"

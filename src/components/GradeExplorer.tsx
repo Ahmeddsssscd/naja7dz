@@ -18,10 +18,9 @@ interface GradeInfo {
   exam?: string; // exam badge (5AP / BEM / BAC)
 }
 
-const CYCLES: Record<Cycle, { title: string; emoji: string; grades: GradeInfo[]; gets: string[] }> = {
+const CYCLES: Record<Cycle, { title: string; grades: GradeInfo[]; gets: string[] }> = {
   primaire: {
     title: "Primaire",
-    emoji: "🎒",
     grades: [
       { code: "1AP", label: "1ère année" },
       { code: "2AP", label: "2ème année" },
@@ -38,7 +37,6 @@ const CYCLES: Record<Cycle, { title: string; emoji: string; grades: GradeInfo[];
   },
   cem: {
     title: "Collège (CEM)",
-    emoji: "📗",
     grades: [
       { code: "1AM", label: "1ère année" },
       { code: "2AM", label: "2ème année" },
@@ -54,7 +52,6 @@ const CYCLES: Record<Cycle, { title: string; emoji: string; grades: GradeInfo[];
   },
   lycee: {
     title: "Lycée",
-    emoji: "🎓",
     grades: [
       { code: "1AS", label: "1ère année" },
       { code: "2AS", label: "2ème année" },
@@ -98,7 +95,6 @@ export function GradeExplorer() {
                   : "bg-surface-2 text-fg-soft border border-line hover:border-fg/40"
               }`}
             >
-              <span className="me-1.5">{CYCLES[k].emoji}</span>
               {CYCLES[k].title}
             </button>
           ))}
