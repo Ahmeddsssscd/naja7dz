@@ -11,7 +11,7 @@ export default async function AdminProfessorsPage() {
   const [{ data: professors }, { data: bookings }] = await Promise.all([
     admin
       .from("professors")
-      .select("id, full_name, subject, wilaya, teaches_at, mode, bio, hourly_rate_dzd, verified, active, sort_order")
+      .select("id, full_name, subject, wilaya, teaches_at, mode, teaching_types, bio, hourly_rate_dzd, verified, active, sort_order")
       .order("sort_order"),
     admin
       .from("booking_requests")

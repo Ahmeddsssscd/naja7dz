@@ -11,7 +11,7 @@ export default async function ProfessorsPage() {
   const supabase = await createServerClient();
   const { data } = await supabase
     .from("professors")
-    .select("id, full_name, subject, wilaya, teaches_at, mode, bio, hourly_rate_dzd, verified")
+    .select("id, full_name, subject, wilaya, teaches_at, mode, teaching_types, bio, hourly_rate_dzd, verified")
     .eq("active", true)
     .order("sort_order");
 

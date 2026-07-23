@@ -9,6 +9,7 @@ export interface ProfessorRow {
   wilaya: string;
   teaches_at: string | null;
   mode: string;
+  teaching_types: string[] | null;
   bio: string | null;
   hourly_rate_dzd: number | null;
   verified: boolean;
@@ -55,6 +56,7 @@ const formFields: FieldDef[] = [
       { value: "both", label: "Les deux" },
     ],
   },
+  { key: "teaching_types", label: "Types de cours", type: "text", placeholder: "school, private, online", helpText: "Séparés par des virgules. Valeurs : school (au lycée), private (cours particuliers), online (en ligne)." },
   { key: "hourly_rate_dzd", label: "Tarif horaire (DZD)", type: "number", placeholder: "1500" },
   { key: "bio", label: "Présentation", type: "textarea" },
   { key: "verified", label: "Vérifié (badge doré)", type: "boolean" },
@@ -77,6 +79,7 @@ export function ProfessorsAdmin({ initialRows }: { initialRows: ProfessorRow[] }
         wilaya: r.wilaya,
         teaches_at: r.teaches_at ?? "",
         mode: r.mode,
+        teaching_types: (r.teaching_types ?? []).join(", "),
         hourly_rate_dzd: r.hourly_rate_dzd ?? "",
         bio: r.bio ?? "",
         verified: r.verified,
