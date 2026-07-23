@@ -58,61 +58,133 @@ const CITIES: { key: NonNullable<Answers["city"]>; fr: string; ar: string }[] = 
   { key: "any",         fr: "Peu importe",          ar: "لا يهم" },
 ];
 
+type Feasibility = "safe" | "accessible" | "ambitious" | "hard" | "unknown";
+
 interface ScoredUni {
   uni: University;
-  score: number;
+  fit: number;              // 0..100 fit percentage
+  feasibility: Feasibility;
   reasons: string[];
 }
 
+// Which domains a duration preference implies (used as a light tie-breaker).
+const DURATION_DOMAINS: Record<NonNullable<Answers["duration"]>, Domain[]> = {
+  "5": ["informatique", "economie", "lettres", "langues", "droit", "communication", "art"],
+  "5-7": ["ingenieur", "architecture", "genie-civil", "math-physique", "agronomie"],
+  "7+": ["medecine", "pharmacie", "dentiste", "veto"],
+};
+
+function feasibilityOf(avg?: number, min?: number): Feasibility {
+  if (avg === undefined || min === undefined) return "unknown";
+  if (avg >= min + 2) return "safe";
+  if (avg >= min) return "accessible";
+  if (avg >= min - 1.5) return "ambitious";
+  return "hard";
+}
+
+/** The domains the student's profile points to (interests + stream-implied). */
+function recommendedDomains(a: Answers): Domain[] {
+  const weight = new Map<Domain, number>();
+  for (const d of a.interests) weight.set(d, (weight.get(d) ?? 0) + 3);
+  // Universities matching the stream contribute their domains lightly.
+  if (a.bac) {
+    for (const uni of UNIVERSITIES) {
+      if (uni.streams.includes(a.bac)) {
+        for (const d of uni.domains) weight.set(d, (weight.get(d) ?? 0) + 0.4);
+      }
+    }
+  }
+  return [...weight.entries()].sort((x, y) => y[1] - x[1]).map(([d]) => d).slice(0, 3);
+}
+
 function scoreUniversities(a: Answers, isAr: boolean): ScoredUni[] {
+  // Max achievable raw score, used to normalise into a fit %.
+  const MAX = 3 /*stream*/ + 2 /*avg*/ + 8 /*interests cap*/ + 1.5 /*city*/ + 1 /*duration*/;
   const out: ScoredUni[] = [];
+
   for (const uni of UNIVERSITIES) {
     let score = 0;
     const reasons: string[] = [];
 
     if (a.bac && uni.streams.includes(a.bac)) {
       score += 3;
-      reasons.push(isAr ? "+٣ شعبتك متوافقة" : "+3 ta filière correspond");
+      reasons.push(isAr ? "شعبتك متوافقة" : "Ta filière correspond");
+    } else if (a.bac) {
+      // Off-stream universities are strongly penalised, not excluded.
+      score -= 1.5;
     }
 
-    if (a.avg !== undefined && uni.min_avg !== undefined) {
-      if (a.avg >= uni.min_avg) {
-        score += 2;
-        reasons.push(isAr ? `+٢ معدلك (${a.avg}) ≥ المطلوب (${uni.min_avg})` : `+2 moyenne (${a.avg}) ≥ requis (${uni.min_avg})`);
-      } else if (a.avg + 0.5 >= uni.min_avg) {
-        score += 1;
-        reasons.push(isAr ? "+١ معدلك قريب" : "+1 moyenne très proche");
+    // Interests — the strongest signal.
+    const overlap = uni.domains.filter((d) => a.interests.includes(d)).length;
+    if (overlap > 0) {
+      score += Math.min(8, overlap * 2.5);
+      reasons.push(isAr ? `يغطي ${overlap} من اهتماماتك` : `Couvre ${overlap} de tes intérêts`);
+    }
+
+    // Moyenne feasibility.
+    const feasibility = feasibilityOf(a.avg, uni.min_avg);
+    if (feasibility === "accessible" || feasibility === "safe") {
+      score += 2;
+    } else if (feasibility === "ambitious") {
+      score += 0.5;
+    }
+
+    // Region.
+    if (a.city && a.city !== "any") {
+      const matches =
+        (a.city === "alger" && /alger|harrach|kouba|smar|aknoun|brahim|ezzouar|mahelma|hamdine/i.test(uni.city)) ||
+        (a.city === "oran" && /oran/i.test(uni.city)) ||
+        (a.city === "constantine" && /constantine/i.test(uni.city)) ||
+        (a.city === "est" && /annaba|constantine|batna|setif|sétif|tébessa|skikda|bejaia|bejaïa|béjaïa/i.test(uni.city)) ||
+        (a.city === "ouest" && /oran|tlemcen|sidi|mostaganem/i.test(uni.city)) ||
+        (a.city === "sud" && /ouargla|ghardaia|ghardaïa|adrar|béchar|bechar|tamanrasset/i.test(uni.city));
+      if (matches) {
+        score += 1.5;
+        reasons.push(isAr ? "في منطقتك" : "Dans ta région");
       }
-    } else if (a.avg !== undefined) {
+    }
+
+    // Duration tie-breaker.
+    if (a.duration && uni.domains.some((d) => DURATION_DOMAINS[a.duration!].includes(d))) {
       score += 1;
     }
 
-    const overlap = uni.domains.filter((d) => a.interests.includes(d)).length;
-    if (overlap > 0) {
-      score += overlap * 2;
-      reasons.push(isAr ? `+${overlap * 2} ${overlap} من اهتماماتك` : `+${overlap * 2} couvre ${overlap} de tes intérêts`);
+    if (score > 0) {
+      out.push({ uni, fit: Math.max(0, Math.min(100, Math.round((score / MAX) * 100))), feasibility, reasons });
     }
-
-    if (a.city) {
-      const matches = (
-        (a.city === "alger" && uni.city.toLowerCase().includes("alger")) ||
-        (a.city === "oran" && uni.city.toLowerCase().includes("oran")) ||
-        (a.city === "constantine" && uni.city.toLowerCase().includes("constantine")) ||
-        (a.city === "est" && /annaba|constantine|batna|setif|tebessa|skikda/i.test(uni.city)) ||
-        (a.city === "ouest" && /oran|tlemcen|sidi|mostaganem/i.test(uni.city)) ||
-        (a.city === "any")
-      );
-      if (matches) {
-        score += 2;
-        reasons.push(isAr ? "+٢ في منطقتك" : "+2 dans ta région");
-      }
-    }
-
-    if (score > 0) out.push({ uni, score, reasons });
   }
-  out.sort((x, y) => y.score - x.score);
+  out.sort((x, y) => y.fit - x.fit);
   return out;
 }
+
+const DOMAIN_LABEL: Record<Domain, { fr: string; ar: string }> = {
+  medecine: { fr: "Médecine", ar: "الطب" },
+  pharmacie: { fr: "Pharmacie", ar: "الصيدلة" },
+  dentiste: { fr: "Chirurgie dentaire", ar: "طب الأسنان" },
+  veto: { fr: "Vétérinaire", ar: "الطب البيطري" },
+  ingenieur: { fr: "Ingénierie", ar: "الهندسة" },
+  informatique: { fr: "Informatique", ar: "الإعلام الآلي" },
+  "math-physique": { fr: "Maths & physique", ar: "الرياضيات والفيزياء" },
+  architecture: { fr: "Architecture", ar: "الهندسة المعمارية" },
+  "genie-civil": { fr: "Génie civil", ar: "الهندسة المدنية" },
+  agronomie: { fr: "Agronomie", ar: "الفلاحة" },
+  droit: { fr: "Droit", ar: "الحقوق" },
+  economie: { fr: "Économie & gestion", ar: "الاقتصاد والتسيير" },
+  lettres: { fr: "Lettres", ar: "الآداب" },
+  langues: { fr: "Langues", ar: "اللغات" },
+  "sciences-naturelles": { fr: "Sciences naturelles", ar: "علوم الطبيعة" },
+  sport: { fr: "Sport (STAPS)", ar: "الرياضة" },
+  art: { fr: "Arts", ar: "الفنون" },
+  communication: { fr: "Communication", ar: "الإعلام والاتصال" },
+};
+
+const FEASIBILITY_META: Record<Feasibility, { fr: string; ar: string; cls: string }> = {
+  safe: { fr: "Accessible en sécurité", ar: "متاحة بأمان", cls: "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300" },
+  accessible: { fr: "Accessible", ar: "متاحة", cls: "bg-blue-100 dark:bg-blue-950/30 text-blue-800 dark:text-blue-300" },
+  ambitious: { fr: "Ambitieux", ar: "طموح", cls: "bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300" },
+  hard: { fr: "Difficile à atteindre", ar: "صعبة المنال", cls: "bg-red-100 dark:bg-red-950/30 text-red-800 dark:text-red-300" },
+  unknown: { fr: "", ar: "", cls: "" },
+};
 
 export function Diagnostic() {
   const locale = useLocale();
@@ -122,8 +194,12 @@ export function Diagnostic() {
   const [answers, setAnswers] = useState<Answers>({ interests: [] });
 
   const top = useMemo(
-    () => (step === "result" ? scoreUniversities(answers, isAr).slice(0, 5) : []),
+    () => (step === "result" ? scoreUniversities(answers, isAr).slice(0, 6) : []),
     [step, answers, isAr],
+  );
+  const domains = useMemo(
+    () => (step === "result" ? recommendedDomains(answers) : []),
+    [step, answers],
   );
 
   const stepIndex = (["bac", "avg", "interest", "city", "duration", "result"] as Step[]).indexOf(step);
@@ -286,6 +362,22 @@ export function Diagnostic() {
             <p className="text-sm text-fg-soft">{isAr ? "بناءً على إجاباتك" : "D'après tes réponses"}</p>
           </div>
 
+          {/* Domain recommendation — the field(s) the profile points to */}
+          {domains.length > 0 && (
+            <div className="bg-navy rounded-card p-5 mb-6 text-center">
+              <div className="text-gold text-xs font-bold uppercase tracking-wider mb-2">
+                {isAr ? "ملمحك يميل نحو" : "Ton profil penche vers"}
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {domains.map((d) => (
+                  <span key={d} className="bg-white/10 text-white text-sm font-semibold rounded-full px-3 py-1.5">
+                    {isAr ? DOMAIN_LABEL[d].ar : DOMAIN_LABEL[d].fr}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {top.length === 0 ? (
             <div className="text-center py-8 text-fg-soft">
               {isAr
@@ -294,25 +386,30 @@ export function Diagnostic() {
             </div>
           ) : (
             <div className="space-y-3">
-              {top.map(({ uni, score, reasons }, i) => (
+              {top.map(({ uni, fit, feasibility, reasons }) => (
                 <Link
                   key={uni.slug}
                   href={`/fac/universites/${uni.slug}` as never}
                   className="block bg-surface border border-line rounded-card p-5 hover:shadow-card-hover hover:border-fg/40 transition"
                 >
                   <div className="flex items-start gap-4">
-                    {/* Rank badge */}
-                    <div className="flex flex-col items-center flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-surface-3 text-fg font-bold flex items-center justify-center">
-                        {i + 1}
-                      </div>
-                      <div className="text-[10px] uppercase tracking-wider text-fg-faint mt-1">{score} pts</div>
+                    {/* Fit ring */}
+                    <div className="flex flex-col items-center flex-shrink-0 w-12">
+                      <div className="text-2xl font-bold text-fg leading-none">{fit}<span className="text-xs text-fg-faint">%</span></div>
+                      <div className="text-[10px] uppercase tracking-wider text-fg-faint mt-1">{isAr ? "توافق" : "fit"}</div>
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-fg text-base md:text-lg leading-tight">
-                        {isAr ? uni.name_ar : uni.name_fr}
-                      </h3>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-fg text-base md:text-lg leading-tight">
+                          {isAr ? uni.name_ar : uni.name_fr}
+                        </h3>
+                        {feasibility !== "unknown" && (
+                          <span className={`text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap ${FEASIBILITY_META[feasibility].cls}`}>
+                            {isAr ? FEASIBILITY_META[feasibility].ar : FEASIBILITY_META[feasibility].fr}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5 text-xs text-fg-soft mt-1">
                         <MapPinIcon size={12} />
                         <span>{uni.city}</span>
