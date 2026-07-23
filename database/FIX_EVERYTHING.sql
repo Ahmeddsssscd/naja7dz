@@ -151,6 +151,10 @@ update public.professors set teaching_types = teaching_types || array['private']
 update public.professors set teaching_types = array['online']
   where mode = 'online' and teaching_types = '{}';
 
+-- Link a self-registered professor account to its directory listing.
+alter table public.professors add column if not exists user_id uuid references auth.users(id) on delete set null;
+create index if not exists idx_professors_user on public.professors (user_id);
+
 alter table public.professors enable row level security;
 drop policy if exists "anon read active professors" on public.professors;
 create policy "anon read active professors" on public.professors
@@ -198,6 +202,24 @@ create policy "service role weekly plan" on public.weekly_plan_items
   for all to service_role using (true) with check (true);
 
 -- ---------------------------------------------------------------------
--- 8) Refresh the PostgREST schema cache so all changes are visible now.
+-- 8) Prof-to-prof private messaging (teacher_dms)
+-- ---------------------------------------------------------------------
+create table if not exists public.teacher_dms (
+  id uuid primary key default gen_random_uuid(),
+  sender_id uuid not null references auth.users(id) on delete cascade,
+  recipient_id uuid not null references auth.users(id) on delete cascade,
+  body text not null,
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_teacher_dms_pair on public.teacher_dms(sender_id, recipient_id, created_at);
+create index if not exists idx_teacher_dms_recipient on public.teacher_dms(recipient_id, created_at desc);
+alter table public.teacher_dms enable row level security;
+drop policy if exists "service role teacher dms" on public.teacher_dms;
+create policy "service role teacher dms" on public.teacher_dms
+  for all to service_role using (true) with check (true);
+
+-- ---------------------------------------------------------------------
+-- 9) Refresh the PostgREST schema cache so all changes are visible now.
 -- ---------------------------------------------------------------------
 notify pgrst, 'reload schema';
