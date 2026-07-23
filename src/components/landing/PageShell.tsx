@@ -34,12 +34,9 @@ export function PageShell({
           <Link href="/" aria-label="Najaح" className="flex-shrink-0">
             <Logo variant="wordmark" height={26} priority />
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium ms-12">
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium ms-12">
             <Link href="/tarifs" className={navLinkClass("tarifs")}>
               {t("pricing")}
-            </Link>
-            <Link href="/pour-les-parents" className={navLinkClass("parents")}>
-              {t("parents")}
             </Link>
             <Link href="/bac" className={navLinkClass("bac")}>
               BAC
@@ -50,11 +47,8 @@ export function PageShell({
             <Link href="/enseignant" className={navLinkClass("teacher")}>
               {t("teacher")}
             </Link>
-            <Link href="/faq" className={navLinkClass("faq")}>
-              {t("faq")}
-            </Link>
-            <Link href="/contact" className={navLinkClass("contact")}>
-              {t("contact")}
+            <Link href="/pour-les-parents" className={navLinkClass("parents")}>
+              {t("parents")}
             </Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -69,12 +63,10 @@ export function PageShell({
             <MobileMenu
               items={[
                 { href: "/tarifs", label: t("pricing") },
-                { href: "/pour-les-parents", label: t("parents") },
                 { href: "/bac", label: "BAC" },
                 { href: "/fac", label: t("fac") },
                 { href: "/enseignant", label: t("teacher") },
-                { href: "/faq", label: t("faq") },
-                { href: "/contact", label: t("contact") },
+                { href: "/pour-les-parents", label: t("parents") },
                 { href: "/connexion", label: t("login") },
               ]}
               ctaLabel={t("start")}

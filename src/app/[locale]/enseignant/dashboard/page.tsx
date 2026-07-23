@@ -88,6 +88,27 @@ export default async function TeacherDashboard() {
         </div>
       </section>
 
+      {/* Approval status banner — explains why community/messages are locked */}
+      {profile.status !== "approved" && (
+        <section className="pt-6 bg-surface">
+          <div className="container-x max-w-5xl">
+            <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-card p-4">
+              <span className="text-xl leading-none">⏳</span>
+              <div>
+                <div className="font-semibold text-amber-900 dark:text-amber-200 text-sm">
+                  {isAr ? "حسابك قيد المراجعة" : "Ton compte est en cours de validation"}
+                </div>
+                <p className="text-xs text-amber-800 dark:text-amber-300/80 mt-0.5">
+                  {isAr
+                    ? "ستُفتح لك المجتمع والرسائل بمجرد تأكيد فريقنا لملفك."
+                    : "La communauté et la messagerie s'ouvriront dès que notre équipe aura confirmé ton profil."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* KPIs */}
       <section className="py-10 bg-surface">
         <div className="container-x max-w-5xl">
