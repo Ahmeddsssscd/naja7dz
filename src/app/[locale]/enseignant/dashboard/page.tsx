@@ -121,6 +121,15 @@ export default async function TeacherDashboard() {
                 {isAr ? "شارك وتبادل مع زملائك" : "Partage et échange avec tes collègues"}
               </div>
             </Link>
+            <Link href="/enseignant/messages" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
+              <div className="text-2xl mb-2">📨</div>
+              <div className="font-semibold text-fg group-hover:text-gold transition-colors">
+                {isAr ? "الرسائل والطلبات" : "Messages & demandes"}
+              </div>
+              <div className="text-xs text-fg-soft mt-1">
+                {isAr ? "طلبات التلاميذ ومراسلة الأساتذة" : "Demandes d'élèves + messages professeurs"}
+              </div>
+            </Link>
             <Link href="/enseignant/reseau" className="bg-surface border border-line rounded-card p-5 hover:border-gold hover:shadow-card-hover transition group">
               <div className="text-2xl mb-2">🌐</div>
               <div className="font-semibold text-fg group-hover:text-gold transition-colors">

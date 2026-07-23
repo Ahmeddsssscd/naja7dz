@@ -9,7 +9,8 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 import { createServerClient } from "@/lib/supabase/server";
-import { ArrowRightIcon, MapPinIcon, UsersIcon, BookIcon } from "@/components/Icon";
+import { MapPinIcon, UsersIcon, BookIcon } from "@/components/Icon";
+import { ContactProfButton } from "@/components/app/ContactProfButton";
 
 export const metadata = { title: "Réseau enseignants — Najaح" };
 
@@ -20,10 +21,19 @@ interface PageProps {
 export default async function ReseauPage({ searchParams }: PageProps) {
   const t = await getTranslations("ReseauProfs");
   const locale = await getLocale();
-  const isAr = locale === "ar";
   const { subject, wilaya } = await searchParams;
 
   const supabase = await createServerClient();
+
+  // Is the viewer an approved teacher? Only they can message peers.
+  const { data: { user } } = await supabase.auth.getUser();
+  let canMessage = false;
+  if (user) {
+    const { data: me } = await supabase
+      .from("teacher_profiles").select("status").eq("user_id", user.id).maybeSingle();
+    canMessage = me?.status === "approved";
+  }
+
   let query = supabase
     .from("teacher_profiles")
     .select("user_id, full_name, school_name, wilaya, bio, bio_public, subjects, grades_taught")
@@ -74,8 +84,8 @@ export default async function ReseauPage({ searchParams }: PageProps) {
                 const last = p.full_name.split(" ").slice(-1)[0]?.[0] ?? "";
                 const safeName = `${p.full_name.split(" ")[0]} ${last}.`;
                 return (
-                  <Link key={p.user_id} href={`/enseignant/reseau/${p.user_id}` as never}
-                    className="bg-surface border border-line rounded-card p-5 hover:shadow-card-hover hover:border-fg/40 transition flex flex-col">
+                  <div key={p.user_id}
+                    className="bg-surface border border-line rounded-card p-5 flex flex-col">
                     <div className="flex items-start gap-3 mb-3">
                       <div className="w-12 h-12 rounded-full bg-surface-3 text-fg font-bold inline-flex items-center justify-center flex-shrink-0">
                         {monogram}
@@ -100,7 +110,10 @@ export default async function ReseauPage({ searchParams }: PageProps) {
                         <span key={s} className="text-[10px] font-mono bg-surface-3 text-fg px-2 py-0.5 rounded-full">{s}</span>
                       ))}
                     </div>
-                  </Link>
+                    {canMessage && user?.id !== p.user_id && (
+                      <ContactProfButton peerId={p.user_id} peerName={safeName} />
+                    )}
+                  </div>
                 );
               })}
             </div>
