@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { LangSwitch } from "@/components/LangSwitch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LogoutButton } from "@/components/app/LogoutButton";
+import { TeacherQuickAccess } from "@/components/app/TeacherQuickAccess";
 
 /**
  * PRO teacher workspace chrome. A distinct, focused shell — logo + "PRO"
@@ -18,11 +19,11 @@ export function TeacherShell({
   active?: "dashboard" | "exercices" | "communaute" | "messages" | "reseau";
   teacherName?: string;
 }) {
+  // Messages + Communauté live as header icons now (TeacherQuickAccess), so
+  // the text nav stays short and scannable.
   const NAV: { id: string; href: string; label: string }[] = [
     { id: "dashboard", href: "/enseignant/dashboard", label: "Tableau de bord" },
     { id: "exercices", href: "/enseignant/exercices", label: "Exercices" },
-    { id: "communaute", href: "/enseignant/communaute", label: "Communauté" },
-    { id: "messages", href: "/enseignant/messages", label: "Messages" },
     { id: "reseau", href: "/enseignant/reseau", label: "Réseau" },
   ];
 
@@ -50,10 +51,12 @@ export function TeacherShell({
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <TeacherQuickAccess />
+            <span className="w-px h-6 bg-line mx-1 hidden sm:inline-block" />
             <ThemeToggle />
             <LangSwitch />
-            {teacherName && <span className="hidden md:inline text-sm text-fg ms-2 max-w-[140px] truncate">{teacherName}</span>}
+            {teacherName && <span className="hidden lg:inline text-sm text-fg ms-1 max-w-[130px] truncate">{teacherName}</span>}
             <LogoutButton />
           </div>
         </div>
