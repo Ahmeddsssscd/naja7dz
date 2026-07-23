@@ -19,6 +19,13 @@ alter table public.parent_profiles add column if not exists onboarded  boolean n
 alter table public.parent_profiles add column if not exists phone      text;
 alter table public.parent_profiles add column if not exists wilaya     text;
 alter table public.parent_profiles add column if not exists updated_at timestamptz not null default now();
+-- Account role chosen at sign-up (parent | student | teacher).
+alter table public.parent_profiles add column if not exists role text not null default 'parent';
+do $$ begin
+  alter table public.parent_profiles drop constraint if exists parent_profiles_role_check;
+  alter table public.parent_profiles add constraint parent_profiles_role_check
+    check (role in ('parent','student','teacher'));
+exception when others then null; end $$;
 
 -- ---------------------------------------------------------------------
 -- 2) children — kids-universe opt-in + parental controls

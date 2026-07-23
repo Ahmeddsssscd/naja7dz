@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { PageShell } from "@/components/landing/PageShell";
+import { TeacherShell } from "@/components/app/TeacherShell";
 import { Link } from "@/i18n/routing";
 import { TeacherCommunity } from "@/components/app/TeacherCommunity";
 
@@ -24,7 +24,7 @@ export default async function TeacherCommunityPage() {
   const approved = profile.status === "approved";
 
   return (
-    <PageShell active="teacher">
+    <TeacherShell active="communaute">
       <section className="py-10 bg-surface-2 border-b border-line">
         <div className="container-x max-w-2xl">
           <Link href="/enseignant/dashboard" className="text-xs text-fg-soft hover:text-fg">
@@ -47,7 +47,7 @@ export default async function TeacherCommunityPage() {
             <TeacherCommunity locale={isAr ? "ar" : "fr"} />
           ) : (
             <div className="bg-surface border border-dashed border-line rounded-card p-10 text-center">
-              <div className="text-4xl mb-3">⏳</div>
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-3 text-fg-faint"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               <h2 className="text-lg font-bold text-fg mb-2">
                 {isAr ? "حسابك قيد المراجعة" : "Ton compte est en cours de validation"}
               </h2>
@@ -63,6 +63,6 @@ export default async function TeacherCommunityPage() {
           )}
         </div>
       </section>
-    </PageShell>
+    </TeacherShell>
   );
 }

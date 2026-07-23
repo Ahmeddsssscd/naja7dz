@@ -9,7 +9,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/routing";
 import { CreateClassButton } from "@/components/app/enseignant/CreateClassButton";
-import { PageShell } from "@/components/landing/PageShell";
+import { TeacherShell } from "@/components/app/TeacherShell";
 import {
   BookIcon,
   UsersIcon,
@@ -56,7 +56,7 @@ export default async function TeacherDashboard() {
   const initials = profile.full_name.split(" ").map((n: string) => n[0]).slice(0, 2).join("");
 
   return (
-    <PageShell active="teacher">
+    <TeacherShell active="dashboard" teacherName={profile.full_name}>
       {/* Hero */}
       <section className="py-12 md:py-16 bg-surface-2">
         <div className="container-x max-w-5xl">
@@ -93,7 +93,7 @@ export default async function TeacherDashboard() {
         <section className="pt-6 bg-surface">
           <div className="container-x max-w-5xl">
             <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-card p-4">
-              <span className="text-xl leading-none">⏳</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-amber-700 dark:text-amber-400 flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               <div>
                 <div className="font-semibold text-amber-900 dark:text-amber-200 text-sm">
                   {isAr ? "حسابك قيد المراجعة" : "Ton compte est en cours de validation"}
@@ -200,7 +200,7 @@ export default async function TeacherDashboard() {
           </div>
         </div>
       </section>
-    </PageShell>
+    </TeacherShell>
   );
 }
 

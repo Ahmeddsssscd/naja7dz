@@ -1,17 +1,13 @@
 /**
- * /espace — smart post-login dispatch.
+ * /espace — smart post-login dispatch, by account role.
  *
- * One URL that sends every account to the right place:
+ *   teacher → /enseignant/dashboard   (PRO teacher space)
+ *   student → /eleve                  (they are their own learner)
+ *   parent  → /parent                 (manage children) — unless they have
+ *             no profile row yet, then also /parent (onboarding handles it)
  *
- *   - no child yet                          → /parent   (add a child first)
- *   - kids_universe_enabled is ON           → /petits   (Kids Universe)
- *   - otherwise (any grade, default)        → /eleve    (age-appropriate
- *                                             academic space, filtered by
- *                                             the child's grade)
- *
- * Kids Universe is now opt-in (migration 024): even primary pupils land on
- * their academic space by default. A parent flips the toggle per child in
- * /parent/enfants when they want the playful games.
+ * Role is set at sign-up (migration 030). Falls back to the child-based
+ * dispatch for legacy accounts created before roles existed.
  */
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
@@ -22,16 +18,29 @@ export default async function EspaceDispatchPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
 
+  const { data: profile } = await supabase
+    .from("parent_profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const role = profile?.role ?? "parent";
+
+  if (role === "teacher") redirect("/enseignant/dashboard");
+  if (role === "student") redirect("/eleve");
+
+  // Parent (or legacy account without a role): manage children from /parent.
+  // Legacy fallback — if there's exactly one child and kids-universe is on,
+  // still jump straight into the playful space.
   const { active } = await resolveActiveChild(user.id);
   if (!active) redirect("/parent");
 
-  // Look up the opt-in flag for the active child.
   const { data: child } = await supabase
     .from("children")
     .select("kids_universe_enabled")
     .eq("id", active.id)
     .maybeSingle();
-
   if (child?.kids_universe_enabled) redirect("/petits");
-  redirect("/eleve");
+
+  redirect("/parent");
 }

@@ -13,7 +13,14 @@ interface SignupRequest {
   phone?: string;
   wilaya?: string;
   locale?: string;
+  role?: string;   // parent | student | teacher
+  grade?: string;  // required when role = student
 }
+
+const ROLES = new Set(["parent", "student", "teacher"]);
+const GRADES = new Set([
+  "1AP", "2AP", "3AP", "4AP", "5AP", "1AM", "2AM", "3AM", "4AM", "1AS", "2AS", "3AS",
+]);
 
 export async function POST(req: Request) {
   const rl = rateLimit(`signup:${getClientKey(req)}`, { max: 5, windowSec: 60 * 15 });
@@ -37,6 +44,8 @@ export async function POST(req: Request) {
   const phone = (body.phone ?? "").trim().slice(0, 32) || null;
   const wilaya = (body.wilaya ?? "").trim().slice(0, 64) || null;
   const locale = body.locale === "ar" ? "ar" : "fr";
+  const role = ROLES.has(body.role ?? "") ? body.role! : "parent";
+  const grade = GRADES.has(body.grade ?? "") ? body.grade! : null;
 
   if (!email || !EMAIL_RX.test(email))
     return NextResponse.json({ error: "Email invalide" }, { status: 400 });
@@ -74,11 +83,12 @@ export async function POST(req: Request) {
       wilaya,
       language_pref: locale,
       onboarded: false,
+      role,
     });
     if (isSetupIncompleteError(profileErr)) {
       return NextResponse.json(
         {
-          error: "Configuration de la base de données incomplète. L'admin doit appliquer database/SETUP.sql dans Supabase.",
+          error: "Configuration de la base de données incomplète. L'admin doit appliquer database/FIX_EVERYTHING.sql dans Supabase.",
           setupRequired: true,
         },
         { status: 503 },
@@ -86,10 +96,25 @@ export async function POST(req: Request) {
     }
     if (profileErr) {
       console.error("[signup] profile upsert failed", profileErr);
-      // Don't block signup — child API has a defensive INSERT-if-missing path —
-      // but log it so we notice in monitoring. Auth user was created and
-      // verification email was sent; user can still log in and the wizard
-      // will create their profile on the first onboarding action.
+    }
+
+    // Role-specific setup so the first login lands in the right space.
+    if (role === "teacher") {
+      // Pending teacher profile — the "specialized team" approves it later.
+      await admin.from("teacher_profiles").upsert(
+        { user_id: data.user.id, full_name: fullName, wilaya, phone, status: "pending" },
+        { onConflict: "user_id" },
+      ).then(({ error }) => error && console.error("[signup] teacher_profiles", error.message));
+    } else if (role === "student") {
+      // The student is their own learner — create a child row for themselves
+      // so the student space (which reads the first child) works immediately.
+      const { data: existing } = await admin
+        .from("children").select("id").eq("parent_id", data.user.id).limit(1).maybeSingle();
+      if (!existing) {
+        await admin.from("children")
+          .insert({ parent_id: data.user.id, full_name: fullName, grade })
+          .then(({ error }) => error && console.error("[signup] self-child", error.message));
+      }
     }
   }
 

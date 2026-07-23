@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { PageShell } from "@/components/landing/PageShell";
+import { TeacherShell } from "@/components/app/TeacherShell";
 import { Link } from "@/i18n/routing";
 import { ExerciseGenerator } from "@/components/app/ExerciseGenerator";
 
@@ -21,7 +21,7 @@ export default async function TeacherExercisesPage() {
   if (!profile) redirect("/enseignant");
 
   return (
-    <PageShell active="teacher">
+    <TeacherShell active="exercices">
       <section className="py-10 bg-surface-2 border-b border-line">
         <div className="container-x max-w-3xl">
           <Link href="/enseignant/dashboard" className="text-xs text-fg-soft hover:text-fg">
@@ -43,6 +43,6 @@ export default async function TeacherExercisesPage() {
           <ExerciseGenerator locale={locale === "ar" ? "ar" : "fr"} />
         </div>
       </section>
-    </PageShell>
+    </TeacherShell>
   );
 }

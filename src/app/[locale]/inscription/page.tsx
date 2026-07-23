@@ -3,7 +3,7 @@ import { PageShell } from "@/components/landing/PageShell";
 import { Link } from "@/i18n/routing";
 import { SignupForm } from "@/components/auth/SignupForm";
 
-export const metadata = { title: "Créer un compte parent" };
+export const metadata = { title: "Créer un compte" };
 
 export default function InscriptionPage() {
   const t = useTranslations("Inscription");
