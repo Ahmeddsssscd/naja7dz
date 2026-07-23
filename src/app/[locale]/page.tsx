@@ -73,9 +73,68 @@ export default async function LandingPage() {
       <Testimonials />
       <Pricing />
       <FAQ />
+      <ContactStrip />
       <FinalCTA auth={auth} />
       <SiteFooter />
     </>
+  );
+}
+
+/* =============== CONTACT STRIP (replaces the standalone Contact page in nav) =============== */
+function ContactStrip() {
+  const channels = [
+    {
+      label: "Par email",
+      value: "support@naja7dz.com",
+      href: "mailto:support@naja7dz.com",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7l-10 6L2 7" /></svg>
+      ),
+    },
+    {
+      label: "Par téléphone",
+      value: "+213 XXX XX XX XX",
+      href: "tel:+213000000000",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+      ),
+    },
+    {
+      label: "Support 24/7",
+      value: "Écris-nous maintenant",
+      href: "/contact",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+      ),
+    },
+  ];
+  return (
+    <section id="contact" className="py-20 md:py-24 bg-surface-2 border-t border-line">
+      <div className="container-x max-w-4xl text-center">
+        <span className="eyebrow mb-3">Contact</span>
+        <h2 className="text-[clamp(26px,4vw,36px)] font-bold text-fg leading-tight tracking-tight mb-3 mt-2">
+          Une question ? Nous sommes là.
+        </h2>
+        <p className="text-fg-soft text-lg mb-10 max-w-xl mx-auto">
+          Réponse rapide, du dimanche au jeudi — et un support disponible à tout moment.
+        </p>
+        <div className="grid sm:grid-cols-3 gap-4">
+          {channels.map((c) => (
+            <a
+              key={c.label}
+              href={c.href}
+              className="group bg-surface border border-line rounded-card p-6 flex flex-col items-center gap-3 hover:border-gold hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
+            >
+              <span className="w-12 h-12 rounded-full bg-surface-3 text-fg inline-flex items-center justify-center group-hover:bg-gold group-hover:text-navy transition-colors">
+                {c.icon}
+              </span>
+              <span className="text-xs font-semibold text-fg-soft uppercase tracking-wider">{c.label}</span>
+              <span className="text-sm font-medium text-fg">{c.value}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -96,12 +155,9 @@ function SiteNav({ auth }: { auth: AuthState }) {
         <Link href="/" aria-label="Najaح" className="flex-shrink-0">
           <Logo variant="wordmark" height={26} priority />
         </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-fg-soft ms-12">
+        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-fg-soft ms-12">
           <Link href="/tarifs" className="hover:text-fg transition-colors">
             {t("pricing")}
-          </Link>
-          <Link href="/pour-les-parents" className="hover:text-fg transition-colors">
-            {t("parents")}
           </Link>
           <Link href="/bac" className="hover:text-fg transition-colors">
             BAC
@@ -112,8 +168,8 @@ function SiteNav({ auth }: { auth: AuthState }) {
           <Link href="/enseignant" className="hover:text-fg transition-colors">
             {t("teacher")}
           </Link>
-          <Link href="/faq" className="hover:text-fg transition-colors">
-            {t("faq")}
+          <Link href="/pour-les-parents" className="hover:text-fg transition-colors">
+            {t("parents")}
           </Link>
         </nav>
         <div className="flex items-center gap-2">
@@ -149,8 +205,7 @@ function SiteNav({ auth }: { auth: AuthState }) {
                   { href: "/bac", label: "BAC" },
                   { href: "/fac", label: t("fac") },
                   { href: "/enseignant", label: t("teacher") },
-                  { href: "/faq", label: t("faq") },
-                  { href: "/contact", label: "Contact" },
+                  { href: "/pour-les-parents", label: t("parents") },
                 ]}
                 ctaLabel={auth.hasSub ? t("cta_practice") : t("cta_discover_plans")}
               />
@@ -166,12 +221,10 @@ function SiteNav({ auth }: { auth: AuthState }) {
               <MobileMenu
                 items={[
                   { href: "/tarifs", label: t("pricing") },
-                  { href: "/pour-les-parents", label: t("parents") },
                   { href: "/bac", label: "BAC" },
                   { href: "/fac", label: t("fac") },
                   { href: "/enseignant", label: t("teacher") },
-                  { href: "/faq", label: t("faq") },
-                  { href: "/contact", label: "Contact" },
+                  { href: "/pour-les-parents", label: t("parents") },
                   { href: "/connexion", label: t("login") },
                 ]}
                 ctaLabel={t("start")}

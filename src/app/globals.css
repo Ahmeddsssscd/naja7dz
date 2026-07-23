@@ -23,15 +23,24 @@
     - `bg-surface-3` is the lightest accent (for icon chips, decoration)
     All values lean cool-navy to keep the brand temperature.
   */
+  /*
+    Dark theme — refined neutral slate (v2). Replaces the old saturated navy,
+    which read as heavy and low-contrast. This palette is near-neutral with a
+    whisper of cool, higher text contrast, and softer hairline borders — the
+    calmer, more "product-grade" dark you see in polished apps. Gold stays the
+    single accent. Hierarchy still mirrors light mode: `surface` = raised
+    body/cards, `surface-2` = deepest (alternating sections), `surface-3` =
+    lightest accent chips.
+  */
   .dark {
-    --surface: #141E3B;       /* mid navy — cards / headers ("raised") */
-    --surface-2: #0A1124;     /* deepest navy — page + alternating section */
-    --surface-3: #1F2B4F;     /* lightest navy — decorative accents */
-    --fg: #F2EBDC;            /* warm cream text */
-    --fg-soft: #A8B0C8;
-    --fg-faint: #6F7796;
-    --line: #1E2849;          /* subtle border on cards */
-    --line-strong: #2D3960;   /* visible border on inputs */
+    --surface: #16181D;       /* raised cards / headers / body */
+    --surface-2: #0D0E11;     /* deepest — page + alternating sections */
+    --surface-3: #20232A;     /* lightest — icon chips / decoration */
+    --fg: #EAEBEE;            /* clean near-white text */
+    --fg-soft: #9BA1AD;       /* muted supporting text */
+    --fg-faint: #656B76;      /* hints / captions */
+    --line: #23262D;          /* subtle border on cards */
+    --line-strong: #343A45;   /* visible border on inputs */
     color-scheme: dark;
   }
 
