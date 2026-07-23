@@ -11,8 +11,9 @@
  */
 import { LOGO_ICON_B64 } from "./logo-icon-data";
 
-// Aspect ratio (width / height of source PNG) for the combined lockup.
+// Aspect ratios (width / height of source PNG)
 const COMBINED_RATIO = 757 / 200; // logo-combined.png
+const WM_RATIO       = 365 / 113; // logo-wordmark.png (trimmed)
 
 type LogoProps = {
   height?: number;
@@ -47,16 +48,14 @@ export function Logo({ height = 36, variant = "wordmark", className = "" }: Logo
     );
   }
 
-  // wordmark (default) — clean typographic wordmark (no baked-in artwork/line).
-  // "naja" in the foreground brand colour + the Arabic ح accent in gold.
+  // wordmark (default)
   return (
-    <span
-      className={`inline-flex items-baseline font-bold tracking-tight leading-none select-none ${className}`}
-      style={{ fontSize: Math.round(height * 0.86) }}
-      aria-label="Najaح"
-    >
-      <span className="text-fg">naja</span>
-      <span className="text-gold ms-[0.02em]">ح</span>
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/logo-wordmark.png"
+      alt="Najaح"
+      className={`dark:invert ${className}`}
+      style={{ height, width: Math.round(height * WM_RATIO) }}
+    />
   );
 }
