@@ -134,6 +134,23 @@ create table if not exists public.professors (
   sort_order integer default 0,
   created_at timestamptz not null default now()
 );
+-- teaching_types powers the guided BAC finder (school / private / online).
+alter table public.professors add column if not exists teaching_types text[] not null default '{}';
+update public.professors p set teaching_types = coalesce((
+  select array_remove(array[
+    case when p.mode in ('in_person','both')
+          and (p.teaches_at ilike '%lyc%' or p.teaches_at ilike '%éc%'
+               or p.teaches_at ilike '%ec%' or p.teaches_at ilike '%coll%') then 'school' end,
+    case when p.mode in ('in_person','both')
+          and p.teaches_at ilike '%particulier%' then 'private' end,
+    case when p.mode in ('online','both') then 'online' end
+  ]::text[], null)
+), '{}') where p.teaching_types = '{}';
+update public.professors set teaching_types = teaching_types || array['private']
+  where mode in ('in_person','both') and teaching_types = '{}';
+update public.professors set teaching_types = array['online']
+  where mode = 'online' and teaching_types = '{}';
+
 alter table public.professors enable row level security;
 drop policy if exists "anon read active professors" on public.professors;
 create policy "anon read active professors" on public.professors
